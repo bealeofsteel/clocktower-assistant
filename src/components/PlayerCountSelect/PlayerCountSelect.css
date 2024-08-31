@@ -1,0 +1,12 @@
+button.player-count {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.good-char-count {
+    color: blue;
+}
+
+.evil-char-count {
+    color: red;
+}
