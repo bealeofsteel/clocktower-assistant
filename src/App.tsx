@@ -10,7 +10,7 @@ function App() {
 
   const initialState = JSON.parse(localStorage.getItem("gameState") as string);
 
-  const populateSelectedCharacters = useCallback((initialState: GameState) => {
+  const populateSelectedCharacters = () => {
     const charGroups = ["townsfolk", "outsiders", "minions", "demons", "demonBluffs", "notInUse"] as (keyof AssignedChars)[];
     const classMap: Partial<Record<CharacterName, (json: Character) => Character>> = {
       [CharacterName.Baron]: Baron.fromJson,
@@ -25,13 +25,15 @@ function App() {
       });
       initialState[charGroup] = chars;
     });
-  }, []);
+  };
 
-  populateSelectedCharacters(initialState);
+  if (initialState) {
+    populateSelectedCharacters();
+  }
 
   const [selectedTab, setSelectedTab] = useState("setup");
-  const [playerCount, setPlayerCount] = useState(initialState.playerCount || 12);
-  const [selectedEdition, setSelectedEdition] = useState(initialState.edition || EditionName.TroubleBrewing);
+  const [playerCount, setPlayerCount] = useState(initialState?.playerCount || 12);
+  const [selectedEdition, setSelectedEdition] = useState(initialState?.edition || EditionName.TroubleBrewing);
 
   const [gameState, setGameState] = useState<GameState>(initialState);
 
