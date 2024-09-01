@@ -1,15 +1,14 @@
-import { Character, Demon, Minion, Outsider, Townsfolk } from "./characters";
+import { Character } from "./characters";
 
 export interface Edition {
-    name: string;
-    setupNewGame: () => CharacterSet
+    getCharactersForEdition: () => CharacterSet
 }
 
-interface CharacterSet {
-    allTownsfolk: Townsfolk[];
-    allOutsiders: Outsider[];
-    allMinions: Minion[];
-    allDemons: Demon[];
+export interface CharacterSet {
+    townsfolk: Character[];
+    outsiders: Character[];
+    minions: Character[];
+    demons: Character[];
 }
 
 export enum Alignment {
@@ -42,17 +41,18 @@ export enum CharacterName {
     Imp = "Imp"
 }
 
-export interface GameState {
-    townsfolk: CharAvailability<Townsfolk>;
-    outsiders: CharAvailability<Outsider>;
-    minions: CharAvailability<Minion>;
-    demons: CharAvailability<Demon>;
-    demonBluffs: Character[];
+export enum EditionName {
+    TroubleBrewing = "Trouble Brewing"
 }
 
-export interface CharAvailability<T> {
-    picked: T[];
-    available: T[];
+export interface AssignedChars extends CharacterSet {
+    demonBluffs: Character[];
+    notInUse: Character[];
+}
+
+export interface GameState extends AssignedChars {
+    playerCount: number;
+    edition: string;
 }
 
 export interface PlayerSetup {

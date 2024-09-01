@@ -1,27 +1,25 @@
-import { Dispatch, SetStateAction } from "react";
-import { ALL_EDITIONS } from "../../editions";
 import { playerCountConfig } from "../../gameSettings";
-import { CharAvailability, GameState, PlayerSetup } from "../../types";
+import { CharacterSet, EditionName, GameState, PlayerSetup } from "../../types";
 import "./RandomizeSetup.css"
 import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
+import { EDITIONS_BY_NAME } from "../../editions";
 
 interface RandomizeSetupProps {
     playerCount: number;
-    setGameState: Dispatch<SetStateAction<GameState | undefined>>;
+    updateGameState: (newState: GameState) => void;
+    editionName: EditionName;
 }
 
-function RandomizeSetup({playerCount, setGameState}: RandomizeSetupProps) {
+function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSetupProps) {
 
-    const pickAvailableCharacter = (charSet: CharAvailability<Character>): Character => {
-        const character = charSet.available.pop() as Character;
-        charSet.picked.push(character);
+    const pickAvailableCharacter = (availableChars: Character[], pickedChars: Character[]): Character => {
+        const character = availableChars.pop() as Character;
+        pickedChars.push(character);
         return character;
     };
 
     const generateRandomSetup = () => {
-        // Assume Trouble Brewing (for now...)
-        const edition = ALL_EDITIONS[0];
 
         const playerSetup: PlayerSetup = {
             townsfolkToPick: playerCountConfig[playerCount].townsfolk,
@@ -30,65 +28,68 @@ function RandomizeSetup({playerCount, setGameState}: RandomizeSetupProps) {
             demonsToPick: playerCountConfig[playerCount].demons
         };
 
-        const characterSet = edition.setupNewGame();
+        const characterSet = EDITIONS_BY_NAME[editionName].getCharactersForEdition();
+
+        const availableChars: CharacterSet = {
+            townsfolk: shuffleArray(characterSet.townsfolk),
+            outsiders: shuffleArray(characterSet.outsiders),
+            minions: shuffleArray(characterSet.minions),
+            demons: shuffleArray(characterSet.demons)
+        };
 
         const gameState: GameState = {
-            townsfolk: {
-                available: shuffleArray(characterSet.allTownsfolk),
-                picked: []
-            },
-            outsiders: {
-                available: shuffleArray(characterSet.allOutsiders),
-                picked: []
-            },
-            minions: {
-                available: shuffleArray(characterSet.allMinions),
-                picked: []
-            },
-            demons: {
-                available: shuffleArray(characterSet.allDemons),
-                picked: []
-            },
-            demonBluffs: []
+            townsfolk: [],
+            outsiders: [],
+            minions: [],
+            demons: [],
+            demonBluffs: [],
+            notInUse: [],
+            playerCount: playerCount,
+            edition: editionName,
         };
 
         while (playerSetup.demonsToPick > 0) {
-            pickAvailableCharacter(gameState.demons);
+            pickAvailableCharacter(availableChars.demons, gameState.demons);
             playerSetup.demonsToPick--;
         }
 
         while (playerSetup.minionsToPick > 0) {
-            const character = pickAvailableCharacter(gameState.minions);
-            character.onPicked(playerSetup, gameState);
+            const character = pickAvailableCharacter(availableChars.minions, gameState.minions);
+            character.onPicked(playerSetup, availableChars, gameState);
             playerSetup.minionsToPick--;
         }
 
         while (playerSetup.outsidersToPick > 0) {
-            const character = pickAvailableCharacter(gameState.outsiders);
-            character.onPicked(playerSetup, gameState);
+            const character = pickAvailableCharacter(availableChars.outsiders, gameState.outsiders);
+            character.onPicked(playerSetup, availableChars, gameState);
             playerSetup.outsidersToPick--;
         }
 
         while (playerSetup.townsfolkToPick > 0) {
-            pickAvailableCharacter(gameState.townsfolk);
+            pickAvailableCharacter(availableChars.townsfolk, gameState.townsfolk);
             playerSetup.townsfolkToPick--;
         }
 
         let numDemonBluffs = 3;
         
-        if (gameState.outsiders.available.length > 0) {
-            const character = gameState.outsiders.available.pop() as Character;
+        if (availableChars.outsiders.length > 0) {
+            const character = availableChars.outsiders.pop() as Character;
             gameState.demonBluffs.push(character);
             numDemonBluffs--;    
         }
 
         while (numDemonBluffs > 0) {
-            const character = gameState.townsfolk.available.pop() as Character;
+            const character = availableChars.townsfolk.pop() as Character;
             gameState.demonBluffs.push(character);
             numDemonBluffs--;
         }
 
-        setGameState(gameState);
+        gameState.notInUse = gameState.notInUse.concat(availableChars.townsfolk);
+        gameState.notInUse = gameState.notInUse.concat(availableChars.outsiders);
+        gameState.notInUse = gameState.notInUse.concat(availableChars.minions);
+        gameState.notInUse = gameState.notInUse.concat(availableChars.demons);
+
+        updateGameState(gameState);
     };
 
     return (
