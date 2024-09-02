@@ -1,6 +1,5 @@
 import { Baron, Drunk, Character, Washerwoman, FortuneTeller, Empath, Chef, Investigator, Librarian, Undertaker, Monk, Ravenkeeper, Butler, Poisoner, Spy, ScarletWoman, Imp } from "./characters";
-import { SpecialInstructionKey } from "./components/NightInfo/NightInfo";
-import { CharacterName, Edition, EditionName } from "./types";
+import { CharacterName, Edition, EditionName, SpecialInstructionKey } from "./types";
 
 export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
     [EditionName.TroubleBrewing]: {

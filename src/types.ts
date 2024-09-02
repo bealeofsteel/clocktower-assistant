@@ -1,7 +1,5 @@
 import { Character } from "./characters";
-import { NightType, SpecialInstructionKey} from "./components/NightInfo/NightInfo";
-
-export type NightInstructions = Partial<Record<CharacterName, string>>[]
+import { Instruction, NightType} from "./components/NightInfo/NightInfo";
 
 export interface Edition {
     getCharactersForEdition: () => CharacterSet;
@@ -60,6 +58,10 @@ export interface AssignedChars extends CharacterSet {
 export interface GameState extends AssignedChars {
     playerCount: number;
     edition: EditionName;
+    nightInstructions: {
+        first: Instruction[];
+        other: Instruction[];
+    }
 }
 
 export interface PlayerSetup {
@@ -67,4 +69,11 @@ export interface PlayerSetup {
     outsidersToPick: number;
     minionsToPick: number;
     demonsToPick: number;
+}
+
+export enum SpecialInstructionKey {
+    Dusk = "Dusk",
+    MinionInfo = "Minion Info",
+    DemonInfo = "Demon Info",
+    Dawn = "Dawn"
 }

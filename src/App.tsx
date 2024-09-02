@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import './App.css'
 import PlayerCountSelect from './components/PlayerCountSelect/PlayerCountSelect'
 import RandomizeSetup from './components/RandomizeSetup/RandomizeSetup'
-import { CharacterName, EditionName, GameState, AssignedChars } from './types';
-import { Character, characterClassMap } from './characters';
+import { EditionName, GameState, AssignedChars, CharacterName } from './types';
+import { Character, characterClassNameMap } from './characters';
 import { EDITIONS_BY_NAME } from './editions';
-import NightInfo, { NightType } from './components/NightInfo/NightInfo';
+import NightInfo, { Instruction, NightType } from './components/NightInfo/NightInfo';
 
 enum TabName {
   Setup = "setup",
@@ -19,21 +19,35 @@ function App() {
 
   const initialState = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) as string);
 
-  const populateSelectedCharacters = () => {
+  // To take advantage of Character functionality, we need to instantiate Character objects from the saved JSON
+  const populateCharacters = () => {
     const charGroups = ["townsfolk", "outsiders", "minions", "demons", "demonBluffs", "notInUse"] as (keyof AssignedChars)[];
+    const instantiatedCharsByName = new Map<CharacterName, Character>();
 
-    charGroups.map((charGroup) => {
+    charGroups.forEach((charGroup) => {
       const chars: Character[] = [];
-      initialState[charGroup].map((charJson: Character) => {
-        const Klass = characterClassMap[charJson.name as CharacterName] || Character;
-        chars.push(new Klass(charJson.name).fromJson(charJson))
+      initialState[charGroup].forEach((charJson: Character) => {
+        const Klass = characterClassNameMap[charJson.name] || Character;
+        const char = new Klass(charJson.name).fromJson(charJson);
+        chars.push(char);
+        instantiatedCharsByName.set(charJson.name, char);
       });
       initialState[charGroup] = chars;
     });
+
+    const nightTypes = [NightType.First, NightType.Other];
+
+    nightTypes.forEach((nightType) => {
+      initialState.nightInstructions[nightType].forEach((instruction: Instruction) => {
+        if (instruction.character) {
+          instruction.character = instantiatedCharsByName.get(instruction.character.name);
+        }
+      });
+    })
   };
 
   if (initialState) {
-    populateSelectedCharacters();
+    populateCharacters();
   }
 
   const [selectedTab, setSelectedTab] = useState(TabName.Setup);
@@ -46,9 +60,47 @@ function App() {
     setGameState(newState);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
   };
+
+  const toggleDeadAliveState = (char: Character, category: keyof AssignedChars) => {
+    const newChars = gameState[category].map((oldChar) => {
+      if (oldChar.name === char.name) {
+        return Object.assign(oldChar, { isDead: !char.isDead });
+      } else {
+        return oldChar;
+      }
+    });
+
+    updateGameState({
+      ...gameState,
+      [category]: newChars
+    });
+  };
+
+  const updatePlayerName = (e: ChangeEvent<HTMLInputElement>, char: Character, category: keyof AssignedChars) => {
+    const newChars = gameState[category].map((oldChar) => {
+      if (oldChar.name === char.name) {
+        return Object.assign(oldChar, { playerName: e.target.value });
+      } else {
+        return oldChar;
+      }
+    });
+
+    updateGameState({
+      ...gameState,
+      [category]: newChars
+    });
+  };
   
-  const displayCharName = (char: Character) => {
-    return <div key={char.name} className={`char-name-${char.alignment}`}>{char.getDisplayName()}</div>
+  const displayCharName = (char: Character, category?: keyof AssignedChars) => {
+    return (
+      <div key={`${char.name}-name`} className="char-name-container">
+        <span className={`char-name clickable ${char.alignment} ${char.isDead ? "is-dead" : ""}`} 
+          onClick={category ? () => toggleDeadAliveState(char, category) : () => {}}>{char.getDisplayName()} 
+        </span>
+        { category && <input type="text" value={char.playerName} onChange={(e) => updatePlayerName(e, char, category)}></input> }
+      </div>
+    )
+
   };
 
   return (
@@ -76,27 +128,27 @@ function App() {
             <>
               <div>
                 <strong>Townsfolk:</strong>
-                {gameState.townsfolk.map(displayCharName)}
+                {gameState.townsfolk.map((char) => displayCharName(char, "townsfolk"))}
               </div>
               <div>
                 <strong>Outsiders:</strong>
-                {gameState.outsiders.map(displayCharName)}
+                {gameState.outsiders.map((char) => displayCharName(char, "outsiders"))}
               </div>
               <div>
                 <strong>Minions:</strong>
-                {gameState.minions.map(displayCharName)}
+                {gameState.minions.map((char) => displayCharName(char, "minions"))}
               </div>
               <div>
                 <strong>Demons:</strong>
-                {gameState.demons.map(displayCharName)}
+                {gameState.demons.map((char) => displayCharName(char, "demons"))}
               </div>
               <div>
                 <strong>Demon Bluffs:</strong>
-                {gameState.demonBluffs.map(displayCharName)}
+                {gameState.demonBluffs.map((char) => displayCharName(char))}
               </div>
               <div>
                 <strong>Not in use:</strong>
-                {gameState.notInUse.map(displayCharName)}
+                {gameState.notInUse.map((char) => displayCharName(char))}
               </div>
             </>
           }
@@ -104,8 +156,8 @@ function App() {
       }
       {selectedTab === TabName.Nights && 
         <>
-          <NightInfo gameState={gameState} type={NightType.First}></NightInfo>
-          <NightInfo gameState={gameState} type={NightType.Other}></NightInfo>
+          <NightInfo gameState={gameState} type={NightType.First} updateGameState={updateGameState}></NightInfo>
+          <NightInfo gameState={gameState} type={NightType.Other} updateGameState={updateGameState}></NightInfo>
         </>
       }
     </>

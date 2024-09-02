@@ -1,0 +1,21 @@
+.instruction {
+    cursor: pointer;
+    margin-bottom: 5px;
+
+    &.char-is-dead {
+        text-decoration: line-through;
+    }
+
+    input {
+        margin-right: 10px;
+    }
+}
+
+.checkbox-select {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.instructions-container {
+    text-align: left;
+}

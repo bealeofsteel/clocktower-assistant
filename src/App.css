@@ -11,10 +11,25 @@ div.tabs {
   margin-bottom: 10px;
 }
 
-.char-name-good {
-  color: blue;
+.char-name {
+  &.good {
+    color: blue;
+  }
+
+  &.evil {
+    color: red;
+  }
+
+  &.clickable {
+    cursor: pointer;
+  }
+
+  &.is-dead {
+    text-decoration: line-through;
+  }
 }
 
-.char-name-evil {
-  color: red;
+.char-name-container {
+  display: flex;
+  justify-content: space-between;
 }

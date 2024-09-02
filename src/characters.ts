@@ -6,18 +6,24 @@ export class Character {
     alignment: Alignment;
     isDead: boolean;
     nightInstructions: Partial<Record<NightType, string>>;
+    playerName: string;
 
     constructor(name: CharacterName, alignment: Alignment = Alignment.Good) {
         this.name = name;
         this.alignment = alignment;
         this.isDead = false;
         this.nightInstructions = {};
+        this.playerName = "";
     }
 
     // Do nothing, some classes will override
     onPicked(_playerSetup: PlayerSetup, _availableChars: CharacterSet, _gameState: GameState) {}
 
     getDisplayName(): string {
+        if (this.playerName) {
+            return `${this.name} [${this.playerName}]`;
+        }
+
         return this.name;
     }
 
@@ -200,7 +206,11 @@ export class Drunk extends Character {
     }
 
     getDisplayName(): string {
-        return this.mistakenIdentity ? `${CharacterName.Drunk} (${this.mistakenIdentity})` : CharacterName.Drunk;
+        let name = this.mistakenIdentity ? `${CharacterName.Drunk} (${this.mistakenIdentity})` : CharacterName.Drunk;
+        if (this.playerName) {
+            name += ` [${this.playerName}]`;
+        }
+        return name;
     }
 
     getIdentityForInstructions(): CharacterName {
@@ -208,7 +218,7 @@ export class Drunk extends Character {
     }
 }
 
-export const characterClassMap: Partial<Record<CharacterName, new() => Character>> = {
+export const characterClassNameMap: Partial<Record<CharacterName, new() => Character>> = {
     [CharacterName.Baron]: Baron,
     [CharacterName.Drunk]: Drunk,
     [CharacterName.Poisoner]: Poisoner,
