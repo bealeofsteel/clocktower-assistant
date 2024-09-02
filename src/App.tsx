@@ -113,8 +113,8 @@ function App() {
       </div>
       {selectedTab === TabName.Setup && 
         <>
-          <div>
-            <strong>Edition:</strong>
+          <div className="edition-container">
+            <strong>Edition: </strong>
             <select value={selectedEdition} onChange={e => setSelectedEdition(e.target.value)}>
               {Object.keys(EDITIONS_BY_NAME).map(editionName => (
                 <option key={editionName} value={editionName}>{editionName}</option>

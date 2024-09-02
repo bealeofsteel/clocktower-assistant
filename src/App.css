@@ -33,3 +33,7 @@ div.tabs {
   display: flex;
   justify-content: space-between;
 }
+
+.edition-container {
+  margin-bottom: 10px;
+}
