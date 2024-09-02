@@ -78,7 +78,7 @@ function NightInfo({gameState, type}: NightInfoProps) {
         if (specialInstructionFunction) {
             const result = specialInstructionFunction(gameState, type);
             if (result) {
-                tempInstructions.push(result);
+                tempInstructions.push({...result, checked: false});
             }
             continue;
         }
@@ -92,7 +92,8 @@ function NightInfo({gameState, type}: NightInfoProps) {
                     label: character.getDisplayName(),
                     message: instructionsForChar,
                     alignment: character.alignment,
-                    character: character
+                    character: character,
+                    checked: false
                 })
             }
         }
@@ -101,23 +102,25 @@ function NightInfo({gameState, type}: NightInfoProps) {
     const [instructions, setInstructions] = useState<Instruction[]>(tempInstructions);
 
     const selectAll = () => {
-        instructions.forEach((instruction) => {
-            instruction.checked = true;
-        });
-        setInstructions(instructions);
-        console.log("instructions:", instructions);
+        setInstructions(instructions.map((instruction) => {
+            return {...instruction, checked: true}
+        }));
     };
 
     const unselectAll = () => {
-        instructions.forEach((instruction) => {
-            instruction.checked = false;
-        });
-        setInstructions(instructions);
+        setInstructions(instructions.map((instruction) => {
+            return {...instruction, checked: false}
+        }));
     };
 
-    const handleCheckedChange = (instruction: Instruction) => {
-        instruction.checked = !instruction.checked;
-        setInstructions(instructions);
+    const handleCheckedChange = (index: number) => {
+        setInstructions(
+            instructions.map((instruction, currentIndex) => {
+                return currentIndex === index
+                  ? { ...instruction, checked: !instruction.checked }
+                  : instruction
+            }
+        ));
     };
 
     return (
@@ -125,9 +128,9 @@ function NightInfo({gameState, type}: NightInfoProps) {
             <h2>{type === NightType.First ? "First Night" : "Other Nights"}</h2>
             <button onClick={() => selectAll()}>Select All</button>
             <button onClick={() => unselectAll()}>Unselect All</button>
-            {instructions?.map((instruction) => (
+            {instructions?.map((instruction, index) => (
                 <div key={instruction.label}>
-                    <input type="checkbox" checked={instruction.checked} onChange={() => handleCheckedChange(instruction)}/>
+                    <input type="checkbox" checked={instruction.checked} onChange={() => handleCheckedChange(index)}/>
                     <span className={`char-name-${instruction.alignment}`}><strong>{instruction.label} | </strong></span>
                     <span>{instruction.message}</span>
                 </div>
