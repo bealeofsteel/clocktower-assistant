@@ -84,10 +84,7 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
             numDemonBluffs--;
         }
 
-        gameState.notInUse = gameState.notInUse.concat(availableChars.townsfolk);
-        gameState.notInUse = gameState.notInUse.concat(availableChars.outsiders);
-        gameState.notInUse = gameState.notInUse.concat(availableChars.minions);
-        gameState.notInUse = gameState.notInUse.concat(availableChars.demons);
+        gameState.notInUse = gameState.notInUse.concat(availableChars.townsfolk, availableChars.outsiders, availableChars.minions, availableChars.demons);
 
         updateGameState(gameState);
     };

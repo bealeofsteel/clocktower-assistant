@@ -1,19 +1,20 @@
-import { Baron, Drunk, Character } from "./characters";
-import { Alignment, CharacterName, Edition, EditionName } from "./types";
+import { Baron, Drunk, Character, Washerwoman, FortuneTeller, Empath, Chef, Investigator, Librarian, Undertaker, Monk, Ravenkeeper, Butler, Poisoner, Spy, ScarletWoman, Imp } from "./characters";
+import { SpecialInstructionKey } from "./components/NightInfo/NightInfo";
+import { CharacterName, Edition, EditionName } from "./types";
 
 export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
     [EditionName.TroubleBrewing]: {
         getCharactersForEdition: () => {
             const townsfolk = [
-                new Character(CharacterName.Washerwoman),
-                new Character(CharacterName.Librarian),
-                new Character(CharacterName.Investigator),
-                new Character(CharacterName.Chef),
-                new Character(CharacterName.Empath),
-                new Character(CharacterName.FortuneTeller),
-                new Character(CharacterName.Undertaker),
-                new Character(CharacterName.Monk),
-                new Character(CharacterName.Ravenkeeper),
+                new Washerwoman(),
+                new Librarian(),
+                new Investigator(),
+                new Chef(),
+                new Empath(),
+                new FortuneTeller(),
+                new Undertaker(),
+                new Monk(),
+                new Ravenkeeper(),
                 new Character(CharacterName.Virgin),
                 new Character(CharacterName.Slayer),
                 new Character(CharacterName.Soldier),
@@ -21,21 +22,21 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
             ];
 
             const outsiders = [
-                new Character(CharacterName.Butler),
+                new Butler(),
                 new Drunk(),
                 new Character(CharacterName.Recluse),
                 new Character(CharacterName.Saint)
             ];
 
             const minions = [
-                new Character(CharacterName.Poisoner, Alignment.Evil),
-                new Character(CharacterName.Spy, Alignment.Evil),
-                new Character(CharacterName.ScarletWoman, Alignment.Evil),
+                new Poisoner(),
+                new Spy(),
+                new ScarletWoman(),
                 new Baron(),
             ];
 
             const demons = [
-                new Character(CharacterName.Imp, Alignment.Evil)
+                new Imp()
             ];
 
             return {
@@ -44,6 +45,37 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
                 minions,
                 demons
             }
-        }   
+        },
+        nightInstructions: {
+            first: [
+                SpecialInstructionKey.Dusk,
+                SpecialInstructionKey.MinionInfo,
+                SpecialInstructionKey.DemonInfo,
+                CharacterName.Poisoner,
+                CharacterName.Spy,
+                CharacterName.Washerwoman,
+                CharacterName.Librarian,
+                CharacterName.Investigator,
+                CharacterName.Chef,
+                CharacterName.Empath,
+                CharacterName.FortuneTeller,
+                CharacterName.Butler,
+                SpecialInstructionKey.Dawn,
+            ],
+            other: [
+                SpecialInstructionKey.Dusk,
+                CharacterName.Poisoner,
+                CharacterName.Monk,
+                CharacterName.Spy,
+                CharacterName.ScarletWoman,
+                CharacterName.Imp,
+                CharacterName.Ravenkeeper,
+                CharacterName.Undertaker,
+                CharacterName.Empath,
+                CharacterName.FortuneTeller,
+                CharacterName.Butler,
+                SpecialInstructionKey.Dawn,
+            ]
+        }
     }
 };

@@ -10,3 +10,11 @@ div.tabs {
   justify-content: space-between;
   margin-bottom: 10px;
 }
+
+.char-name-good {
+  color: blue;
+}
+
+.char-name-evil {
+  color: red;
+}
