@@ -32,6 +32,7 @@ div.tabs {
 .char-name-container {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 5px;
 }
 
 .edition-container {

@@ -139,7 +139,7 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         const charsInPlay = getAllCharsInPlay(gameState);
         const instructionCharNameToCharacter: Partial<Record<CharacterName, Character>> = {};
         charsInPlay.forEach((char) => {
-            instructionCharNameToCharacter[char.getIdentityForInstructions()] = char;
+            instructionCharNameToCharacter[char.identityForInstructions] = char;
         });
 
         [NightType.First, NightType.Other].forEach((nightType: NightType) => {
@@ -161,7 +161,7 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
                     const instructionsForChar = character.nightInstructions[nightType];
                     if (instructionsForChar) {
                         instructions.push({
-                            label: character.getDisplayName(),
+                            label: character.name,
                             message: instructionsForChar,
                             alignment: character.alignment,
                             character: character,

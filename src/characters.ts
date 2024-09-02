@@ -8,6 +8,7 @@ export class Character {
     nightInstructions: Partial<Record<NightType, string>>;
     playerName: string;
     isDrunkMistakenIdentity: boolean;
+    identityForInstructions: CharacterName;
 
     constructor(name: CharacterName, alignment: Alignment = Alignment.Good) {
         this.name = name;
@@ -16,6 +17,7 @@ export class Character {
         this.nightInstructions = {};
         this.playerName = "";
         this.isDrunkMistakenIdentity = false;
+        this.identityForInstructions = name;
     }
 
     // Do nothing, some classes will override
@@ -33,10 +35,6 @@ export class Character {
         }
 
         return name;
-    }
-
-    getIdentityForInstructions(): CharacterName {
-        return this.name;
     }
 
     fromJson(json: Character): Character {
@@ -208,6 +206,7 @@ export class Drunk extends Character {
         character.isDrunkMistakenIdentity = true;
         gameState.notInPlay.push(character);
         this.mistakenIdentity = character.name;
+        this.identityForInstructions = character.name;
         this.nightInstructions = {
             first: character.nightInstructions.first,
             other: character.nightInstructions.other
@@ -220,10 +219,6 @@ export class Drunk extends Character {
             name += ` [${this.playerName}]`;
         }
         return name;
-    }
-
-    getIdentityForInstructions(): CharacterName {
-        return this.mistakenIdentity as CharacterName;
     }
 }
 
