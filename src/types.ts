@@ -52,7 +52,7 @@ export enum EditionName {
 
 export interface AssignedChars extends CharacterSet {
     demonBluffs: Character[];
-    notInUse: Character[];
+    notInPlay: Character[];
 }
 
 export interface GameState extends AssignedChars {

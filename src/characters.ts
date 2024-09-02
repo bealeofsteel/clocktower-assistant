@@ -7,6 +7,7 @@ export class Character {
     isDead: boolean;
     nightInstructions: Partial<Record<NightType, string>>;
     playerName: string;
+    isDrunkMistakenIdentity: boolean;
 
     constructor(name: CharacterName, alignment: Alignment = Alignment.Good) {
         this.name = name;
@@ -14,17 +15,24 @@ export class Character {
         this.isDead = false;
         this.nightInstructions = {};
         this.playerName = "";
+        this.isDrunkMistakenIdentity = false;
     }
 
     // Do nothing, some classes will override
     onPicked(_playerSetup: PlayerSetup, _availableChars: CharacterSet, _gameState: GameState) {}
 
     getDisplayName(): string {
-        if (this.playerName) {
-            return `${this.name} [${this.playerName}]`;
+        let name: string = this.name;
+
+        if (this.isDrunkMistakenIdentity) {
+            name += " (token used by Drunk)";
         }
 
-        return this.name;
+        if (this.playerName) {
+            name += ` [${this.playerName}]`;
+        }
+
+        return name;
     }
 
     getIdentityForInstructions(): CharacterName {
@@ -197,7 +205,8 @@ export class Drunk extends Character {
 
     onPicked(_playerSetup: PlayerSetup, availableChars: CharacterSet, gameState: GameState, ) {
         const character = availableChars.townsfolk.pop() as Character;
-        gameState.notInUse.push(character);
+        character.isDrunkMistakenIdentity = true;
+        gameState.notInPlay.push(character);
         this.mistakenIdentity = character.name;
         this.nightInstructions = {
             first: character.nightInstructions.first,

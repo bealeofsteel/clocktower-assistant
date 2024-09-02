@@ -77,7 +77,7 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
             minions: [],
             demons: [],
             demonBluffs: [],
-            notInUse: [],
+            notInPlay: [],
             playerCount: playerCount,
             edition: editionName,
             nightInstructions: {
@@ -122,7 +122,7 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
             numDemonBluffs--;
         }
 
-        gameState.notInUse = gameState.notInUse.concat(availableChars.townsfolk, availableChars.outsiders, availableChars.minions, availableChars.demons);
+        gameState.notInPlay = gameState.notInPlay.concat(availableChars.townsfolk, availableChars.outsiders, availableChars.minions, availableChars.demons);
 
         gameState.nightInstructions = generateNightInstructions(gameState);
 

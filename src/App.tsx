@@ -21,7 +21,7 @@ function App() {
 
   // To take advantage of Character functionality, we need to instantiate Character objects from the saved JSON
   const populateCharacters = () => {
-    const charGroups = ["townsfolk", "outsiders", "minions", "demons", "demonBluffs", "notInUse"] as (keyof AssignedChars)[];
+    const charGroups = ["townsfolk", "outsiders", "minions", "demons", "demonBluffs", "notInPlay"] as (keyof AssignedChars)[];
     const instantiatedCharsByName = new Map<CharacterName, Character>();
 
     charGroups.forEach((charGroup) => {
@@ -147,8 +147,8 @@ function App() {
                 {gameState.demonBluffs.map((char) => displayCharName(char))}
               </div>
               <div>
-                <strong>Not in use:</strong>
-                {gameState.notInUse.map((char) => displayCharName(char))}
+                <strong>Not in play:</strong>
+                {gameState.notInPlay.map((char) => displayCharName(char))}
               </div>
             </>
           }
@@ -164,4 +164,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
