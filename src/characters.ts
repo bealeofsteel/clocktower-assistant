@@ -1,23 +1,34 @@
+import { pickRandomCharacterInPlay, pickRandomCharOfTypeInPlay } from "./charUtils";
 import { NightType } from "./components/NightInfo/NightInfo";
-import { Alignment, CharacterName, CharacterSet, GameState, PlayerSetup } from "./types";
+import { shuffleArray } from "./randomUtils";
+import { Alignment, CharacterName, CharacterSet, CharacterType, charTypeToGameStateFieldMapping, GameState, PlayerSetup } from "./types";
 
 export class Character {
     name: CharacterName;
+    type: CharacterType;
     alignment: Alignment;
     isDead: boolean;
+    // move back to functions?
     nightInstructions: Partial<Record<NightType, string>>;
     playerName: string;
     isDrunkMistakenIdentity: boolean;
+    // move back to functions?
     identityForInstructions: CharacterName;
+    // move back to functions?
+    canBeDemonBluff: boolean;
+    charRegistersAs: CharacterName;
 
-    constructor(name: CharacterName, alignment: Alignment = Alignment.Good) {
+    constructor(name: CharacterName, type: CharacterType = CharacterType.Townsfolk, alignment: Alignment = Alignment.Good) {
         this.name = name;
+        this.type = type;
         this.alignment = alignment;
         this.isDead = false;
         this.nightInstructions = {};
         this.playerName = "";
         this.isDrunkMistakenIdentity = false;
         this.identityForInstructions = name;
+        this.canBeDemonBluff = true;
+        this.charRegistersAs = name;
     }
 
     // Do nothing, some classes will override
@@ -37,6 +48,10 @@ export class Character {
         return name;
     }
 
+    getStartingInfoSuggestion(_gameState: GameState): string | undefined {
+        return;
+    }
+
     fromJson(json: Character): Character {
         return Object.assign(this, json);
     }
@@ -49,6 +64,10 @@ export class Washerwoman extends Character {
             first: "Show the Townsfolk character token. Point to both the TOWNSFOLK and WRONG players."
         };
     }
+
+    getStartingInfoSuggestion(gameState: GameState): string {
+        return getPointToTwoCharsOfTypeSuggestion(gameState, CharacterType.Townsfolk, this.name);
+    }
 }
 
 export class Librarian extends Character {
@@ -58,6 +77,10 @@ export class Librarian extends Character {
             first: "Show the Outsider character token. Point to both the OUTSIDER and WRONG players."
         };
     }
+
+    getStartingInfoSuggestion(gameState: GameState): string {
+        return getPointToTwoCharsOfTypeSuggestion(gameState, CharacterType.Outsider, this.name);
+    }
 }
 
 export class Investigator extends Character {
@@ -66,6 +89,10 @@ export class Investigator extends Character {
         this.nightInstructions = {
             first: "Show the Minion character token. Point to both the MINION and WRONG players."
         };
+    }
+
+    getStartingInfoSuggestion(gameState: GameState): string {
+        return getPointToTwoCharsOfTypeSuggestion(gameState, CharacterType.Minion, this.name);
     }
 }
 
@@ -143,7 +170,7 @@ export class Undertaker extends Character {
 
 export class Baron extends Character {
     constructor() {
-        super(CharacterName.Baron, Alignment.Evil);
+        super(CharacterName.Baron, CharacterType.Minion, Alignment.Evil);
     }
 
     onPicked(playerSetup: PlayerSetup) {
@@ -156,7 +183,7 @@ const poisonerInstructions = "The Poisoner chooses a player. ⚫️";
 
 export class Poisoner extends Character {
     constructor() {
-        super(CharacterName.Poisoner, Alignment.Evil);
+        super(CharacterName.Poisoner, CharacterType.Minion, Alignment.Evil);
         this.nightInstructions = {
             first: poisonerInstructions,
             other: poisonerInstructions
@@ -168,7 +195,7 @@ const spyInstructions = "Show the Grimoire for as long as the Spy needs.";
 
 export class Spy extends Character {
     constructor() {
-        super(CharacterName.Spy, Alignment.Evil);
+        super(CharacterName.Spy, CharacterType.Minion, Alignment.Evil);
         this.nightInstructions = {
             first: spyInstructions,
             other: spyInstructions
@@ -178,7 +205,7 @@ export class Spy extends Character {
 
 export class ScarletWoman extends Character {
     constructor() {
-        super(CharacterName.ScarletWoman, Alignment.Evil);
+        super(CharacterName.ScarletWoman, CharacterType.Minion, Alignment.Evil);
         this.nightInstructions = {
             other: "If the Scarlet Woman became the Imp today, show them the YOU ARE token, then the Imp token."
         };
@@ -187,7 +214,7 @@ export class ScarletWoman extends Character {
 
 export class Imp extends Character {
     constructor() {
-        super(CharacterName.Imp, Alignment.Evil);
+        super(CharacterName.Imp, CharacterType.Minion, Alignment.Evil);
         this.nightInstructions = {
             other: "The Imp chooses a player. ⚫️ If the Imp chose themselves: Replace 1 alive Minion token with a spare Imp token. Put the old Imp to sleep. Wake the new Imp. Show the YOU ARE token, then show the Imp token."
         };
@@ -198,7 +225,8 @@ export class Drunk extends Character {
     mistakenIdentity: CharacterName | undefined;
 
     constructor() {
-        super(CharacterName.Drunk);
+        super(CharacterName.Drunk, CharacterType.Outsider);
+        this.canBeDemonBluff = false;
     }
 
     onPicked(_playerSetup: PlayerSetup, availableChars: CharacterSet, gameState: GameState, ) {
@@ -221,6 +249,26 @@ export class Drunk extends Character {
         return name;
     }
 }
+
+const getPointToTwoCharsOfTypeSuggestion = (gameState: GameState, charType: CharacterType, currentChar: CharacterName) => {
+    const gameStateField = charTypeToGameStateFieldMapping[charType];
+    if (gameState[gameStateField].length === 0) {
+        return "Show a zero.";
+    }
+
+    const pickedChar = pickRandomCharOfTypeInPlay(gameState, charType);
+    const otherChar = pickRandomCharacterInPlay(gameState, [currentChar, pickedChar.name]) as Character;
+
+    const charsToPointTo = [pickedChar, otherChar];
+    shuffleArray(charsToPointTo);
+
+    const result = `Show the ${pickedChar.charRegistersAs} character token. Point to {{${charsToPointTo[0].name}}} and {{${charsToPointTo[1].name}}}.`;
+    
+    // Once we've embedded the char name into the string, reset the "registers as" flag so as not to confuse subsequent steps
+    pickedChar.charRegistersAs = pickedChar.name;
+
+    return result;
+};
 
 export const characterClassNameMap: Partial<Record<CharacterName, new() => Character>> = {
     [CharacterName.Baron]: Baron,

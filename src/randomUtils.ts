@@ -1,8 +1,6 @@
 import { Character } from "./characters";
 
-export const pickRandomArrayItem = (array: Character[]) => {
-    return array[(Math.floor(Math.random() * array.length))]
-};
+export const RECLUSE_REGISTER_EVIL_BASE_CHANCE = .75;
 
 // Fisher-Yates shuffle
 export const shuffleArray = (array: Character[]) => {

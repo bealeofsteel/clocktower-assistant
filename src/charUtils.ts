@@ -1,30 +1,77 @@
-import { Character, Drunk } from "./characters";
-import { GameState, CharacterName, AssignedChars } from "./types";
-
-const inPlayCharGroups = ["townsfolk", "outsiders", "minions", "demons"];
-
-interface InstructionsIncludedResult {
-    shouldInclude: boolean;
-    character?: Character;
-}
-
-export const shouldIncludeCharacterInstructions = (gameState: GameState, charName: CharacterName): InstructionsIncludedResult => {
-    for (let i = 0; i < inPlayCharGroups.length; i++) {
-        const charGroup = inPlayCharGroups[i] as keyof AssignedChars;
-        for (let j = 0; j < gameState[charGroup].length; j++) {
-            const character = gameState[charGroup][j];
-            if (character.name === charName || (character instanceof Drunk && character.mistakenIdentity === charName)) {
-                return {
-                    shouldInclude: true,
-                    character
-                };
-            }
-        }
-    }
-    
-    return { shouldInclude: false };
-};
+import { Character } from "./characters";
+import { shuffleArray } from "./randomUtils";
+import { GameState, CharacterName, charTypeToGameStateFieldMapping, CharacterType } from "./types";
 
 export const getAllCharsInPlay = (gameState: GameState): Character[] => {
     return gameState.townsfolk.concat(gameState.outsiders, gameState.minions, gameState.demons);
+};
+
+// Picks a random in-play char of the specified type, with the spy and recluse possibly registering as another character
+export const pickRandomCharOfTypeInPlay = (gameState: GameState, charType: CharacterType): Character => {
+    const gameStateField = charTypeToGameStateFieldMapping[charType];
+    const chars = Array.from(gameState[gameStateField]);
+
+    if (charType === CharacterType.Townsfolk || charType === CharacterType.Outsider) {
+        const spy = findCharIfInPlay(gameState, CharacterType.Minion, CharacterName.Spy);
+        if (spy) {
+            const randomChar = pickRandomCharOfType(gameState, charType);
+            spy.charRegistersAs = randomChar.name;
+            chars.push(spy);
+        }
+    } else if (charType === CharacterType.Minion || charType === CharacterType.Demon) {
+        const recluse = findCharIfInPlay(gameState, CharacterType.Outsider, CharacterName.Recluse);
+        if (recluse) {
+            const randomChar = pickRandomCharOfType(gameState, charType);
+            recluse.charRegistersAs = randomChar.name;
+            chars.push(recluse);
+        }
+    }
+
+    shuffleArray(chars);
+    return chars[0];
+};
+
+// Picks a random character of the specified type out of all the characters in the edition (not just in play)
+export const pickRandomCharOfType = (gameState: GameState, charType: CharacterType): Character => {
+    const gameStateField = charTypeToGameStateFieldMapping[charType];
+    const chars = Array.from(gameState[gameStateField]);
+    gameState.notInPlay.forEach((char) => {
+        if (char.type === charType) {
+            chars.push(char);
+        }
+    });
+
+    shuffleArray(chars);
+    return chars[0];
+};
+
+export const pickRandomCharacterInPlay = (gameState: GameState, excludeChars?: CharacterName[]): Character | undefined => {
+    const allChars = getAllCharsInPlay(gameState);
+    shuffleArray(allChars);
+
+    if (excludeChars) {
+        for (let i = 0; i < allChars.length; i++) {
+            const char = allChars[i];
+            if (excludeChars.includes(char.name)) {
+                continue;
+            } else {
+                return char;
+            }
+        }
+    } else {
+        return allChars[0];
+    }
+
+    return undefined;
+};
+
+const findCharIfInPlay = (gameState: GameState, charType: CharacterType, charName: CharacterName) => {
+    const gameStateField = charTypeToGameStateFieldMapping[charType];
+    for (let i = 0; i < gameState[gameStateField].length; i++) {
+        if (gameState[gameStateField][i].name === charName) {
+            return gameState[gameStateField][i];
+        }
+    }
+
+    return undefined;
 };

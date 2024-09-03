@@ -83,7 +83,8 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
             nightInstructions: {
                 first: [],
                 other: []
-            }
+            },
+            startingInfoSuggestions: {}
         };
 
         while (playerSetup.demonsToPick > 0) {
@@ -111,9 +112,12 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         let numDemonBluffs = 3;
         
         if (availableChars.outsiders.length > 0) {
-            const character = availableChars.outsiders.pop() as Character;
-            gameState.demonBluffs.push(character);
-            numDemonBluffs--;    
+            const lastChar = availableChars.outsiders[availableChars.outsiders.length - 1];
+            if (lastChar.canBeDemonBluff) {
+                availableChars.outsiders.pop();
+                gameState.demonBluffs.push(lastChar);
+                numDemonBluffs--;
+            }
         }
 
         while (numDemonBluffs > 0) {
@@ -125,6 +129,10 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         gameState.notInPlay = gameState.notInPlay.concat(availableChars.townsfolk, availableChars.outsiders, availableChars.minions, availableChars.demons);
 
         gameState.nightInstructions = generateNightInstructions(gameState);
+
+        gameState.startingInfoSuggestions = generateStartingInfoSuggestions(gameState);
+
+        console.log("starting info:", gameState.startingInfoSuggestions);
 
         updateGameState(gameState);
     };
@@ -175,6 +183,19 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         });
 
         return result;
+    };
+
+    const generateStartingInfoSuggestions = (gameState: GameState) => {
+        const startingInfoSuggestions: Partial<Record<CharacterName, string>> = {};
+
+        gameState.townsfolk.forEach((char) => {
+            const suggestion = char.getStartingInfoSuggestion(gameState);
+            if (suggestion) {
+                startingInfoSuggestions[char.name] = suggestion;
+            }
+        });
+
+        return startingInfoSuggestions;
     };
 
     return (

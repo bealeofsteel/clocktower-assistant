@@ -62,6 +62,7 @@ export interface GameState extends AssignedChars {
         first: Instruction[];
         other: Instruction[];
     }
+    startingInfoSuggestions: Partial<Record<CharacterName, string>>;
 }
 
 export interface PlayerSetup {
@@ -77,3 +78,17 @@ export enum SpecialInstructionKey {
     DemonInfo = "Demon Info",
     Dawn = "Dawn"
 }
+
+export enum CharacterType {
+    Townsfolk = "townsfolk",
+    Outsider = "outsider",
+    Minion = "minion",
+    Demon = "demon"
+}
+
+export const charTypeToGameStateFieldMapping: Record<string, keyof CharacterSet> = {
+    [CharacterType.Townsfolk]: "townsfolk",
+    [CharacterType.Outsider]: "outsiders",
+    [CharacterType.Minion]: "minions",
+    [CharacterType.Demon]: "demons"
+};

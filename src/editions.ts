@@ -1,5 +1,5 @@
 import { Baron, Drunk, Character, Washerwoman, FortuneTeller, Empath, Chef, Investigator, Librarian, Undertaker, Monk, Ravenkeeper, Butler, Poisoner, Spy, ScarletWoman, Imp } from "./characters";
-import { CharacterName, Edition, EditionName, SpecialInstructionKey } from "./types";
+import { CharacterName, CharacterType, Edition, EditionName, SpecialInstructionKey } from "./types";
 
 export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
     [EditionName.TroubleBrewing]: {
@@ -23,8 +23,8 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
             const outsiders = [
                 new Butler(),
                 new Drunk(),
-                new Character(CharacterName.Recluse),
-                new Character(CharacterName.Saint)
+                new Character(CharacterName.Recluse, CharacterType.Outsider),
+                new Character(CharacterName.Saint, CharacterType.Outsider)
             ];
 
             const minions = [
