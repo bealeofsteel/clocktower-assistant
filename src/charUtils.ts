@@ -6,29 +6,32 @@ export const getAllCharsInPlay = (gameState: GameState): Character[] => {
     return gameState.townsfolk.concat(gameState.outsiders, gameState.minions, gameState.demons);
 };
 
+export interface InPlayCharResult {
+    character: Character,
+    registersAs?: CharacterName
+}
+
 // Picks a random in-play char of the specified type, with the spy and recluse possibly registering as another character
-export const pickRandomCharOfTypeInPlay = (gameState: GameState, charType: CharacterType): Character => {
+export const pickRandomCharOfTypeInPlay = (gameState: GameState, charType: CharacterType): InPlayCharResult => {
     const gameStateField = charTypeToGameStateFieldMapping[charType];
-    const chars = Array.from(gameState[gameStateField]);
+    const inPlayCharResult: InPlayCharResult[] = gameState[gameStateField].map((char) => { return { character: char } });
 
     if (charType === CharacterType.Townsfolk || charType === CharacterType.Outsider) {
         const spy = findCharIfInPlay(gameState, CharacterType.Minion, CharacterName.Spy);
         if (spy) {
             const randomChar = pickRandomCharOfType(gameState, charType);
-            spy.charRegistersAs = randomChar.name;
-            chars.push(spy);
+            inPlayCharResult.push({ character: spy, registersAs: randomChar.name });
         }
     } else if (charType === CharacterType.Minion || charType === CharacterType.Demon) {
         const recluse = findCharIfInPlay(gameState, CharacterType.Outsider, CharacterName.Recluse);
         if (recluse) {
             const randomChar = pickRandomCharOfType(gameState, charType);
-            recluse.charRegistersAs = randomChar.name;
-            chars.push(recluse);
+            inPlayCharResult.push({ character: recluse, registersAs: randomChar.name });
         }
     }
 
-    shuffleArray(chars);
-    return chars[0];
+    shuffleArray(inPlayCharResult);
+    return inPlayCharResult[0];
 };
 
 // Picks a random character of the specified type out of all the characters in the edition (not just in play)

@@ -113,7 +113,7 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         
         if (availableChars.outsiders.length > 0) {
             const lastChar = availableChars.outsiders[availableChars.outsiders.length - 1];
-            if (lastChar.canBeDemonBluff) {
+            if (lastChar.canBeDemonBluff()) {
                 availableChars.outsiders.pop();
                 gameState.demonBluffs.push(lastChar);
                 numDemonBluffs--;
@@ -147,7 +147,7 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         const charsInPlay = getAllCharsInPlay(gameState);
         const instructionCharNameToCharacter: Partial<Record<CharacterName, Character>> = {};
         charsInPlay.forEach((char) => {
-            instructionCharNameToCharacter[char.identityForInstructions] = char;
+            instructionCharNameToCharacter[char.getIdentityForInstructions()] = char;
         });
 
         [NightType.First, NightType.Other].forEach((nightType: NightType) => {
@@ -163,10 +163,10 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
                     }
                     continue;
                 }
-        
+
                 const character = instructionCharNameToCharacter[instructionKey as CharacterName];
                 if (character) {
-                    const instructionsForChar = character.nightInstructions[nightType];
+                    const instructionsForChar = nightType === NightType.First ? character.getFirstNightInstructions() : character.getOtherNightsInstructions();
                     if (instructionsForChar) {
                         instructions.push({
                             label: character.name,
