@@ -153,14 +153,14 @@ function App() {
               </div>
               <div>
                 <strong>Starting Info:</strong>
-                {Object.keys(gameState.startingInfoSuggestions).map((key) => {
-                  return (
-                    <div key={key}>
-                      <span className={`char-name ${instantiatedCharsByName.get(key as CharacterName)?.alignment}`}>{key}</span>
-                      : {parseCharTokens(gameState.startingInfoSuggestions[key as CharacterName] as string, instantiatedCharsByName)}
+                {gameState.nightInstructions[NightType.First]?.map((instruction) => (
+                  instruction.character && gameState.startingInfoSuggestions[instruction.character.name] ? (
+                    <div key={instruction.label}>
+                      <span className={`char-name ${instruction.character.alignment}`}>{instruction.character.name}</span>
+                      : {parseCharTokens(gameState.startingInfoSuggestions[instruction.character.name] as string, instantiatedCharsByName)}
                     </div>
-                  )
-                })}
+                  ) : null
+                ))}
               </div>
             </>
           }
