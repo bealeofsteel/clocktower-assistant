@@ -1,4 +1,4 @@
-import { InPlayCharResult, pickRandomCharacterInPlay, pickRandomCharOfTypeInPlay } from "./charUtils";
+import { InPlayCharResult, pickFortuneTellerRedHerring, pickRandomCharacterInPlay, pickRandomCharOfTypeInPlay } from "./charUtils";
 import { shuffleArray } from "./randomUtils";
 import { Alignment, CharacterName, CharacterSet, CharacterType, charTypeToGameStateFieldMapping, GameState, PlayerSetup } from "./types";
 
@@ -142,6 +142,11 @@ export class FortuneTeller extends Character {
 
     getOtherNightsInstructions() {
         return fortuneTellerInstructions;
+    }
+
+    getStartingInfoSuggestion(gameState: GameState): string {
+        const pickedChar = pickFortuneTellerRedHerring(gameState);
+        return `The RED HERRING is {{${pickedChar.name}}}.`;
     }
 }
 
@@ -303,8 +308,9 @@ const getPointToTwoCharsOfTypeSuggestion = (gameState: GameState, charType: Char
         return "Show a zero.";
     }
 
-    const pickedCharResult: InPlayCharResult = pickRandomCharOfTypeInPlay(gameState, charType);
-    const otherChar = pickRandomCharacterInPlay(gameState, [currentChar, pickedCharResult.character.name]) as Character;
+    // This gets returned in a different format because the character might register as something else
+    const pickedCharResult: InPlayCharResult = pickRandomCharOfTypeInPlay(gameState, charType, currentChar);
+    const otherChar = pickRandomCharacterInPlay(gameState, [currentChar, pickedCharResult.character.name]);
 
     const charsToPointTo = [pickedCharResult.character, otherChar];
     shuffleArray(charsToPointTo);

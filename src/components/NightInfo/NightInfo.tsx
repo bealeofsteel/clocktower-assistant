@@ -1,6 +1,7 @@
-import { Alignment, GameState } from "../../types";
+import { Alignment, CharacterName, GameState } from "../../types";
 import { Character } from "../../characters";
 import './NightInfo.css'
+import { parseCharTokens } from "../../charUtils";
 
 export enum NightType {
     First = "first",
@@ -11,6 +12,7 @@ interface NightInfoProps {
     gameState: GameState;
     type: NightType;
     updateGameState: (newState: GameState) => void;
+    instantiatedCharsByName: Map<CharacterName, Character>;
 }
 
 export interface Instruction {
@@ -21,7 +23,7 @@ export interface Instruction {
     checked?: boolean;
 }
 
-function NightInfo({gameState, type, updateGameState}: NightInfoProps) {
+function NightInfo({gameState, type, updateGameState, instantiatedCharsByName}: NightInfoProps) {
     
     const selectAll = () => {
         const newInstructions = gameState.nightInstructions[type].map((instruction) => {
@@ -67,10 +69,23 @@ function NightInfo({gameState, type, updateGameState}: NightInfoProps) {
             <button className="checkbox-select" onClick={() => unselectAll()}>Unselect All</button>
             <div className="instructions-container">
                 {gameState.nightInstructions[type]?.map((instruction, index) => (
-                    <div key={instruction.label} className={`instruction ${instruction.character?.isDead ? "char-is-dead": ""}`} onClick={() => handleCheckedChange(index)}>
+                    <div 
+                        key={instruction.label} 
+                        className={`instruction ${instruction.character?.isDead ? "char-is-dead": ""}`} 
+                        onClick={() => handleCheckedChange(index)}
+                    >
                         <input type="checkbox" checked={instruction.checked} onChange={() => handleCheckedChange(index)}/>
-                        <span className={`char-name ${instruction.alignment}`}><strong>{instruction.character? instruction.character.getDisplayName() : instruction.label} | </strong></span>
+                        <span className={`char-name ${instruction.alignment}`}>
+                            <strong>{instruction.character? instruction.character.getDisplayName() : instruction.label} | </strong>
+                        </span>
                         <span>{instruction.message}</span>
+                        {instruction.character && 
+                            gameState.startingInfoSuggestions[instruction.character.name] && 
+                            <>
+                                <strong> Suggestion: </strong>
+                                <span>{parseCharTokens(gameState.startingInfoSuggestions[instruction.character.name] as string, instantiatedCharsByName)}</span>
+                            </>
+                        }
                     </div>
                 ))}
             </div>

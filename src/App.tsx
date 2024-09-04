@@ -6,6 +6,7 @@ import { EditionName, GameState, AssignedChars, CharacterName } from './types';
 import { Character, characterClassNameMap } from './characters';
 import { EDITIONS_BY_NAME } from './editions';
 import NightInfo, { Instruction, NightType } from './components/NightInfo/NightInfo';
+import { parseCharTokens } from './charUtils';
 
 enum TabName {
   Setup = "setup",
@@ -18,11 +19,11 @@ const LOCAL_STORAGE_KEY = "gameState";
 function App() {
 
   const initialState = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) as string);
+  const instantiatedCharsByName = new Map<CharacterName, Character>();
 
   // To take advantage of Character functionality, we need to instantiate Character objects from the saved JSON
   const populateCharacters = () => {
     const charGroups = ["townsfolk", "outsiders", "minions", "demons", "demonBluffs", "notInPlay"] as (keyof AssignedChars)[];
-    const instantiatedCharsByName = new Map<CharacterName, Character>();
 
     charGroups.forEach((charGroup) => {
       const chars: Character[] = [];
@@ -150,14 +151,35 @@ function App() {
                 <strong>Not in play:</strong>
                 {gameState.notInPlay.map((char) => displayCharName(char))}
               </div>
+              <div>
+                <strong>Starting Info:</strong>
+                {Object.keys(gameState.startingInfoSuggestions).map((key) => {
+                  return (
+                    <div key={key}>
+                      <span className={`char-name ${instantiatedCharsByName.get(key as CharacterName)?.alignment}`}>{key}</span>
+                      : {parseCharTokens(gameState.startingInfoSuggestions[key as CharacterName] as string, instantiatedCharsByName)}
+                    </div>
+                  )
+                })}
+              </div>
             </>
           }
         </>
       }
       {selectedTab === TabName.Nights && 
         <>
-          <NightInfo gameState={gameState} type={NightType.First} updateGameState={updateGameState}></NightInfo>
-          <NightInfo gameState={gameState} type={NightType.Other} updateGameState={updateGameState}></NightInfo>
+          <NightInfo 
+            gameState={gameState} 
+            type={NightType.First} 
+            updateGameState={updateGameState} 
+            instantiatedCharsByName={instantiatedCharsByName}>
+          </NightInfo>
+          <NightInfo 
+            gameState={gameState} 
+            type={NightType.Other} 
+            updateGameState={updateGameState} 
+            instantiatedCharsByName={instantiatedCharsByName}>
+          </NightInfo>
         </>
       }
     </>

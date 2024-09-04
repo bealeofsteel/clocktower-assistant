@@ -126,13 +126,12 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
             numDemonBluffs--;
         }
 
-        gameState.notInPlay = gameState.notInPlay.concat(availableChars.townsfolk, availableChars.outsiders, availableChars.minions, availableChars.demons);
+        gameState.notInPlay = gameState.notInPlay.concat(
+            availableChars.townsfolk, availableChars.outsiders, availableChars.minions, availableChars.demons);
 
         gameState.nightInstructions = generateNightInstructions(gameState);
 
         gameState.startingInfoSuggestions = generateStartingInfoSuggestions(gameState);
-
-        console.log("starting info:", gameState.startingInfoSuggestions);
 
         updateGameState(gameState);
     };
@@ -153,8 +152,7 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         [NightType.First, NightType.Other].forEach((nightType: NightType) => {
             const instructions = [];
 
-            for(let i = 0; i < EDITIONS_BY_NAME[gameState.edition].nightInstructions[nightType].length; i++) {
-                const instructionKey = EDITIONS_BY_NAME[gameState.edition].nightInstructions[nightType][i];
+            for(const instructionKey of EDITIONS_BY_NAME[gameState.edition].nightInstructions[nightType]) {
                 const specialInstructionFunction = specialInstructions[instructionKey as SpecialInstructionKey];
                 if (specialInstructionFunction) {
                     const result = specialInstructionFunction(gameState, nightType);
@@ -166,7 +164,9 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
 
                 const character = instructionCharNameToCharacter[instructionKey as CharacterName];
                 if (character) {
-                    const instructionsForChar = nightType === NightType.First ? character.getFirstNightInstructions() : character.getOtherNightsInstructions();
+                    const instructionsForChar = nightType === NightType.First ? 
+                        character.getFirstNightInstructions() : 
+                        character.getOtherNightsInstructions();
                     if (instructionsForChar) {
                         instructions.push({
                             label: character.name,
