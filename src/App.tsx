@@ -7,6 +7,7 @@ import { Character, characterClassNameMap } from './characters';
 import { EDITIONS_BY_NAME } from './editions';
 import NightInfo, { Instruction, NightType } from './components/NightInfo/NightInfo';
 import { parseCharTokens } from './charUtils';
+import RandomizationTools from './components/RandomizationTools/RandomizationTools';
 
 enum TabName {
   Setup = "setup",
@@ -181,6 +182,9 @@ function App() {
             instantiatedCharsByName={instantiatedCharsByName}>
           </NightInfo>
         </>
+      }
+      {selectedTab === TabName.Random && 
+        <RandomizationTools gameState={gameState}></RandomizationTools>
       }
     </>
   )

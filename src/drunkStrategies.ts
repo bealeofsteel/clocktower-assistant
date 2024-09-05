@@ -12,7 +12,7 @@ export abstract class DrunkStrategy {
     abstract getInstructionsForStrategy(_gameState: GameState): string
 }
 
-export class InvestigatorFramesGoodPlayersAsMinion extends DrunkStrategy {
+export class FrameGoodPlayersAsMinion extends DrunkStrategy {
 
     getInstructionsForStrategy(gameState: GameState): string {
         const minion = pickNotInPlayMinion(gameState);
@@ -22,20 +22,24 @@ export class InvestigatorFramesGoodPlayersAsMinion extends DrunkStrategy {
     }
 }
 
-export class WasherwomanSupportsDemonBluff extends DrunkStrategy {
+const supportDemonBluffOfType = (gameState: GameState, charType: CharacterType) => {
+    const bluff = pickDemonBluffOfType(gameState, charType);
+    const goodChars = pickGoodChars(gameState, [CharGroup.Townsfolk, CharGroup.Outsiders], CharacterName.Drunk, 1);
+
+    const charsToPointTo = [goodChars[0], gameState.demons[0]];
+    shuffleArray(charsToPointTo);
+
+    return `Show the ${bluff.name} character token. Point to {{${charsToPointTo[0].name}}} and {{${charsToPointTo[1].name}}}.`;
+};
+
+export class SupportDemonTownsfolkBluff extends DrunkStrategy {
 
     getInstructionsForStrategy(gameState: GameState): string {
-        const bluff = pickDemonBluffOfType(gameState, CharacterType.Townsfolk);
-        const goodChars = pickGoodChars(gameState, [CharGroup.Townsfolk, CharGroup.Outsiders], CharacterName.Drunk, 1);
-
-        const charsToPointTo = [goodChars[0], gameState.demons[0]];
-        shuffleArray(charsToPointTo);
-
-        return `Show the ${bluff.name} character token. Point to {{${charsToPointTo[0].name}}} and {{${charsToPointTo[1].name}}}.`;
+        return supportDemonBluffOfType(gameState, CharacterType.Townsfolk);
     }
 }
 
-export class LibrarianSupportsDemonBluff extends DrunkStrategy {
+export class SupportDemonOutsiderBluff extends DrunkStrategy {
 
     gameQualifiesForStrategy(gameState: GameState): boolean {
         for (const bluff of gameState.demonBluffs) {
@@ -47,17 +51,11 @@ export class LibrarianSupportsDemonBluff extends DrunkStrategy {
     }
 
     getInstructionsForStrategy(gameState: GameState): string {
-        const bluff = pickDemonBluffOfType(gameState, CharacterType.Outsider);
-        const goodChars = pickGoodChars(gameState, [CharGroup.Townsfolk, CharGroup.Outsiders], CharacterName.Drunk, 1);
-
-        const charsToPointTo = [goodChars[0], gameState.demons[0]];
-        shuffleArray(charsToPointTo);
-
-        return `Show the ${bluff.name} character token. Point to {{${charsToPointTo[0].name}}} and {{${charsToPointTo[1].name}}}.`;
+        return supportDemonBluffOfType(gameState, CharacterType.Outsider);
     }
 }
 
-export class LibrarianFramesGoodPlayersAsDrunk extends DrunkStrategy {
+export class FrameTownsfolkAsDrunk extends DrunkStrategy {
 
     getInstructionsForStrategy(gameState: GameState): string {
         const goodChars = pickGoodChars(gameState, [CharGroup.Townsfolk], CharacterName.Drunk, 2);
@@ -66,7 +64,7 @@ export class LibrarianFramesGoodPlayersAsDrunk extends DrunkStrategy {
     }
 }
 
-export class LibrarianClaimsZeroOutsiders extends DrunkStrategy {
+export class ClaimZeroOutsiders extends DrunkStrategy {
 
     gameQualifiesForStrategy(gameState: GameState): boolean {
         return playerCountConfig[gameState.playerCount].outsiders === 0;

@@ -1,5 +1,5 @@
 import { InPlayCharResult, pickFortuneTellerRedHerring, pickRandomCharacterInPlay, pickRandomCharOfTypeInPlay } from "./charUtils";
-import { DrunkStrategy, InvestigatorFramesGoodPlayersAsMinion, LibrarianClaimsZeroOutsiders, LibrarianFramesGoodPlayersAsDrunk, LibrarianSupportsDemonBluff, WasherwomanSupportsDemonBluff } from "./drunkStrategies";
+import { DrunkStrategy, FrameGoodPlayersAsMinion, ClaimZeroOutsiders, FrameTownsfolkAsDrunk, SupportDemonOutsiderBluff, SupportDemonTownsfolkBluff } from "./drunkStrategies";
 import { shuffleArray } from "./randomUtils";
 import { Alignment, CharacterName, CharacterSet, CharacterType, charTypeToGameStateFieldMapping, GameState, PlayerSetup } from "./types";
 
@@ -80,7 +80,7 @@ export class Washerwoman extends Character {
     }
 
     getDrunkStrategies(): DrunkStrategy[] | undefined {
-        return [new WasherwomanSupportsDemonBluff()];
+        return [new SupportDemonTownsfolkBluff()];
     }
 }
 
@@ -98,7 +98,7 @@ export class Librarian extends Character {
     }
 
     getDrunkStrategies(): DrunkStrategy[] | undefined {
-        return [new LibrarianClaimsZeroOutsiders(), new LibrarianFramesGoodPlayersAsDrunk(), new LibrarianSupportsDemonBluff()];
+        return [new ClaimZeroOutsiders(), new FrameTownsfolkAsDrunk(), new SupportDemonOutsiderBluff()];
     }
 }
 
@@ -116,7 +116,7 @@ export class Investigator extends Character {
     }
 
     getDrunkStrategies(): DrunkStrategy[] | undefined {
-        return [new InvestigatorFramesGoodPlayersAsMinion()];
+        return [new FrameGoodPlayersAsMinion()];
     }
 }
 
