@@ -1,4 +1,5 @@
 import { InPlayCharResult, pickFortuneTellerRedHerring, pickRandomCharacterInPlay, pickRandomCharOfTypeInPlay } from "./charUtils";
+import { DrunkStrategy, InvestigatorFramesGoodPlayersAsMinion, LibrarianClaimsZeroOutsiders, LibrarianFramesGoodPlayersAsDrunk, LibrarianSupportsDemonBluff, WasherwomanSupportsDemonBluff } from "./drunkStrategies";
 import { shuffleArray } from "./randomUtils";
 import { Alignment, CharacterName, CharacterSet, CharacterType, charTypeToGameStateFieldMapping, GameState, PlayerSetup } from "./types";
 
@@ -56,6 +57,10 @@ export class Character {
         return true;
     }
 
+    getDrunkStrategies(): DrunkStrategy[] | undefined {
+        return;
+    }
+
     fromJson(json: Character): Character {
         return Object.assign(this, json);
     }
@@ -73,6 +78,10 @@ export class Washerwoman extends Character {
     getStartingInfoSuggestion(gameState: GameState): string {
         return getPointToTwoCharsOfTypeSuggestion(gameState, CharacterType.Townsfolk, this.name);
     }
+
+    getDrunkStrategies(): DrunkStrategy[] | undefined {
+        return [new WasherwomanSupportsDemonBluff()];
+    }
 }
 
 export class Librarian extends Character {
@@ -87,6 +96,10 @@ export class Librarian extends Character {
     getStartingInfoSuggestion(gameState: GameState): string {
         return getPointToTwoCharsOfTypeSuggestion(gameState, CharacterType.Outsider, this.name);
     }
+
+    getDrunkStrategies(): DrunkStrategy[] | undefined {
+        return [new LibrarianClaimsZeroOutsiders(), new LibrarianFramesGoodPlayersAsDrunk(), new LibrarianSupportsDemonBluff()];
+    }
 }
 
 export class Investigator extends Character {
@@ -100,6 +113,10 @@ export class Investigator extends Character {
 
     getStartingInfoSuggestion(gameState: GameState): string {
         return getPointToTwoCharsOfTypeSuggestion(gameState, CharacterType.Minion, this.name);
+    }
+
+    getDrunkStrategies(): DrunkStrategy[] | undefined {
+        return [new InvestigatorFramesGoodPlayersAsMinion()];
     }
 }
 
@@ -260,7 +277,7 @@ export class Imp extends Character {
 }
 
 export class Drunk extends Character {
-    mistakenIdentity: CharacterName | undefined;
+    mistakenIdentity: Character | undefined;
     firstNightInstructions: string | undefined;
     otherNightsInstructions: string | undefined;
 
@@ -272,13 +289,13 @@ export class Drunk extends Character {
         const character = availableChars.townsfolk.pop() as Character;
         character.isDrunkMistakenIdentity = true;
         gameState.notInPlay.push(character);
-        this.mistakenIdentity = character.name;
+        this.mistakenIdentity = character;
         this.firstNightInstructions = character.getFirstNightInstructions();
         this.otherNightsInstructions = character.getOtherNightsInstructions();
     }
 
     getDisplayName(): string {
-        let name = this.mistakenIdentity ? `${CharacterName.Drunk} (${this.mistakenIdentity})` : CharacterName.Drunk;
+        let name = this.mistakenIdentity ? `${CharacterName.Drunk} (${this.mistakenIdentity.name})` : CharacterName.Drunk;
         if (this.playerName) {
             name += ` [${this.playerName}]`;
         }
@@ -294,11 +311,21 @@ export class Drunk extends Character {
     }
 
     getIdentityForInstructions() {
-        return this.mistakenIdentity as CharacterName;
+        return this.mistakenIdentity?.name as CharacterName;
     }
 
     canBeDemonBluff(): boolean {
         return false;
+    }
+
+    getStartingInfoSuggestion(gameState: GameState): string | undefined {
+        let strategies = this.mistakenIdentity?.getDrunkStrategies();
+        if (strategies) {
+            strategies = strategies?.filter((strategy) => strategy.gameQualifiesForStrategy(gameState));
+
+            shuffleArray(strategies);
+            return strategies[0].getInstructionsForStrategy(gameState);
+        }
     }
 }
 

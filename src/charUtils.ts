@@ -1,6 +1,6 @@
 import { Character } from "./characters";
 import { shuffleArray } from "./randomUtils";
-import { GameState, CharacterName, charTypeToGameStateFieldMapping, CharacterType } from "./types";
+import { GameState, CharacterName, charTypeToGameStateFieldMapping, CharacterType, AssignedChars } from "./types";
 
 export const getAllCharsInPlay = (gameState: GameState): Character[] => {
     return gameState.townsfolk.concat(gameState.outsiders, gameState.minions, gameState.demons);
@@ -110,4 +110,34 @@ export const parseCharTokens = (inputStr: string, instantiatedCharsByName: Map<C
     return inputStr.replace(regExp, (_match, token) => {
         return instantiatedCharsByName.get(token)?.getDisplayName() as string;
     });
+};
+
+export const pickNotInPlayMinion = (gameState: GameState): Character => {
+    const minions = gameState.notInPlay.filter((character) => character.type === CharacterType.Minion);
+    shuffleArray(minions);
+    return minions[0];
+};
+
+export const pickGoodChars = (gameState: GameState, charTypes: (keyof AssignedChars)[], excludeChar: CharacterName, numChars: number): Character[] => {
+    let chars: Character[] = [];
+    for (const charType of charTypes) {
+        chars = chars.concat(gameState[charType].filter((character) => character.name !== excludeChar));
+    }
+
+    shuffleArray(chars);
+
+    const result: Character[] = [];
+    while (numChars > 0) {
+        result.push(chars.pop() as Character);
+        numChars--;
+    }
+
+    return result;
+};
+
+export const pickDemonBluffOfType = (gameState: GameState, charType: CharacterType): Character => {
+    const bluffs = gameState.demonBluffs.filter((character) => character.type === charType);
+
+    shuffleArray(bluffs);
+    return bluffs[0];
 };

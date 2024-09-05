@@ -1,5 +1,5 @@
 import { playerCountConfig } from "../../gameSettings";
-import { CharacterName, CharacterSet, EditionName, GameState, PlayerSetup, SpecialInstructionKey } from "../../types";
+import { AssignedChars, CharacterName, CharacterSet, EditionName, GameState, PlayerSetup, SpecialInstructionKey } from "../../types";
 import "./RandomizeSetup.css"
 import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
@@ -112,11 +112,14 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         let numDemonBluffs = 3;
         
         if (availableChars.outsiders.length > 0) {
-            const lastChar = availableChars.outsiders[availableChars.outsiders.length - 1];
-            if (lastChar.canBeDemonBluff()) {
-                availableChars.outsiders.pop();
-                gameState.demonBluffs.push(lastChar);
-                numDemonBluffs--;
+            for (let i = availableChars.outsiders.length - 1; i >= 0; i--) {
+                const lastChar = availableChars.outsiders[i];
+                if (lastChar.canBeDemonBluff()) {
+                    availableChars.outsiders.pop();
+                    gameState.demonBluffs.push(lastChar);
+                    numDemonBluffs--;
+                    break;
+                }    
             }
         }
 
@@ -188,12 +191,16 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
     const generateStartingInfoSuggestions = (gameState: GameState) => {
         const startingInfoSuggestions: Partial<Record<CharacterName, string>> = {};
 
-        gameState.townsfolk.forEach((char) => {
-            const suggestion = char.getStartingInfoSuggestion(gameState);
-            if (suggestion) {
-                startingInfoSuggestions[char.name] = suggestion;
-            }
-        });
+        const startingInfoCharGroups: (keyof AssignedChars)[] = ["townsfolk", "outsiders"];
+
+        for (const startingInfoCharGroup of startingInfoCharGroups) {
+            gameState[startingInfoCharGroup].forEach((char) => {
+                const suggestion = char.getStartingInfoSuggestion(gameState);
+                if (suggestion) {
+                    startingInfoSuggestions[char.name] = suggestion;
+                }
+            });
+        }
 
         return startingInfoSuggestions;
     };
