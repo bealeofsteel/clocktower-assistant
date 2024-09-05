@@ -156,7 +156,7 @@ function App() {
                 {gameState.nightInstructions[NightType.First]?.map((instruction) => (
                   instruction.character && gameState.startingInfoSuggestions[instruction.character.name] ? (
                     <div key={instruction.label}>
-                      <span className={`char-name ${instruction.character.alignment}`}>{instruction.character.name}</span>
+                      <span className={`char-name ${instruction.character.alignment}`}>{instruction.character.getDisplayName()}</span>
                       : {parseCharTokens(gameState.startingInfoSuggestions[instruction.character.name] as string, instantiatedCharsByName)}
                     </div>
                   ) : null
