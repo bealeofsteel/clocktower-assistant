@@ -9,6 +9,15 @@ export interface Edition {
     }
 }
 
+export enum CharGroup {
+    Townsfolk = "townsfolk",
+    Outsiders = "outsiders",
+    Minions = "minions",
+    Demons = "demons",
+    DemonBluffs = "demonBluffs",
+    NotInPlay = "notInPlay"
+}
+
 export interface CharacterSet {
     townsfolk: Character[];
     outsiders: Character[];
@@ -86,9 +95,9 @@ export enum CharacterType {
     Demon = "demon"
 }
 
-export const charTypeToGameStateFieldMapping: Record<string, keyof CharacterSet> = {
-    [CharacterType.Townsfolk]: "townsfolk",
-    [CharacterType.Outsider]: "outsiders",
-    [CharacterType.Minion]: "minions",
-    [CharacterType.Demon]: "demons"
+export const charTypeToGameStateFieldMapping: Record<CharacterType, CharGroup> = {
+    [CharacterType.Townsfolk]: CharGroup.Townsfolk,
+    [CharacterType.Outsider]: CharGroup.Outsiders,
+    [CharacterType.Minion]: CharGroup.Minions,
+    [CharacterType.Demon]: CharGroup.Demons
 };

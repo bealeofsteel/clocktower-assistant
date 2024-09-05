@@ -1,5 +1,5 @@
 import { playerCountConfig } from "../../gameSettings";
-import { AssignedChars, CharacterName, CharacterSet, EditionName, GameState, PlayerSetup, SpecialInstructionKey } from "../../types";
+import { CharacterName, CharacterSet, CharGroup, EditionName, GameState, PlayerSetup, SpecialInstructionKey } from "../../types";
 import "./RandomizeSetup.css"
 import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
@@ -191,7 +191,7 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
     const generateStartingInfoSuggestions = (gameState: GameState) => {
         const startingInfoSuggestions: Partial<Record<CharacterName, string>> = {};
 
-        const startingInfoCharGroups: (keyof AssignedChars)[] = ["townsfolk", "outsiders"];
+        const startingInfoCharGroups: CharGroup[] = [CharGroup.Townsfolk, CharGroup.Outsiders];
 
         for (const startingInfoCharGroup of startingInfoCharGroups) {
             gameState[startingInfoCharGroup].forEach((char) => {

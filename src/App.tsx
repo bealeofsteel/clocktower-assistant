@@ -2,7 +2,7 @@ import { ChangeEvent, useState } from 'react';
 import './App.css'
 import PlayerCountSelect from './components/PlayerCountSelect/PlayerCountSelect'
 import RandomizeSetup from './components/RandomizeSetup/RandomizeSetup'
-import { EditionName, GameState, AssignedChars, CharacterName } from './types';
+import { EditionName, GameState, CharacterName, CharGroup } from './types';
 import { Character, characterClassNameMap } from './characters';
 import { EDITIONS_BY_NAME } from './editions';
 import NightInfo, { Instruction, NightType } from './components/NightInfo/NightInfo';
@@ -23,7 +23,7 @@ function App() {
 
   // To take advantage of Character functionality, we need to instantiate Character objects from the saved JSON
   const populateCharacters = () => {
-    const charGroups = ["townsfolk", "outsiders", "minions", "demons", "demonBluffs", "notInPlay"] as (keyof AssignedChars)[];
+    const charGroups = [CharGroup.Townsfolk, CharGroup.Outsiders, CharGroup.Minions, CharGroup.Demons, CharGroup.DemonBluffs, CharGroup.NotInPlay];
 
     charGroups.forEach((charGroup) => {
       const chars: Character[] = [];
@@ -62,7 +62,7 @@ function App() {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
   };
 
-  const toggleDeadAliveState = (char: Character, category: keyof AssignedChars) => {
+  const toggleDeadAliveState = (char: Character, category: CharGroup) => {
     const newChars = gameState[category].map((oldChar) => {
       if (oldChar.name === char.name) {
         return Object.assign(oldChar, { isDead: !char.isDead });
@@ -77,7 +77,7 @@ function App() {
     });
   };
 
-  const updatePlayerName = (e: ChangeEvent<HTMLInputElement>, char: Character, category: keyof AssignedChars) => {
+  const updatePlayerName = (e: ChangeEvent<HTMLInputElement>, char: Character, category: CharGroup) => {
     const newChars = gameState[category].map((oldChar) => {
       if (oldChar.name === char.name) {
         return Object.assign(oldChar, { playerName: e.target.value });
@@ -92,7 +92,7 @@ function App() {
     });
   };
   
-  const displayCharName = (char: Character, category?: keyof AssignedChars) => {
+  const displayCharName = (char: Character, category?: CharGroup) => {
     return (
       <div key={`${char.name}-name`} className="char-name-container">
         <span className={`char-name clickable ${char.alignment} ${char.isDead ? "is-dead" : ""}`} 
@@ -129,19 +129,19 @@ function App() {
             <>
               <div>
                 <strong>Townsfolk:</strong>
-                {gameState.townsfolk.map((char) => displayCharName(char, "townsfolk"))}
+                {gameState.townsfolk.map((char) => displayCharName(char, CharGroup.Townsfolk))}
               </div>
               <div>
                 <strong>Outsiders:</strong>
-                {gameState.outsiders.map((char) => displayCharName(char, "outsiders"))}
+                {gameState.outsiders.map((char) => displayCharName(char, CharGroup.Outsiders))}
               </div>
               <div>
                 <strong>Minions:</strong>
-                {gameState.minions.map((char) => displayCharName(char, "minions"))}
+                {gameState.minions.map((char) => displayCharName(char, CharGroup.Minions))}
               </div>
               <div>
                 <strong>Demons:</strong>
-                {gameState.demons.map((char) => displayCharName(char, "demons"))}
+                {gameState.demons.map((char) => displayCharName(char, CharGroup.Demons))}
               </div>
               <div>
                 <strong>Demon Bluffs:</strong>
