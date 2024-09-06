@@ -1,0 +1,21 @@
+.randomization-tools {
+
+    .filters-container {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .filter-option {
+        cursor: pointer;
+    }
+
+    .get-random-characters {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    .random-results {
+        width: 100%;
+        height: 400px;
+    }
+}

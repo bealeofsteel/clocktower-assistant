@@ -2,12 +2,21 @@ import { useState } from "react";
 import { Alignment, CharGroup, GameState } from "../../types";
 import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
+import './RandomizationTools.css'
 
 interface RandomizationToolsProps {
     gameState: GameState;
 }
 
+interface Filter {
+    checked: boolean;
+}
+
 function RandomizationTools({gameState}: RandomizationToolsProps) {
+
+    if (!gameState || !gameState.townsfolk) {
+        return null;
+    }
 
     const charGroupFilterOptions = [
         {
@@ -107,10 +116,11 @@ function RandomizationTools({gameState}: RandomizationToolsProps) {
             }
         }
 
-        const allowedAlignments: Alignment[] = [];
+        let allowedAlignments: Alignment[] = [];
         for (const filter of alignmentFilters) {
             if (filter.name === "All") {
                 if (filter.checked) {
+                    allowedAlignments = [Alignment.Good, Alignment.Evil]
                     break;
                 }
             } else if (filter.checked) {
@@ -120,10 +130,11 @@ function RandomizationTools({gameState}: RandomizationToolsProps) {
 
         chars = chars.filter((char) => allowedAlignments.includes(char.alignment));
 
-        const allowedLifeStatuses: boolean[] = [];
+        let allowedLifeStatuses: boolean[] = [];
         for (const filter of lifeStatusFilters) {
             if (filter.name === "All") {
                 if (filter.checked) {
+                    allowedLifeStatuses = [true, false];
                     break;
                 }
             } else if (filter.checked) {
@@ -140,72 +151,93 @@ function RandomizationTools({gameState}: RandomizationToolsProps) {
         setRandomizedResult(charDisplayNames.join("\n"));
     };
 
+    const handleAllCheckbox = (newFilters: Filter[], index: number) => {
+        if (newFilters[index].checked) {
+            // If "All" is checked, uncheck all other checkboxes in the filter group
+            if (index === 0) {
+                for (let i = 1; i < newFilters.length; i++) {
+                    newFilters[i].checked = false;
+                }
+            } else {
+                // If any other box is checked, uncheck "All"
+                newFilters[0].checked = false;
+            }
+        }
+    };
+
     const handleCharGroupFilterChange = (index: number) => {
-        const newFilters = charGroupFilters.map((filter, currentIndex) => {
-            return currentIndex === index
-              ? { ...filter, checked: !filter.checked }
-              : filter
-        });
+        const newFilters = Array.from(charGroupFilters);
+        newFilters[index].checked = !charGroupFilters[index].checked;
+
+        handleAllCheckbox(newFilters, index);
 
         setCharGroupFilters(newFilters);
     };
 
     const handleAlignmentFilterChange = (index: number) => {
-        const newFilters = alignmentFilters.map((filter, currentIndex) => {
-            return currentIndex === index
-              ? { ...filter, checked: !filter.checked }
-              : filter
-        });
+        const newFilters = Array.from(alignmentFilters);
+        newFilters[index].checked = !alignmentFilters[index].checked;
+
+        handleAllCheckbox(newFilters, index);
 
         setAlignmentFilters(newFilters);
     };
 
-    const handleLifeStausFilterChange = (index: number) => {
-        const newFilters = lifeStatusFilters.map((filter, currentIndex) => {
-            return currentIndex === index
-              ? { ...filter, checked: !filter.checked }
-              : filter
-        });
+    const handleLifeStatusFilterChange = (index: number) => {
+        const newFilters = Array.from(lifeStatusFilters);
+        newFilters[index].checked = !lifeStatusFilters[index].checked;
+
+        handleAllCheckbox(newFilters, index);
 
         setLifeStatusFilters(newFilters);
     };
 
     return (
-        <>
-            {
-                charGroupFilters.map((filter, index) => {
-                    return (
-                        <div key={filter.name}>
-                            <input type="checkbox" checked={filter.checked} onChange={() => handleCharGroupFilterChange(index)}/>
-                            <span>{filter.name}</span>
-                        </div>
-                    );
-                })
-            }
-            {
-                alignmentFilters.map((filter, index) => {
-                    return (
-                        <div key={filter.name}>
-                            <input type="checkbox" checked={filter.checked} onChange={() => handleAlignmentFilterChange(index)}/>
-                            <span>{filter.name}</span>
-                        </div>
-                    );
-                })
-            }
-            {
-                lifeStatusFilters.map((filter, index) => {
-                    return (
-                        <div key={filter.name}>
-                            <input type="checkbox" checked={filter.checked} onChange={() => handleLifeStausFilterChange(index)}/>
-                            <span>{filter.name}</span>
-                        </div>
-                    );
-                })
-            }
+        <div className="randomization-tools">
+            <div className="filters-container">
+                <div>
+                    {
+                        charGroupFilters.map((filter, index) => {
+                            return (
+                                <div className="filter-option" key={filter.name} onClick={() => handleCharGroupFilterChange(index)}>
+                                    <input type="checkbox" checked={filter.checked} onChange={() => {}}/>
+                                    <span>{filter.name}</span>
+                                </div>
+                            );
+                        })
+                    }
+                </div>
+                <div>
+                    {
+                        alignmentFilters.map((filter, index) => {
+                            return (
+                                <div className="filter-option" key={filter.name} onClick={() => handleAlignmentFilterChange(index)}>
+                                    <input type="checkbox" checked={filter.checked} onChange={() => handleAlignmentFilterChange(index)}/>
+                                    <span>{filter.name}</span>
+                                </div>
+                            );
+                        })
+                    }
+                </div>
+                <div>
+                    {
+                        lifeStatusFilters.map((filter, index) => {
+                            return (
+                                <div className="filter-option" key={filter.name} onClick={() => handleLifeStatusFilterChange(index)}>
+                                    <input type="checkbox" checked={filter.checked} onChange={() => handleLifeStatusFilterChange(index)}/>
+                                    <span>{filter.name}</span>
+                                </div>
+                            );
+                        })
+                    }
+                </div>
+            </div>
 
-            <button onClick={randomizeSelectedChars}>Get Random Characters</button>
-            <textarea value={randomizedResult} readOnly={true}></textarea>
-        </>
+            <button className="get-random-characters" onClick={randomizeSelectedChars}>Get Random Characters</button>
+            <div>
+                <textarea className="random-results" value={randomizedResult} readOnly={true}></textarea>
+            </div>
+        </div>
     );
 }
 

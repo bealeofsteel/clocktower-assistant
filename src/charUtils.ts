@@ -118,7 +118,7 @@ export const pickNotInPlayMinion = (gameState: GameState): Character => {
     return minions[0];
 };
 
-export const pickGoodChars = (gameState: GameState, charTypes: CharGroup[], excludeChar: CharacterName, numChars: number): Character[] => {
+export const pickCharsofTypes = (gameState: GameState, charTypes: CharGroup[], excludeChar: CharacterName, numChars: number): Character[] => {
     let chars: Character[] = [];
     for (const charType of charTypes) {
         chars = chars.concat(gameState[charType].filter((character) => character.name !== excludeChar));

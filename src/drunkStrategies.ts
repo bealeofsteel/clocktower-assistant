@@ -1,4 +1,4 @@
-import { pickDemonBluffOfType, pickGoodChars, pickNotInPlayMinion } from "./charUtils";
+import { pickDemonBluffOfType, pickCharsofTypes, pickNotInPlayMinion } from "./charUtils";
 import { playerCountConfig } from "./gameSettings";
 import { shuffleArray } from "./randomUtils";
 import { CharacterName, CharacterType, CharGroup, GameState } from "./types";
@@ -16,7 +16,7 @@ export class FrameGoodPlayersAsMinion extends DrunkStrategy {
 
     getInstructionsForStrategy(gameState: GameState): string {
         const minion = pickNotInPlayMinion(gameState);
-        const chars = pickGoodChars(gameState, [CharGroup.Townsfolk, CharGroup.Outsiders], CharacterName.Drunk, 2);
+        const chars = pickCharsofTypes(gameState, [CharGroup.Townsfolk, CharGroup.Outsiders], CharacterName.Drunk, 2);
 
         return `Show the ${minion.name} character token. Point to {{${chars[0].name}}} and {{${chars[1].name}}}.`;
     }
@@ -24,7 +24,7 @@ export class FrameGoodPlayersAsMinion extends DrunkStrategy {
 
 const supportDemonBluffOfType = (gameState: GameState, charType: CharacterType) => {
     const bluff = pickDemonBluffOfType(gameState, charType);
-    const goodChars = pickGoodChars(gameState, [CharGroup.Townsfolk, CharGroup.Outsiders], CharacterName.Drunk, 1);
+    const goodChars = pickCharsofTypes(gameState, [CharGroup.Townsfolk, CharGroup.Outsiders], CharacterName.Drunk, 1);
 
     const charsToPointTo = [goodChars[0], gameState.demons[0]];
     shuffleArray(charsToPointTo);
@@ -58,7 +58,7 @@ export class SupportDemonOutsiderBluff extends DrunkStrategy {
 export class FrameTownsfolkAsDrunk extends DrunkStrategy {
 
     getInstructionsForStrategy(gameState: GameState): string {
-        const goodChars = pickGoodChars(gameState, [CharGroup.Townsfolk], CharacterName.Drunk, 2);
+        const goodChars = pickCharsofTypes(gameState, [CharGroup.Townsfolk], CharacterName.Drunk, 2);
 
         return `Show the ${CharacterName.Drunk} character token. Point to {{${goodChars[0].name}}} and {{${goodChars[1].name}}}.`;
     }

@@ -74,7 +74,7 @@ function NightInfo({gameState, type, updateGameState, instantiatedCharsByName}: 
                         className={`instruction ${instruction.character?.isDead ? "char-is-dead": ""}`} 
                         onClick={() => handleCheckedChange(index)}
                     >
-                        <input type="checkbox" checked={instruction.checked} onChange={() => handleCheckedChange(index)}/>
+                        <input type="checkbox" checked={instruction.checked} onChange={() => {}}/>
                         <span className={`char-name ${instruction.alignment}`}>
                             <strong>{instruction.character? instruction.character.getDisplayName() : instruction.label} | </strong>
                         </span>
