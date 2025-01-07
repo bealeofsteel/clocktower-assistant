@@ -76,7 +76,7 @@ export class Washerwoman extends Character {
     }
 
     getStartingInfoSuggestion(gameState: GameState): string {
-        return getPointToTwoCharsOfTypeSuggestion(gameState, CharacterType.Townsfolk, this.name);
+        return getPointToCharOfTypeAndOtherCharSuggestion(gameState, CharacterType.Townsfolk, this.name);
     }
 
     getDrunkStrategies(): DrunkStrategy[] | undefined {
@@ -94,7 +94,7 @@ export class Librarian extends Character {
     }
 
     getStartingInfoSuggestion(gameState: GameState): string {
-        return getPointToTwoCharsOfTypeSuggestion(gameState, CharacterType.Outsider, this.name);
+        return getPointToCharOfTypeAndOtherCharSuggestion(gameState, CharacterType.Outsider, this.name);
     }
 
     getDrunkStrategies(): DrunkStrategy[] | undefined {
@@ -112,7 +112,7 @@ export class Investigator extends Character {
     }
 
     getStartingInfoSuggestion(gameState: GameState): string {
-        return getPointToTwoCharsOfTypeSuggestion(gameState, CharacterType.Minion, this.name);
+        return getPointToCharOfTypeAndOtherCharSuggestion(gameState, CharacterType.Minion, this.name);
     }
 
     getDrunkStrategies(): DrunkStrategy[] | undefined {
@@ -329,7 +329,7 @@ export class Drunk extends Character {
     }
 }
 
-const getPointToTwoCharsOfTypeSuggestion = (gameState: GameState, charType: CharacterType, currentChar: CharacterName) => {
+const getPointToCharOfTypeAndOtherCharSuggestion = (gameState: GameState, charType: CharacterType, currentChar: CharacterName) => {
     const gameStateField = charTypeToGameStateFieldMapping[charType];
     if (gameState[gameStateField].length === 0) {
         return "Show a zero.";

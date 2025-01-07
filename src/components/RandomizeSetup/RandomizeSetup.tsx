@@ -113,10 +113,10 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         
         if (availableChars.outsiders.length > 0) {
             for (let i = availableChars.outsiders.length - 1; i >= 0; i--) {
-                const lastChar = availableChars.outsiders[i];
-                if (lastChar.canBeDemonBluff()) {
-                    availableChars.outsiders.pop();
-                    gameState.demonBluffs.push(lastChar);
+                const char = availableChars.outsiders[i];
+                if (char.canBeDemonBluff()) {
+                    availableChars.outsiders.splice(i, 1);
+                    gameState.demonBluffs.push(char);
                     numDemonBluffs--;
                     break;
                 }    
