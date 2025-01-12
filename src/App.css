@@ -20,24 +20,13 @@ div.tabs {
     color: red;
   }
 
-  &.clickable {
-    cursor: pointer;
-  }
-
   &.is-dead {
     text-decoration: line-through;
   }
 }
 
-.char-name-container {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 3px;
-  padding: 2px;
-
-  &:hover {
-    background-color: #e9e9e9;
-  }
+.clickable {
+  cursor: pointer;
 }
 
 .edition-container {

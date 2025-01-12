@@ -1,27 +1,31 @@
 import { InPlayCharResult, pickFortuneTellerRedHerring, pickRandomCharacterInPlay, pickRandomCharOfTypeInPlay } from "./charUtils";
 import { DrunkStrategy, FrameGoodPlayersAsMinion, ClaimZeroOutsiders, FrameTownsfolkAsDrunk, SupportDemonOutsiderBluff, SupportDemonTownsfolkBluff } from "./drunkStrategies";
 import { shuffleArray } from "./randomUtils";
-import { Alignment, CharacterName, CharacterSet, CharacterType, charTypeToGameStateFieldMapping, GameState, PlayerSetup } from "./types";
+import { Alignment, CharacterName, CharacterSet, CharacterType, GameState, PlayerSetup } from "./types";
 
 export class Character {
+    id: string;
     name: CharacterName;
     type: CharacterType;
     alignment: Alignment;
     isDead: boolean;
     playerName: string;
     isDrunkMistakenIdentity: boolean;
+    inPlay: boolean;
 
     constructor(name: CharacterName, type: CharacterType = CharacterType.Townsfolk, alignment: Alignment = Alignment.Good) {
+        this.id = crypto.randomUUID();
         this.name = name;
         this.type = type;
         this.alignment = alignment;
         this.isDead = false;
         this.playerName = "";
         this.isDrunkMistakenIdentity = false;
+        this.inPlay = false;
     }
 
     // Do nothing, some classes will override
-    onPicked(_playerSetup: PlayerSetup, _availableChars: CharacterSet, _gameState: GameState) {}
+    onPicked(_playerSetup: PlayerSetup, _availableChars: CharacterSet, _allChars: Character[]) {}
 
     getDisplayName(): string {
         let name: string = this.name;
@@ -57,7 +61,7 @@ export class Character {
         return true;
     }
 
-    getDrunkStrategies(): DrunkStrategy[] | undefined {
+    getDrunkStrategies(_charId: string): DrunkStrategy[] | undefined {
         return;
     }
 
@@ -76,11 +80,11 @@ export class Washerwoman extends Character {
     }
 
     getStartingInfoSuggestion(gameState: GameState): string {
-        return getPointToCharOfTypeAndOtherCharSuggestion(gameState, CharacterType.Townsfolk, this.name);
+        return getPointToCharOfTypeAndOtherCharSuggestion(gameState, CharacterType.Townsfolk, this.id);
     }
 
-    getDrunkStrategies(): DrunkStrategy[] | undefined {
-        return [new SupportDemonTownsfolkBluff()];
+    getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
+        return [new SupportDemonTownsfolkBluff(charId)];
     }
 }
 
@@ -94,11 +98,11 @@ export class Librarian extends Character {
     }
 
     getStartingInfoSuggestion(gameState: GameState): string {
-        return getPointToCharOfTypeAndOtherCharSuggestion(gameState, CharacterType.Outsider, this.name);
+        return getPointToCharOfTypeAndOtherCharSuggestion(gameState, CharacterType.Outsider, this.id);
     }
 
-    getDrunkStrategies(): DrunkStrategy[] | undefined {
-        return [new ClaimZeroOutsiders(), new FrameTownsfolkAsDrunk(), new SupportDemonOutsiderBluff()];
+    getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
+        return [new ClaimZeroOutsiders(charId), new FrameTownsfolkAsDrunk(charId), new SupportDemonOutsiderBluff(charId)];
     }
 }
 
@@ -112,11 +116,11 @@ export class Investigator extends Character {
     }
 
     getStartingInfoSuggestion(gameState: GameState): string {
-        return getPointToCharOfTypeAndOtherCharSuggestion(gameState, CharacterType.Minion, this.name);
+        return getPointToCharOfTypeAndOtherCharSuggestion(gameState, CharacterType.Minion, this.id);
     }
 
-    getDrunkStrategies(): DrunkStrategy[] | undefined {
-        return [new FrameGoodPlayersAsMinion()];
+    getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
+        return [new FrameGoodPlayersAsMinion(charId)];
     }
 }
 
@@ -163,7 +167,7 @@ export class FortuneTeller extends Character {
 
     getStartingInfoSuggestion(gameState: GameState): string {
         const pickedChar = pickFortuneTellerRedHerring(gameState);
-        return `The RED HERRING is {{${pickedChar.name}}}.`;
+        return `The RED HERRING is {{${pickedChar.id}}}.`;
     }
 }
 
@@ -171,7 +175,7 @@ const butlerInstructions = "The Butler chooses a player. ⚫️";
 
 export class Butler extends Character {
     constructor() {
-        super(CharacterName.Butler);
+        super(CharacterName.Butler, CharacterType.Outsider);
     }
 
     getFirstNightInstructions() {
@@ -268,7 +272,7 @@ export class ScarletWoman extends Character {
 
 export class Imp extends Character {
     constructor() {
-        super(CharacterName.Imp, CharacterType.Minion, Alignment.Evil);
+        super(CharacterName.Imp, CharacterType.Demon, Alignment.Evil);
     }
 
     getOtherNightsInstructions() {
@@ -285,13 +289,13 @@ export class Drunk extends Character {
         super(CharacterName.Drunk, CharacterType.Outsider);
     }
 
-    onPicked(_playerSetup: PlayerSetup, availableChars: CharacterSet, gameState: GameState, ) {
+    onPicked(_playerSetup: PlayerSetup, availableChars: CharacterSet, allChars: Character[]) {
         const character = availableChars.townsfolk.pop() as Character;
         character.isDrunkMistakenIdentity = true;
-        gameState.notInPlay.push(character);
         this.mistakenIdentity = character;
         this.firstNightInstructions = character.getFirstNightInstructions();
         this.otherNightsInstructions = character.getOtherNightsInstructions();
+        allChars.push(character);
     }
 
     getDisplayName(): string {
@@ -319,7 +323,7 @@ export class Drunk extends Character {
     }
 
     getStartingInfoSuggestion(gameState: GameState): string | undefined {
-        let strategies = this.mistakenIdentity?.getDrunkStrategies();
+        let strategies = this.mistakenIdentity?.getDrunkStrategies(this.id);
         if (strategies) {
             strategies = strategies?.filter((strategy) => strategy.gameQualifiesForStrategy(gameState));
 
@@ -329,20 +333,19 @@ export class Drunk extends Character {
     }
 }
 
-const getPointToCharOfTypeAndOtherCharSuggestion = (gameState: GameState, charType: CharacterType, currentChar: CharacterName) => {
-    const gameStateField = charTypeToGameStateFieldMapping[charType];
-    if (gameState[gameStateField].length === 0) {
+const getPointToCharOfTypeAndOtherCharSuggestion = (gameState: GameState, charType: CharacterType, currentCharId: string) => {
+    if (gameState.allChars.filter((char) => char.type === charType).length === 0) {
         return "Show a zero.";
     }
 
     // This gets returned in a different format because the character might register as something else
-    const pickedCharResult: InPlayCharResult = pickRandomCharOfTypeInPlay(gameState, charType, currentChar);
-    const otherChar = pickRandomCharacterInPlay(gameState, [currentChar, pickedCharResult.character.name]);
+    const pickedCharResult: InPlayCharResult = pickRandomCharOfTypeInPlay(gameState, charType, currentCharId);
+    const otherChar = pickRandomCharacterInPlay(gameState, [currentCharId, pickedCharResult.character.id]);
 
     const charsToPointTo = [pickedCharResult.character, otherChar];
     shuffleArray(charsToPointTo);
 
-    return `Show the ${pickedCharResult.registersAs || pickedCharResult.character.name} character token. Point to {{${charsToPointTo[0].name}}} and {{${charsToPointTo[1].name}}}.`;
+    return `Show the ${pickedCharResult.registersAs || pickedCharResult.character.name} character token. Point to {{${charsToPointTo[0].id}}} and {{${charsToPointTo[1].id}}}.`;
 };
 
 export const characterClassNameMap: Partial<Record<CharacterName, new() => Character>> = {

@@ -1,11 +1,10 @@
 import { playerCountConfig } from "../../gameSettings";
-import { CharacterName, CharacterSet, CharGroup, EditionName, GameState, PlayerSetup, SpecialInstructionKey } from "../../types";
+import { CharacterName, CharacterSet, EditionName, GameState, PlayerSetup } from "../../types";
 import "./RandomizeSetup.css"
 import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
 import { EDITIONS_BY_NAME } from "../../editions";
-import { getAllCharsInPlay } from "../../charUtils";
-import { Instruction, NightType } from "../NightInfo/NightInfo";
+import { generateNightInstructions } from "../../nightUtils";
 
 interface RandomizeSetupProps {
     playerCount: number;
@@ -13,43 +12,12 @@ interface RandomizeSetupProps {
     editionName: EditionName;
 }
 
-const specialInstructions = {
-    [SpecialInstructionKey.Dusk]: () => {
-        return {
-            label: SpecialInstructionKey.Dusk,
-            message: "Check that all eyes are closed. Some Travellers & Fabled act.",
-        };
-    },
-    [SpecialInstructionKey.MinionInfo]: (gameState: GameState) => {
-        if (gameState.playerCount >= 7) {
-            return {
-                label: SpecialInstructionKey.MinionInfo,
-                message: "Wake all Minions. Show the THIS IS THE DEMON token. Point to the Demon."
-            };
-        }
-    },
-    [SpecialInstructionKey.DemonInfo]: (gameState: GameState) => {
-        if (gameState.playerCount >= 7) {
-            return {
-                label: SpecialInstructionKey.DemonInfo,
-                message: "Show the THESE ARE YOUR MINIONS token. Point to all Minions. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 not-in-play good character tokens."
-            };
-        }
-    },
-    [SpecialInstructionKey.Dawn]: (_gameState: GameState, nightType: NightType) => {
-        const message = nightType === NightType.First ? "Wait a few seconds. Call for eyes open." : "Wait a few seconds. Call for eyes open & immediately say who died.";
-        return {
-            label: SpecialInstructionKey.Dawn,
-            message
-        }
-    }
-};
-
 function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSetupProps) {
 
-    const pickAvailableCharacter = (availableChars: Character[], pickedChars: Character[]): Character => {
+    const pickAvailableCharacter = (availableChars: Character[], inPlayChars: Character[]): Character => {
         const character = availableChars.pop() as Character;
-        pickedChars.push(character);
+        character.inPlay = true;
+        inPlayChars.push(character);
         return character;
     };
 
@@ -64,6 +32,28 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
 
         const characterSet = EDITIONS_BY_NAME[editionName].getCharactersForEdition();
 
+        const allCharNamesForEdition = {
+            townsfolk: characterSet.townsfolk.map((char) => char.name),
+            outsiders: characterSet.outsiders.map((char) => char.name),
+            minions: characterSet.minions.map((char) => char.name),
+            demons: characterSet.demons.map((char) => char.name),
+        };
+
+        const allChars: Character[] = [];
+
+        const gameState: GameState = {
+            demonBluffs: [],
+            playerCount: playerCount,
+            edition: editionName,
+            nightInstructions: {
+                first: [],
+                other: []
+            },
+            startingInfoSuggestions: {},
+            allCharNamesForEdition,
+            allChars
+        };
+
         const availableChars: CharacterSet = {
             townsfolk: shuffleArray(characterSet.townsfolk),
             outsiders: shuffleArray(characterSet.outsiders),
@@ -71,41 +61,25 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
             demons: shuffleArray(characterSet.demons)
         };
 
-        const gameState: GameState = {
-            townsfolk: [],
-            outsiders: [],
-            minions: [],
-            demons: [],
-            demonBluffs: [],
-            notInPlay: [],
-            playerCount: playerCount,
-            edition: editionName,
-            nightInstructions: {
-                first: [],
-                other: []
-            },
-            startingInfoSuggestions: {}
-        };
-
         while (playerSetup.demonsToPick > 0) {
-            pickAvailableCharacter(availableChars.demons, gameState.demons);
+            pickAvailableCharacter(availableChars.demons, allChars);
             playerSetup.demonsToPick--;
         }
 
         while (playerSetup.minionsToPick > 0) {
-            const character = pickAvailableCharacter(availableChars.minions, gameState.minions);
-            character.onPicked(playerSetup, availableChars, gameState);
+            const character = pickAvailableCharacter(availableChars.minions, allChars);
+            character.onPicked(playerSetup, availableChars, allChars);
             playerSetup.minionsToPick--;
         }
 
         while (playerSetup.outsidersToPick > 0) {
-            const character = pickAvailableCharacter(availableChars.outsiders, gameState.outsiders);
-            character.onPicked(playerSetup, availableChars, gameState);
+            const character = pickAvailableCharacter(availableChars.outsiders, allChars);
+            character.onPicked(playerSetup, availableChars, allChars);
             playerSetup.outsidersToPick--;
         }
 
         while (playerSetup.townsfolkToPick > 0) {
-            pickAvailableCharacter(availableChars.townsfolk, gameState.townsfolk);
+            pickAvailableCharacter(availableChars.townsfolk, allChars);
             playerSetup.townsfolkToPick--;
         }
 
@@ -116,6 +90,7 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
                 const char = availableChars.outsiders[i];
                 if (char.canBeDemonBluff()) {
                     availableChars.outsiders.splice(i, 1);
+                    allChars.push(char);
                     gameState.demonBluffs.push(char);
                     numDemonBluffs--;
                     break;
@@ -125,12 +100,24 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
 
         while (numDemonBluffs > 0) {
             const character = availableChars.townsfolk.pop() as Character;
+            allChars.push(character);
             gameState.demonBluffs.push(character);
             numDemonBluffs--;
         }
 
-        gameState.notInPlay = gameState.notInPlay.concat(
-            availableChars.townsfolk, availableChars.outsiders, availableChars.minions, availableChars.demons);
+        // Add remaining available character to the allChars array (although not marked as in-play)
+        while (availableChars.townsfolk.length > 0) {
+            allChars.push(availableChars.townsfolk.pop() as Character);
+        }
+        while (availableChars.outsiders.length > 0) {
+            allChars.push(availableChars.outsiders.pop() as Character);
+        }
+        while (availableChars.minions.length > 0) {
+            allChars.push(availableChars.minions.pop() as Character);
+        }
+        while (availableChars.demons.length > 0) {
+            allChars.push(availableChars.demons.pop() as Character);
+        }
 
         gameState.nightInstructions = generateNightInstructions(gameState);
 
@@ -139,67 +126,14 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         updateGameState(gameState);
     };
 
-    const generateNightInstructions = (gameState: GameState) => {
-        const result: Record<NightType, Instruction[]> = {
-            first: [],
-            other: [],
-        };
-
-        // To handle Drunk logic, we need a list of the characters who appear to be in play
-        const charsInPlay = getAllCharsInPlay(gameState);
-        const instructionCharNameToCharacter: Partial<Record<CharacterName, Character>> = {};
-        charsInPlay.forEach((char) => {
-            instructionCharNameToCharacter[char.getIdentityForInstructions()] = char;
-        });
-
-        [NightType.First, NightType.Other].forEach((nightType: NightType) => {
-            const instructions = [];
-
-            for(const instructionKey of EDITIONS_BY_NAME[gameState.edition].nightInstructions[nightType]) {
-                const specialInstructionFunction = specialInstructions[instructionKey as SpecialInstructionKey];
-                if (specialInstructionFunction) {
-                    const result = specialInstructionFunction(gameState, nightType);
-                    if (result) {
-                        instructions.push({...result, checked: false});
-                    }
-                    continue;
-                }
-
-                const character = instructionCharNameToCharacter[instructionKey as CharacterName];
-                if (character) {
-                    const instructionsForChar = nightType === NightType.First ? 
-                        character.getFirstNightInstructions() : 
-                        character.getOtherNightsInstructions();
-                    if (instructionsForChar) {
-                        instructions.push({
-                            label: character.name,
-                            message: instructionsForChar,
-                            alignment: character.alignment,
-                            character: character,
-                            checked: false
-                        })
-                    }
-                }
-            };
-
-            result[nightType] = instructions;
-        });
-
-        return result;
-    };
-
     const generateStartingInfoSuggestions = (gameState: GameState) => {
         const startingInfoSuggestions: Partial<Record<CharacterName, string>> = {};
 
-        const startingInfoCharGroups: CharGroup[] = [CharGroup.Townsfolk, CharGroup.Outsiders];
-
-        for (const startingInfoCharGroup of startingInfoCharGroups) {
-            gameState[startingInfoCharGroup].forEach((char) => {
-                const suggestion = char.getStartingInfoSuggestion(gameState);
-                if (suggestion) {
-                    startingInfoSuggestions[char.name] = suggestion;
-                }
-            });
+        for (const char of gameState.allChars) {
+            const suggestion = char.getStartingInfoSuggestion(gameState);
+            if (suggestion) {
+                startingInfoSuggestions[char.name] = suggestion;
+            }
         }
 
         return startingInfoSuggestions;

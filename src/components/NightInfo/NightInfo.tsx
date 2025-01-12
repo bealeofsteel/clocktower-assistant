@@ -1,4 +1,4 @@
-import { Alignment, CharacterName, GameState } from "../../types";
+import { Alignment, GameState } from "../../types";
 import { Character } from "../../characters";
 import './NightInfo.css'
 import { parseCharTokens } from "../../charUtils";
@@ -12,7 +12,7 @@ interface NightInfoProps {
     gameState: GameState;
     type: NightType;
     updateGameState: (newState: GameState) => void;
-    instantiatedCharsByName: Map<CharacterName, Character>;
+    instantiatedCharsById: Map<string, Character>;
 }
 
 export interface Instruction {
@@ -23,7 +23,7 @@ export interface Instruction {
     checked?: boolean;
 }
 
-function NightInfo({gameState, type, updateGameState, instantiatedCharsByName}: NightInfoProps) {
+function NightInfo({gameState, type, updateGameState, instantiatedCharsById}: NightInfoProps) {
     
     const selectAll = () => {
         const newInstructions = gameState.nightInstructions[type].map((instruction) => {
@@ -83,7 +83,7 @@ function NightInfo({gameState, type, updateGameState, instantiatedCharsByName}: 
                             gameState.startingInfoSuggestions[instruction.character.name] && 
                             <>
                                 <strong> Suggestion: </strong>
-                                <span>{parseCharTokens(gameState.startingInfoSuggestions[instruction.character.name] as string, instantiatedCharsByName)}</span>
+                                <span>{parseCharTokens(gameState.startingInfoSuggestions[instruction.character.name] as string, instantiatedCharsById)}</span>
                             </>
                         }
                     </div>

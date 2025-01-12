@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alignment, CharGroup, GameState } from "../../types";
+import { Alignment, CharacterType, GameState } from "../../types";
 import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
 import './RandomizationTools.css'
@@ -14,43 +14,50 @@ interface Filter {
 
 function RandomizationTools({gameState}: RandomizationToolsProps) {
 
-    if (!gameState || !gameState.townsfolk) {
+    if (!gameState) {
         return null;
     }
 
-    const charGroupFilterOptions = [
+    const charTypeFilterOptions = [
         {
             name: "All",
             checked: true
         },
         {
             name: "Townsfolk",
-            charGroup: CharGroup.Townsfolk,
+            charType: CharacterType.Townsfolk,
             checked: false
         },
         {
             name: "Outsiders",
-            charGroup: CharGroup.Outsiders,
+            charType: CharacterType.Outsider,
             checked: false
         },
         {
             name: "Minions",
-            charGroup: CharGroup.Minions,
+            charType: CharacterType.Minion,
             checked: false
         },
         {
             name: "Demons",
-            charGroup: CharGroup.Demons,
+            charType: CharacterType.Demon,
             checked: false
+        }
+    ];
+
+    const inPlayFilterOptions = [
+        {
+            name: "All",
+            checked: true
         },
         {
-            name: "Demon Bluffs",
-            charGroup: CharGroup.DemonBluffs,
+            name: "In play",
+            inPlay: true,
             checked: false
         },
         {
             name: "Not in play",
-            charGroup: CharGroup.NotInPlay,
+            inPlay: false,
             checked: false
         }
     ];
@@ -89,7 +96,8 @@ function RandomizationTools({gameState}: RandomizationToolsProps) {
         }
     ];
 
-    const [charGroupFilters, setCharGroupFilters] = useState(charGroupFilterOptions);
+    const [charTypeFilters, setCharTypeFilters] = useState(charTypeFilterOptions);
+    const [inPlayFilters, setInPlayFilters] = useState(inPlayFilterOptions);
     const [alignmentFilters, setAlignmentFilters] = useState(alignmentFilterOptions);
     const [lifeStatusFilters, setLifeStatusFilters] = useState(lifeStatusFilterOptions);
 
@@ -97,24 +105,36 @@ function RandomizationTools({gameState}: RandomizationToolsProps) {
 
     const randomizeSelectedChars = () => {
 
-        let chars: Character[] = [];
+        let chars: Character[] = gameState.allChars;
 
-        for (const filter of charGroupFilters) {
+        let allowedCharTypes: CharacterType[] = [];
+        for (const filter of charTypeFilters) {
             if (filter.name === "All") {
                 if (filter.checked) {
-                    chars = chars.concat(gameState[CharGroup.Townsfolk], 
-                        gameState[CharGroup.Outsiders], 
-                        gameState[CharGroup.Minions], 
-                        gameState[CharGroup.Demons], 
-                        gameState[CharGroup.DemonBluffs], 
-                        gameState[CharGroup.NotInPlay]
-                    );
+                    allowedCharTypes = [CharacterType.Townsfolk, CharacterType.Outsider, CharacterType.Minion, CharacterType.Demon];
                     break;
                 }
             } else if (filter.checked) {
-                chars = chars.concat(gameState[filter.charGroup as CharGroup]);
+                allowedCharTypes.push(filter.charType as CharacterType);
             }
         }
+
+        chars = chars.filter((char) => allowedCharTypes.includes(char.type));
+
+        let allowedInPlayStatuses: boolean[] = [];
+        for (const filter of inPlayFilters) {
+            if (filter.name === "All") {
+                if (filter.checked) {
+                    allowedInPlayStatuses = [true, false];
+                    break;
+                }
+            } else if (filter.checked) {
+                allowedInPlayStatuses.push(filter.inPlay as boolean);
+            }
+        }
+
+        chars = chars.filter((char) => allowedInPlayStatuses.includes(char.inPlay));
+
 
         let allowedAlignments: Alignment[] = [];
         for (const filter of alignmentFilters) {
@@ -165,13 +185,22 @@ function RandomizationTools({gameState}: RandomizationToolsProps) {
         }
     };
 
-    const handleCharGroupFilterChange = (index: number) => {
-        const newFilters = Array.from(charGroupFilters);
-        newFilters[index].checked = !charGroupFilters[index].checked;
+    const handleCharTypeFilterChange = (index: number) => {
+        const newFilters = Array.from(charTypeFilters);
+        newFilters[index].checked = !charTypeFilters[index].checked;
 
         handleAllCheckbox(newFilters, index);
 
-        setCharGroupFilters(newFilters);
+        setCharTypeFilters(newFilters);
+    };
+
+    const handleInPlayFilterChange = (index: number) => {
+        const newFilters = Array.from(inPlayFilters);
+        newFilters[index].checked = !inPlayFilters[index].checked;
+
+        handleAllCheckbox(newFilters, index);
+
+        setInPlayFilters(newFilters);
     };
 
     const handleAlignmentFilterChange = (index: number) => {
@@ -197,9 +226,21 @@ function RandomizationTools({gameState}: RandomizationToolsProps) {
             <div className="filters-container">
                 <div>
                     {
-                        charGroupFilters.map((filter, index) => {
+                        charTypeFilters.map((filter, index) => {
                             return (
-                                <div className="filter-option" key={filter.name} onClick={() => handleCharGroupFilterChange(index)}>
+                                <div className="filter-option" key={filter.name} onClick={() => handleCharTypeFilterChange(index)}>
+                                    <input type="checkbox" checked={filter.checked} onChange={() => {}}/>
+                                    <span>{filter.name}</span>
+                                </div>
+                            );
+                        })
+                    }
+                </div>
+                <div>
+                    {
+                        inPlayFilters.map((filter, index) => {
+                            return (
+                                <div className="filter-option" key={filter.name} onClick={() => handleInPlayFilterChange(index)}>
                                     <input type="checkbox" checked={filter.checked} onChange={() => {}}/>
                                     <span>{filter.name}</span>
                                 </div>
@@ -212,7 +253,7 @@ function RandomizationTools({gameState}: RandomizationToolsProps) {
                         alignmentFilters.map((filter, index) => {
                             return (
                                 <div className="filter-option" key={filter.name} onClick={() => handleAlignmentFilterChange(index)}>
-                                    <input type="checkbox" checked={filter.checked} onChange={() => handleAlignmentFilterChange(index)}/>
+                                    <input type="checkbox" checked={filter.checked} onChange={() => {}}/>
                                     <span>{filter.name}</span>
                                 </div>
                             );
@@ -224,7 +265,7 @@ function RandomizationTools({gameState}: RandomizationToolsProps) {
                         lifeStatusFilters.map((filter, index) => {
                             return (
                                 <div className="filter-option" key={filter.name} onClick={() => handleLifeStatusFilterChange(index)}>
-                                    <input type="checkbox" checked={filter.checked} onChange={() => handleLifeStatusFilterChange(index)}/>
+                                    <input type="checkbox" checked={filter.checked} onChange={() => {}}/>
                                     <span>{filter.name}</span>
                                 </div>
                             );

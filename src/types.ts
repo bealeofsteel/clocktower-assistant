@@ -9,15 +9,6 @@ export interface Edition {
     }
 }
 
-export enum CharGroup {
-    Townsfolk = "townsfolk",
-    Outsiders = "outsiders",
-    Minions = "minions",
-    Demons = "demons",
-    DemonBluffs = "demonBluffs",
-    NotInPlay = "notInPlay"
-}
-
 export interface CharacterSet {
     townsfolk: Character[];
     outsiders: Character[];
@@ -59,12 +50,7 @@ export enum EditionName {
     TroubleBrewing = "Trouble Brewing"
 }
 
-export interface AssignedChars extends CharacterSet {
-    demonBluffs: Character[];
-    notInPlay: Character[];
-}
-
-export interface GameState extends AssignedChars {
+export interface GameState {
     playerCount: number;
     edition: EditionName;
     nightInstructions: {
@@ -72,6 +58,14 @@ export interface GameState extends AssignedChars {
         other: Instruction[];
     }
     startingInfoSuggestions: Partial<Record<CharacterName, string>>;
+    allCharNamesForEdition: {
+        townsfolk: CharacterName[],
+        outsiders: CharacterName[],
+        minions: CharacterName[],
+        demons: CharacterName[],
+    },
+    allChars: Character[],
+    demonBluffs: Character[];
 }
 
 export interface PlayerSetup {
@@ -94,10 +88,3 @@ export enum CharacterType {
     Minion = "minion",
     Demon = "demon"
 }
-
-export const charTypeToGameStateFieldMapping: Record<CharacterType, CharGroup> = {
-    [CharacterType.Townsfolk]: CharGroup.Townsfolk,
-    [CharacterType.Outsider]: CharGroup.Outsiders,
-    [CharacterType.Minion]: CharGroup.Minions,
-    [CharacterType.Demon]: CharGroup.Demons
-};
