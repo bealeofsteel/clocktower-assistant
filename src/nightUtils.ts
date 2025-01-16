@@ -44,9 +44,12 @@ export const generateNightInstructions = (gameState: GameState) => {
 
     // To handle Drunk logic, we need a list of the characters who appear to be in play
     const charsInPlay = getAllCharsInPlay(gameState);
-    const instructionCharNameToCharacter: Partial<Record<CharacterName, Character>> = {};
+    const instructionCharNameToCharacters: Partial<Record<CharacterName, Character[]>> = {};
     charsInPlay.forEach((char) => {
-        instructionCharNameToCharacter[char.getIdentityForInstructions()] = char;
+        const identity = char.getIdentityForInstructions();
+        const charArray = instructionCharNameToCharacters[identity] || [];
+        charArray.push(char);
+        instructionCharNameToCharacters[identity] = charArray;
     });
 
     [NightType.First, NightType.Other].forEach((nightType: NightType) => {
@@ -62,20 +65,22 @@ export const generateNightInstructions = (gameState: GameState) => {
                 continue;
             }
 
-            const character = instructionCharNameToCharacter[instructionKey as CharacterName];
-            if (character) {
-                const instructionsForChar = nightType === NightType.First ? 
-                    character.getFirstNightInstructions() : 
-                    character.getOtherNightsInstructions();
-                if (instructionsForChar) {
-                    instructions.push({
-                        label: character.name,
-                        message: instructionsForChar,
-                        alignment: character.alignment,
-                        character: character,
-                        checked: false
-                    })
-                }
+            const characters = instructionCharNameToCharacters[instructionKey as CharacterName];
+            if (characters) {
+                characters.forEach((char) => {
+                    const instructionsForChar = nightType === NightType.First ? 
+                        char.getFirstNightInstructions() : 
+                        char.getOtherNightsInstructions();
+                    if (instructionsForChar) {
+                        instructions.push({
+                            label: char.name,
+                            message: instructionsForChar,
+                            alignment: char.alignment,
+                            character: char,
+                            checked: false
+                        })
+                    }
+                });
             }
         };
 

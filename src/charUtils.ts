@@ -8,7 +8,7 @@ export const getAllCharsInPlay = (gameState: GameState): Character[] => {
 
 export interface InPlayCharResult {
     character: Character,
-    registersAs?: CharacterName
+    registersAs?: Character
 }
 
 // Picks a random in-play char of the specified type, with the spy and recluse possibly registering as another character
@@ -21,13 +21,13 @@ export const pickRandomCharOfTypeInPlay = (gameState: GameState, charType: Chara
         const spy = findCharIfInPlay(gameState, CharacterName.Spy);
         if (spy) {
             const randomChar = pickRandomCharOfType(gameState, charType, excludeCharId);
-            inPlayCharResults.push({ character: spy, registersAs: randomChar.name });
+            inPlayCharResults.push({ character: spy, registersAs: randomChar });
         }
     } else if (charType === CharacterType.Minion || charType === CharacterType.Demon) {
         const recluse = findCharIfInPlay(gameState, CharacterName.Recluse);
         if (recluse) {
             const randomChar = pickRandomCharOfType(gameState, charType, excludeCharId);
-            inPlayCharResults.push({ character: recluse, registersAs: randomChar.name });
+            inPlayCharResults.push({ character: recluse, registersAs: randomChar });
         }
     }
 
@@ -75,7 +75,8 @@ export const pickFortuneTellerRedHerring = (gameState: GameState) => {
 export const parseCharTokens = (inputStr: string, instantiatedCharsById: Map<string, Character>) => {
     const regExp = /\{\{(.*?)\}\}/g;
     return inputStr.replace(regExp, (_match, token) => {
-        return instantiatedCharsById.get(token)?.getDisplayName() as string;
+        const char = instantiatedCharsById.get(token)
+        return `<span class="char-name ${char?.alignment}">${char?.getDisplayName()}</span>` as string;
     });
 };
 

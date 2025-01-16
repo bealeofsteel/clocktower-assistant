@@ -345,7 +345,18 @@ const getPointToCharOfTypeAndOtherCharSuggestion = (gameState: GameState, charTy
     const charsToPointTo = [pickedCharResult.character, otherChar];
     shuffleArray(charsToPointTo);
 
-    return `Show the ${pickedCharResult.registersAs || pickedCharResult.character.name} character token. Point to {{${charsToPointTo[0].id}}} and {{${charsToPointTo[1].id}}}.`;
+    const char = pickedCharResult.registersAs ? pickedCharResult.registersAs : pickedCharResult.character;
+
+    const prefix = `Show the ${char.name} character token. `;
+    let suffix = "";
+
+    if (Math.random() < 0.5) {
+        suffix = `Point to {{${char.id}}} (${charType}) and {{${otherChar.id}}} (Wrong).`
+    } else {
+        suffix = `Point to {{${otherChar.id}}} (Wrong) and {{${char.id}}} (${charType}).`
+    }
+
+    return prefix + suffix;
 };
 
 export const characterClassNameMap: Partial<Record<CharacterName, new() => Character>> = {

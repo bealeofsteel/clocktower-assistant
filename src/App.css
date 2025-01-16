@@ -12,11 +12,11 @@ div.tabs {
 }
 
 .char-name {
-  &.good {
+  &.Good {
     color: blue;
   }
 
-  &.evil {
+  &.Evil {
     color: red;
   }
 

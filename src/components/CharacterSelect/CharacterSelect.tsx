@@ -1,7 +1,7 @@
 import { Character, characterClassNameMap } from "../../characters";
 import { generateNightInstructions } from "../../nightUtils";
 import { CharacterName, GameState } from "../../types";
-import { NightType } from "../NightInfo/NightInfo";
+import { Instruction, NightType } from "../NightInfo/NightInfo";
 
 interface CharacterSelectProps {
     gameState: GameState;
@@ -61,9 +61,17 @@ function CharacterSelect({gameState, updateGameState, currentChar}: CharacterSel
             [NightType.Other]: {} as Record<string, boolean | undefined>
         };
 
+        const getInstructionKey = (instruction: Instruction) => {
+            if (instruction.label && instruction.character) {
+                return `${instruction.label}_${instruction.character.id}`;
+            } else {
+                return instruction.label;
+            }
+        };
+
         [NightType.First, NightType.Other].forEach((nightType: NightType) => {
             oldNightInstructions[nightType].forEach((instruction) => {
-                checkedInstuctions[nightType][instruction.label] = instruction.checked;
+                checkedInstuctions[nightType][getInstructionKey(instruction)] = instruction.checked;
             });
         });
 
@@ -71,7 +79,7 @@ function CharacterSelect({gameState, updateGameState, currentChar}: CharacterSel
 
         [NightType.First, NightType.Other].forEach((nightType: NightType) => {
             newNightInstructions[nightType].forEach((instruction) => {
-                if (checkedInstuctions[nightType][instruction.label]) {
+                if (checkedInstuctions[nightType][getInstructionKey(instruction)]) {
                     instruction.checked = true;
                 }
             });

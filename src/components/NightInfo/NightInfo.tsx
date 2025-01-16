@@ -83,7 +83,7 @@ function NightInfo({gameState, type, updateGameState, instantiatedCharsById}: Ni
                             gameState.startingInfoSuggestions[instruction.character.name] && 
                             <>
                                 <strong> Suggestion: </strong>
-                                <span>{parseCharTokens(gameState.startingInfoSuggestions[instruction.character.name] as string, instantiatedCharsById)}</span>
+                                <span dangerouslySetInnerHTML={{__html: parseCharTokens(gameState.startingInfoSuggestions[instruction.character.name] as string, instantiatedCharsById)}}></span>
                             </>
                         }
                     </div>

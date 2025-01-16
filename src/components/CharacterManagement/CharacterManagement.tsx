@@ -57,7 +57,7 @@ function CharacterMangement({gameState, updateGameState}: CharacterManagementPro
                     <tr key={char.id} className={`char-table-row char-name ${char.alignment} ${char.isDead ? "is-dead" : ""}`}>
                         <td><PlayerNameInput gameState={gameState} updateGameState={updateGameState} char={char}/></td>
                         <td><CharacterSelect gameState={gameState} updateGameState={updateGameState} currentChar={char} ></CharacterSelect></td>
-                        <td className="clickable" onClick={() => toggleAlignment(char)}>{char.alignment === Alignment.Good ? "Good" : "Evil"}</td>
+                        <td className="clickable" onClick={() => toggleAlignment(char)}>{char.alignment}</td>
                         <td className="clickable" onClick={() => toggleDeadAliveState(char)}>{char.isDead ? "Dead" : "Alive"}</td>
                     </tr>
                 )}

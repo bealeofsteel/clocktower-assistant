@@ -17,8 +17,8 @@ export interface CharacterSet {
 }
 
 export enum Alignment {
-    Good = "good",
-    Evil = "evil"
+    Good = "Good",
+    Evil = "Evil"
 }
 
 export enum CharacterName {
@@ -83,8 +83,8 @@ export enum SpecialInstructionKey {
 }
 
 export enum CharacterType {
-    Townsfolk = "townsfolk",
-    Outsider = "outsider",
-    Minion = "minion",
-    Demon = "demon"
+    Townsfolk = "Townsfolk",
+    Outsider = "Outsider",
+    Minion = "Minion",
+    Demon = "Demon"
 }

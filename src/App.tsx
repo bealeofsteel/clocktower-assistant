@@ -182,7 +182,7 @@ function App() {
                   instruction.character && gameState.startingInfoSuggestions[instruction.character.name] ? (
                     <div key={instruction.label}>
                       <span className={`char-name ${instruction.character.alignment}`}>{instruction.character.getDisplayName()}</span>
-                      : {parseCharTokens(gameState.startingInfoSuggestions[instruction.character.name] as string, instantiatedCharsById)}
+                      : <span dangerouslySetInnerHTML={{__html: parseCharTokens(gameState.startingInfoSuggestions[instruction.character.name] as string, instantiatedCharsById)}}></span>
                     </div>
                   ) : null
                 ))}
