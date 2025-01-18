@@ -62,7 +62,8 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         };
 
         while (playerSetup.demonsToPick > 0) {
-            pickAvailableCharacter(availableChars.demons, allChars);
+            const character = pickAvailableCharacter(availableChars.demons, allChars);
+            character.onPicked(playerSetup, availableChars, allChars);
             playerSetup.demonsToPick--;
         }
 
@@ -79,7 +80,8 @@ function RandomizeSetup({playerCount, updateGameState, editionName}: RandomizeSe
         }
 
         while (playerSetup.townsfolkToPick > 0) {
-            pickAvailableCharacter(availableChars.townsfolk, allChars);
+            const character = pickAvailableCharacter(availableChars.townsfolk, allChars);
+            character.onPicked(playerSetup, availableChars, allChars);
             playerSetup.townsfolkToPick--;
         }
 

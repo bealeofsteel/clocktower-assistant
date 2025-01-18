@@ -1,4 +1,4 @@
-import { Baron, Drunk, Character, Washerwoman, FortuneTeller, Empath, Chef, Investigator, Librarian, Undertaker, Monk, Ravenkeeper, Butler, Poisoner, Spy, ScarletWoman, Imp } from "./characters";
+import { Baron, Drunk, Character, Washerwoman, FortuneTeller, Empath, Chef, Investigator, Librarian, Undertaker, Monk, Ravenkeeper, Butler, Poisoner, Spy, ScarletWoman, Imp, SnakeCharmer, Mathematician, TownCrier, Clockmaker, Dreamer, Flowergirl, Oracle, Seamstress, Philosopher, Juggler, Sage, Sweetheart, Barber, EvilTwin, Cerenovous, PitHag, Witch, FangGu, Vigormortis, NoDashii, Vortox } from "./characters";
 import { CharacterName, CharacterType, Edition, EditionName, SpecialInstructionKey } from "./types";
 
 export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
@@ -73,6 +73,93 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
                 CharacterName.Empath,
                 CharacterName.FortuneTeller,
                 CharacterName.Butler,
+                SpecialInstructionKey.Dawn,
+            ]
+        }
+    },
+    [EditionName.SectsAndViolets]: {
+        getCharactersForEdition: () => {
+            const townsfolk = [
+                new Clockmaker(),
+                new Dreamer(),
+                new SnakeCharmer(),
+                new Mathematician(),
+                new Flowergirl(),
+                new TownCrier(),
+                new Oracle(),
+                new Character(CharacterName.Savant),
+                new Seamstress(),
+                new Philosopher(),
+                new Character(CharacterName.Artist),
+                new Juggler(),
+                new Sage(),
+            ];
+
+            const outsiders = [
+                new Character(CharacterName.Mutant, CharacterType.Outsider),
+                new Sweetheart(),
+                new Barber(),
+                new Character(CharacterName.Klutz, CharacterType.Outsider),
+            ];
+
+            const minions = [
+                new EvilTwin(),
+                new Witch(),
+                new Cerenovous(),
+                new PitHag(),
+            ];
+
+            const demons = [
+                new FangGu(),
+                new Vigormortis(),
+                new NoDashii(),
+                new Vortox(),
+            ];
+
+            return {
+                townsfolk,
+                outsiders,
+                minions,
+                demons,
+            }
+        },
+        nightInstructions: {
+            first: [
+                SpecialInstructionKey.Dusk,
+                SpecialInstructionKey.MinionInfo,
+                SpecialInstructionKey.DemonInfo,
+                CharacterName.Philosopher,
+                CharacterName.SnakeCharmer,
+                CharacterName.EvilTwin,
+                CharacterName.Witch,
+                CharacterName.Cerenovous,
+                CharacterName.Clockmaker,
+                CharacterName.Dreamer,
+                CharacterName.Seamstress,
+                CharacterName.Mathematician,
+                SpecialInstructionKey.Dawn,
+            ],
+            other: [
+                SpecialInstructionKey.Dusk,
+                CharacterName.Philosopher,
+                CharacterName.SnakeCharmer,
+                CharacterName.Witch,
+                CharacterName.Cerenovous,
+                CharacterName.PitHag,
+                CharacterName.FangGu,
+                CharacterName.Vigormortis,
+                CharacterName.NoDashii,
+                CharacterName.Vortox,
+                CharacterName.Barber,
+                CharacterName.Sweetheart,
+                CharacterName.Sage,
+                CharacterName.Dreamer,
+                CharacterName.Flowergirl,
+                CharacterName.TownCrier,
+                CharacterName.Oracle,
+                CharacterName.Seamstress,
+                CharacterName.Juggler,
+                CharacterName.Mathematician,
                 SpecialInstructionKey.Dawn,
             ]
         }

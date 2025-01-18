@@ -359,6 +359,295 @@ const getPointToCharOfTypeAndOtherCharSuggestion = (gameState: GameState, charTy
     return prefix + suffix;
 };
 
+/*
+    Sects & Violets characters
+*/
+
+export class Clockmaker extends Character {
+    constructor() {
+        super(CharacterName.Clockmaker);
+    }
+
+    getFirstNightInstructions(): string | undefined {
+        return giveAFingerSignal;
+    }
+}
+
+const dreamerInstructions = "The Dreamer points to a player. Show 1 good and 1 evil character token, 1 of which is their character.";
+
+export class Dreamer extends Character {
+    constructor() {
+        super(CharacterName.Dreamer);
+    }
+
+    getFirstNightInstructions(): string | undefined {
+        return dreamerInstructions;
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return dreamerInstructions;
+    }
+
+    getStartingInfoSuggestion(gameState: GameState): string | undefined {
+        const goodChars = gameState.allChars.filter((char) => char.type === CharacterType.Townsfolk || char.type === CharacterType.Outsider);
+        const evilChars = gameState.allChars.filter((char) => char.type === CharacterType.Minion || char.type === CharacterType.Demon);
+
+        shuffleArray(goodChars);
+        shuffleArray(evilChars);
+        
+        if (Math.random() < 0.5) {
+            return `Show the correct character token, then (if a Townsfolk or Outsider) the ${evilChars[0].name} token, or (if a Minion or Demon) the ${goodChars[0].name} token.`;
+        } else {
+            `Show (if a Townsfolk or Outsider) the ${evilChars[0].name} token, or (if a Minion or Demon) the ${goodChars[0].name} token, then the correct character token.`;
+        }
+    }
+}
+
+const snakeCharmerInstructions = "The Snake Charmer chooses a player. If they chose the Demon: Show the YOU ARE & Demon tokens. Give a thumbs down. Swap the Snake Charmer & Demon tokens. Put the old Snake Charmer to sleep. Wake the old Demon. Show the YOU ARE and Snake Charmer tokens & give a thumbs up. ⚫️";
+
+export class SnakeCharmer extends Character {
+    constructor() {
+        super(CharacterName.SnakeCharmer);
+    }
+
+    getFirstNightInstructions(): string | undefined {
+        return snakeCharmerInstructions;
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return snakeCharmerInstructions;
+    }
+}
+
+export class Mathematician extends Character {
+    constructor() {
+        super(CharacterName.Mathematician);
+    }
+
+    getFirstNightInstructions(): string | undefined {
+        return giveAFingerSignal;
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return giveAFingerSignal;
+    }
+}
+
+const eitherNodOrShakeYourHead = "Either nod or shake your head.";
+
+export class Flowergirl extends Character {
+    constructor() {
+        super(CharacterName.Flowergirl);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return eitherNodOrShakeYourHead;
+    }
+}
+
+export class TownCrier extends Character {
+    constructor() {
+        super(CharacterName.TownCrier);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return eitherNodOrShakeYourHead;
+    }
+}
+
+export class Oracle extends Character {
+    constructor() {
+        super(CharacterName.Oracle);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return giveAFingerSignal;
+    }
+}
+
+const seamstressInstructions = "The Seamstress might choose 2 players. Nod or shake your head. ⚫️";
+
+export class Seamstress extends Character {
+    constructor() {
+        super(CharacterName.Seamstress);
+    }
+
+    getFirstNightInstructions(): string | undefined {
+        return seamstressInstructions;
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return seamstressInstructions;
+    }
+}
+
+const philosopherInstructions = "The Philosopher might choose a character. If necessary, swap their character token. ⚫️";
+
+export class Philosopher extends Character {
+    constructor() {
+        super(CharacterName.Philosopher);
+    }
+
+    getFirstNightInstructions(): string | undefined {
+        return philosopherInstructions;
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return philosopherInstructions;
+    }
+}
+
+export class Juggler extends Character {
+    constructor() {
+        super(CharacterName.Juggler);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return giveAFingerSignal;
+    }
+}
+
+export class Sage extends Character {
+    constructor() {
+        super(CharacterName.Sage);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return "If the Demon killed the Sage, wake the Sage and point to 2 players, 1 of which is the Demon.";
+    }
+}
+
+export class Sweetheart extends Character {
+    constructor() {
+        super(CharacterName.Sweetheart, CharacterType.Outsider);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return "If the Sweetheart died, a player became drunk immediately. If you haven't done this yet, do so now. ⚫️";
+    }
+}
+
+export class Barber extends Character {
+    constructor() {
+        super(CharacterName.Barber, CharacterType.Outsider);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return "If the Barber died today or tonight, show the Demon the THIS CHARACTER SELECTED YOU & Barber tokens. If the Demon chose 2 players, wake one at a time. Show the YOU ARE token & their new character token.";
+    }
+}
+
+export class EvilTwin extends Character {
+    constructor() {
+        super(CharacterName.EvilTwin, CharacterType.Minion, Alignment.Evil);
+    }
+
+    getFirstNightInstructions(): string | undefined {
+        return "Wake both twins. Allow eye contact. Show the good twin's character token to the Evil Twin & vice versa.";
+    }
+
+    getStartingInfoSuggestion(gameState: GameState): string | undefined {
+        const inPlayGoodChars = gameState.allChars.filter((char) => char.inPlay && char.alignment === Alignment.Good);
+        shuffleArray(inPlayGoodChars);
+        
+        return `The good twin is {{${inPlayGoodChars[0].id}}}.`;
+    }
+}
+
+const theWitchChoosesAPlayer = "The Witch chooses a player. ⚫️";
+
+export class Witch extends Character {
+    constructor() {
+        super(CharacterName.Witch, CharacterType.Minion, Alignment.Evil);
+    }
+
+    getFirstNightInstructions(): string | undefined {
+        return theWitchChoosesAPlayer;
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return theWitchChoosesAPlayer;
+    }
+}
+
+const cerenovousInstructions = "The Cerenovous chooses a player & a character. ⚫️ Put the Cerenovous to sleep. Wake the target. Show the THIS CHARACTER SELECTED YOU token, the Cerenovous token, then the madness-character token.";
+
+export class Cerenovous extends Character {
+    constructor() {
+        super(CharacterName.Cerenovous, CharacterType.Minion, Alignment.Evil);
+    }
+
+    getFirstNightInstructions(): string | undefined {
+        return cerenovousInstructions;
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return cerenovousInstructions;
+    }
+}
+
+export class PitHag extends Character {
+    constructor() {
+        super(CharacterName.PitHag, CharacterType.Minion, Alignment.Evil);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return "The Pit-Hag chooses a player & a character. If they chose a character that is not in play: Put the Pit-Hag to sleep. Wake the target. Show the YOU ARE token & their new character token.";
+    }
+}
+
+export class FangGu extends Character {
+    constructor() {
+        super(CharacterName.FangGu, CharacterType.Demon, Alignment.Evil);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return "The Fang Gu chooses a player. ⚫️ If they chose an Outsider (once only): Replace the Outsider token with the spare Fang Gu token. Put the Fang Gu to sleep. Wake the target. Show the YOU ARE and Fang Gu tokens & give a thumbs-down. ⚫️";
+    }
+
+    onPicked(playerSetup: PlayerSetup): void {
+        playerSetup.outsidersToPick += 1;
+        playerSetup.townsfolkToPick -= 1;
+    }
+}
+
+export class Vigormortis extends Character {
+    constructor() {
+        super(CharacterName.Vigormortis, CharacterType.Demon, Alignment.Evil);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return "The Vigormortis chooses a player. ⚫️ If that player is a Minion, poison a neighboring Townsfolk. ⚫️ ⚫️";
+    }
+
+    onPicked(playerSetup: PlayerSetup): void {
+        if (playerSetup.outsidersToPick > 0) {
+            playerSetup.outsidersToPick -= 1;
+            playerSetup.townsfolkToPick += 1;
+        }
+    }
+}
+
+export class NoDashii extends Character {
+    constructor() {
+        super(CharacterName.NoDashii, CharacterType.Demon, Alignment.Evil);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return "The No Dashii chooses a player. ⚫️";
+    }
+}
+
+export class Vortox extends Character {
+    constructor() {
+        super(CharacterName.Vortox, CharacterType.Demon, Alignment.Evil);
+    }
+
+    getOtherNightsInstructions(): string | undefined {
+        return "The Vortox chooses a player. ⚫️";
+    }
+}
+
 export const characterClassNameMap: Partial<Record<CharacterName, new() => Character>> = {
     [CharacterName.Baron]: Baron,
     [CharacterName.Drunk]: Drunk,
@@ -376,4 +665,26 @@ export const characterClassNameMap: Partial<Record<CharacterName, new() => Chara
     [CharacterName.Imp]: Imp,
     [CharacterName.Ravenkeeper]: Ravenkeeper,
     [CharacterName.Undertaker]: Undertaker,
-  };
+
+    [CharacterName.Clockmaker]: Clockmaker,
+    [CharacterName.Dreamer]: Dreamer,
+    [CharacterName.SnakeCharmer]: SnakeCharmer,
+    [CharacterName.Mathematician]: Mathematician,
+    [CharacterName.Flowergirl]: Flowergirl,
+    [CharacterName.TownCrier]: TownCrier,
+    [CharacterName.Oracle]: Oracle,
+    [CharacterName.Seamstress]: Seamstress,
+    [CharacterName.Philosopher]: Philosopher,
+    [CharacterName.Juggler]: Juggler,
+    [CharacterName.Sage]: Sage,
+    [CharacterName.Sweetheart]: Sweetheart,
+    [CharacterName.Barber]: Barber,
+    [CharacterName.EvilTwin]: EvilTwin,
+    [CharacterName.Witch]: Witch,
+    [CharacterName.Cerenovous]: Cerenovous,
+    [CharacterName.PitHag]: PitHag,
+    [CharacterName.FangGu]: FangGu,
+    [CharacterName.Vigormortis]: Vigormortis,
+    [CharacterName.NoDashii]: NoDashii,
+    [CharacterName.Vortox]: Vortox,
+};

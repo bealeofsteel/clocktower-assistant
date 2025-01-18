@@ -43,11 +43,37 @@ export enum CharacterName {
     Spy = "Spy",
     ScarletWoman = "Scarlet Woman",
     Baron = "Baron",
-    Imp = "Imp"
+    Imp = "Imp",
+    Clockmaker = "Clockmaker",
+    Dreamer = "Dreamer",
+    SnakeCharmer = "Snake Charmer",
+    Mathematician = "Mathematician",
+    Flowergirl = "Flowergirl",
+    TownCrier = "Town Crier",
+    Oracle = "Oracle",
+    Savant = "Savant",
+    Seamstress = "Seamstress",
+    Philosopher = "Philosopher",
+    Artist = "Artist",
+    Juggler = "Juggler",
+    Sage = "Sage",
+    Mutant = "Mutant",
+    Sweetheart = "Sweetheart",
+    Barber = "Barber",
+    Klutz = "Klutz",
+    EvilTwin = "Evil Twin",
+    Witch = "Witch",
+    Cerenovous = "Cerenovous",
+    PitHag = "Pig-Hag",
+    FangGu = "Fang Gu",
+    Vigormortis = "Vigormortis",
+    NoDashii = "No Dashii",
+    Vortox = "Vortox",
 }
 
 export enum EditionName {
-    TroubleBrewing = "Trouble Brewing"
+    TroubleBrewing = "Trouble Brewing",
+    SectsAndViolets = "Sects & Violets",
 }
 
 export interface GameState {
