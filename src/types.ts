@@ -64,7 +64,7 @@ export enum CharacterName {
     EvilTwin = "Evil Twin",
     Witch = "Witch",
     Cerenovous = "Cerenovous",
-    PitHag = "Pig-Hag",
+    PitHag = "Pit-Hag",
     FangGu = "Fang Gu",
     Vigormortis = "Vigormortis",
     NoDashii = "No Dashii",

@@ -14,7 +14,7 @@ function CharacterSelect({gameState, updateGameState, currentChar}: CharacterSel
     const changeCharacter = (newCharName: CharacterName, currentChar: Character) => {
         const oldCharName = currentChar.name;
 
-        let Klass = characterClassNameMap[newCharName] || Character;
+        let Klass = characterClassNameMap[newCharName];
         const newChar = new Klass(newCharName);
         newChar.id = currentChar.id;
         newChar.alignment = currentChar.alignment;
@@ -41,7 +41,7 @@ function CharacterSelect({gameState, updateGameState, currentChar}: CharacterSel
         }
 
         if (oldCharNoLongerInPlay) {
-            Klass = characterClassNameMap[oldCharName] || Character;
+            Klass = characterClassNameMap[oldCharName];
             const newChar = new Klass(newCharName);
             newCharsList.push(newChar);
         }

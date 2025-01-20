@@ -33,7 +33,7 @@ function App() {
     const demonBluffs: Character[] = [];
 
     initialState.allChars?.forEach((charJson: Character) => {
-      const Klass = characterClassNameMap[charJson.name] || Character;
+      const Klass = characterClassNameMap[charJson.name];
       const char = new Klass(charJson.name).fromJson(charJson);
       chars.push(char);
       instantiatedCharsById.set(charJson.id, char);
