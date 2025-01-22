@@ -82,7 +82,7 @@ export interface GameState {
     first: Instruction[];
     other: Instruction[];
   };
-  startingInfoSuggestions: Partial<Record<CharacterName, string>>;
+  startingInfoSuggestions: Record<string, string>;
   allCharNamesForEdition: {
     townsfolk: CharacterName[];
     outsiders: CharacterName[];
@@ -91,6 +91,15 @@ export interface GameState {
   };
   allChars: Character[];
   demonBluffs: Character[];
+  randomTools: {
+    filters: {
+      charType: Filter[];
+      inPlay: Filter[];
+      alignment: Filter[];
+      lifeStatus: Filter[];
+    };
+    randomizedResult: string;
+  };
 }
 
 export interface PlayerSetup {
@@ -120,9 +129,16 @@ export enum NightType {
 }
 
 export interface Instruction {
+  key: string;
   label: string;
   message: string;
   alignment?: Alignment;
   character?: Character;
   checked?: boolean;
+}
+
+export interface Filter {
+  name: string;
+  value?: CharacterType | Alignment | boolean;
+  checked: boolean;
 }

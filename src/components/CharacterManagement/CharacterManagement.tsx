@@ -4,6 +4,7 @@ import { Alignment, GameState } from "../../types";
 import PlayerNameInput from "../PlayerNameInput/PlayerNameInput";
 import { Character } from "../../characters";
 import CharacterSelect from "../CharacterSelect/CharacterSelect";
+import CharActsAsSelect from "../CharActsAsSelect/CharActsAsSelect";
 
 interface CharacterManagementProps {
   gameState: GameState;
@@ -55,6 +56,7 @@ function CharacterMangement({
           <th>Character</th>
           <th>Alignment</th>
           <th>Life Status</th>
+          <th>Acts As</th>
         </tr>
       </thead>
       <tbody>
@@ -85,6 +87,13 @@ function CharacterMangement({
               onClick={() => toggleDeadAliveState(char)}
             >
               {char.isDead ? "Dead" : "Alive"}
+            </td>
+            <td>
+              <CharActsAsSelect
+                gameState={gameState}
+                updateGameState={updateGameState}
+                currentChar={char}
+              ></CharActsAsSelect>
             </td>
           </tr>
         ))}

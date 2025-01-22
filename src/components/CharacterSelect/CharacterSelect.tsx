@@ -1,6 +1,7 @@
 import { Character, characterClassNameMap } from "../../characters";
-import { generateNightInstructions } from "../../nightUtils";
-import { CharacterName, GameState, Instruction, NightType } from "../../types";
+import { regenerateNightInstructions } from "../../nightUtils";
+import { CharacterName, GameState } from "../../types";
+import CharOptions from "../CharOptions/CharOptions";
 
 interface CharacterSelectProps {
   gameState: GameState;
@@ -27,16 +28,16 @@ function CharacterSelect({
     newChar.playerName = currentChar.playerName;
     newChar.inPlay = currentChar.inPlay;
 
-    // If the character we're switching to is currently not in play, we'll want to remove the dummy character
-    const newCharNoLongerInPlay = gameState.allChars.filter(
-      (char) => !char.inPlay && char.name === newCharName,
-    );
-
     // If the character we're switching away from will no longer be in play, we'll want to add a "not in play" dummy character
     const oldCharNoLongerInPlay =
       gameState.allChars.filter(
         (char) => char.inPlay && char.name === oldCharName,
       ).length === 1;
+
+    // If the character we're switching to is currently not in play, we'll want to remove the dummy character
+    const newCharNoLongerNotInPlay = gameState.allChars.filter(
+      (char) => !char.inPlay && char.name === newCharName,
+    );
 
     let newCharsList = gameState.allChars.map((char) => {
       if (char.id === newChar.id) {
@@ -47,19 +48,19 @@ function CharacterSelect({
     });
 
     if (
-      newCharNoLongerInPlay &&
-      newCharNoLongerInPlay.length > 0 &&
-      newCharNoLongerInPlay[0].id
+      newCharNoLongerNotInPlay &&
+      newCharNoLongerNotInPlay.length > 0 &&
+      newCharNoLongerNotInPlay[0].id
     ) {
       newCharsList = newCharsList.filter(
-        (char) => char.id !== newCharNoLongerInPlay[0].id,
+        (char) => char.id !== newCharNoLongerNotInPlay[0].id,
       );
     }
 
     if (oldCharNoLongerInPlay) {
       Klass = characterClassNameMap[oldCharName];
-      const newChar = new Klass(newCharName);
-      newCharsList.push(newChar);
+      const oldChar = new Klass(oldCharName);
+      newCharsList.push(oldChar);
     }
 
     currentChar = newChar;
@@ -69,38 +70,12 @@ function CharacterSelect({
       allChars: newCharsList,
     };
 
-    // We need to regenerate night instructions, but we want the checked status to carry over
-    const oldNightInstructions = gameState.nightInstructions;
+    const startingInfo = newChar.getStartingInfoSuggestion(gameState);
+    if (startingInfo) {
+      newGameState.startingInfoSuggestions[newChar.id] = startingInfo;
+    }
 
-    const checkedInstuctions = {
-      [NightType.First]: {} as Record<string, boolean | undefined>,
-      [NightType.Other]: {} as Record<string, boolean | undefined>,
-    };
-
-    const getInstructionKey = (instruction: Instruction) => {
-      if (instruction.label && instruction.character) {
-        return `${instruction.label}_${instruction.character.id}`;
-      } else {
-        return instruction.label;
-      }
-    };
-
-    [NightType.First, NightType.Other].forEach((nightType: NightType) => {
-      oldNightInstructions[nightType].forEach((instruction) => {
-        checkedInstuctions[nightType][getInstructionKey(instruction)] =
-          instruction.checked;
-      });
-    });
-
-    const newNightInstructions = generateNightInstructions(newGameState);
-
-    [NightType.First, NightType.Other].forEach((nightType: NightType) => {
-      newNightInstructions[nightType].forEach((instruction) => {
-        if (checkedInstuctions[nightType][getInstructionKey(instruction)]) {
-          instruction.checked = true;
-        }
-      });
-    });
+    const newNightInstructions = regenerateNightInstructions(newGameState);
 
     updateGameState({
       ...newGameState,
@@ -115,34 +90,7 @@ function CharacterSelect({
         changeCharacter(e.target.value as CharacterName, currentChar)
       }
     >
-      <optgroup label="Townsfolk">
-        {gameState.allCharNamesForEdition.townsfolk.map((charName) => (
-          <option key={charName} value={charName}>
-            {charName}
-          </option>
-        ))}
-      </optgroup>
-      <optgroup label="Outsiders">
-        {gameState.allCharNamesForEdition.outsiders.map((charName) => (
-          <option key={charName} value={charName}>
-            {charName}
-          </option>
-        ))}
-      </optgroup>
-      <optgroup label="Minions">
-        {gameState.allCharNamesForEdition.minions.map((charName) => (
-          <option key={charName} value={charName}>
-            {charName}
-          </option>
-        ))}
-      </optgroup>
-      <optgroup label="Demons">
-        {gameState.allCharNamesForEdition.demons.map((charName) => (
-          <option key={charName} value={charName}>
-            {charName}
-          </option>
-        ))}
-      </optgroup>
+      <CharOptions gameState={gameState}></CharOptions>
     </select>
   );
 }

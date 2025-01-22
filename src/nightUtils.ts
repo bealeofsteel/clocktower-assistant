@@ -67,6 +67,11 @@ export const generateNightInstructions = (gameState: GameState) => {
     instructionCharNameToCharacters[identity] = charArray;
   });
 
+  console.log(
+    "instructionCharNameToCharacters",
+    instructionCharNameToCharacters,
+  );
+
   [NightType.First, NightType.Other].forEach((nightType: NightType) => {
     const instructions = [];
 
@@ -77,7 +82,7 @@ export const generateNightInstructions = (gameState: GameState) => {
       if (specialInstructionFunction) {
         const result = specialInstructionFunction(gameState, nightType);
         if (result) {
-          instructions.push({ ...result, checked: false });
+          instructions.push({ ...result, key: result.label, checked: false });
         }
         continue;
       }
@@ -88,10 +93,13 @@ export const generateNightInstructions = (gameState: GameState) => {
         characters.forEach((char) => {
           const instructionsForChar =
             nightType === NightType.First
-              ? char.getFirstNightInstructions()
-              : char.getOtherNightsInstructions();
+              ? char.actsAsChar?.getFirstNightInstructions() ||
+                char.getFirstNightInstructions()
+              : char.actsAsChar?.getOtherNightsInstructions() ||
+                char.getOtherNightsInstructions();
           if (instructionsForChar) {
             instructions.push({
+              key: char.id,
               label: char.name,
               message: instructionsForChar,
               alignment: char.alignment,
@@ -107,4 +115,43 @@ export const generateNightInstructions = (gameState: GameState) => {
   });
 
   return result;
+};
+
+// Regenerates night instructions, with checked statuses carrying over
+export const regenerateNightInstructions = (
+  gameState: GameState,
+): Record<NightType, Instruction[]> => {
+  const oldNightInstructions = gameState.nightInstructions;
+
+  const checkedInstuctions = {
+    [NightType.First]: {} as Record<string, boolean | undefined>,
+    [NightType.Other]: {} as Record<string, boolean | undefined>,
+  };
+
+  const getInstructionKey = (instruction: Instruction) => {
+    if (instruction.label && instruction.character) {
+      return `${instruction.label}_${instruction.character.id}`;
+    } else {
+      return instruction.label;
+    }
+  };
+
+  [NightType.First, NightType.Other].forEach((nightType: NightType) => {
+    oldNightInstructions[nightType].forEach((instruction) => {
+      checkedInstuctions[nightType][getInstructionKey(instruction)] =
+        instruction.checked;
+    });
+  });
+
+  const newNightInstructions = generateNightInstructions(gameState);
+
+  [NightType.First, NightType.Other].forEach((nightType: NightType) => {
+    newNightInstructions[nightType].forEach((instruction) => {
+      if (checkedInstuctions[nightType][getInstructionKey(instruction)]) {
+        instruction.checked = true;
+      }
+    });
+  });
+
+  return newNightInstructions;
 };

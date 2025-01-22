@@ -1,7 +1,8 @@
 import { playerCountConfig } from "../../gameSettings";
 import {
-  CharacterName,
+  Alignment,
   CharacterSet,
+  CharacterType,
   EditionName,
   GameState,
   PlayerSetup,
@@ -64,6 +65,15 @@ function RandomizeSetup({
       startingInfoSuggestions: {},
       allCharNamesForEdition,
       allChars,
+      randomTools: {
+        filters: {
+          charType: charTypeFilterOptions,
+          inPlay: inPlayFilterOptions,
+          alignment: alignmentFilterOptions,
+          lifeStatus: lifeStatusFilterOptions,
+        },
+        randomizedResult: "",
+      },
     };
 
     const availableChars: CharacterSet = {
@@ -151,12 +161,12 @@ function RandomizeSetup({
   };
 
   const generateStartingInfoSuggestions = (gameState: GameState) => {
-    const startingInfoSuggestions: Partial<Record<CharacterName, string>> = {};
+    const startingInfoSuggestions: Record<string, string> = {};
 
     for (const char of gameState.allChars) {
       const suggestion = char.getStartingInfoSuggestion(gameState);
       if (suggestion) {
-        startingInfoSuggestions[char.name] = suggestion;
+        startingInfoSuggestions[char.id] = suggestion;
       }
     }
 
@@ -171,5 +181,83 @@ function RandomizeSetup({
     </>
   );
 }
+
+const charTypeFilterOptions = [
+  {
+    name: "All",
+    checked: true,
+  },
+  {
+    name: "Townsfolk",
+    value: CharacterType.Townsfolk,
+    checked: false,
+  },
+  {
+    name: "Outsiders",
+    value: CharacterType.Outsider,
+    checked: false,
+  },
+  {
+    name: "Minions",
+    value: CharacterType.Minion,
+    checked: false,
+  },
+  {
+    name: "Demons",
+    value: CharacterType.Demon,
+    checked: false,
+  },
+];
+
+const inPlayFilterOptions = [
+  {
+    name: "All",
+    checked: true,
+  },
+  {
+    name: "In play",
+    value: true,
+    checked: false,
+  },
+  {
+    name: "Not in play",
+    value: false,
+    checked: false,
+  },
+];
+
+const alignmentFilterOptions = [
+  {
+    name: "All",
+    checked: true,
+  },
+  {
+    name: "Good",
+    value: Alignment.Good,
+    checked: false,
+  },
+  {
+    name: "Evil",
+    value: Alignment.Evil,
+    checked: false,
+  },
+];
+
+const lifeStatusFilterOptions = [
+  {
+    name: "All",
+    checked: true,
+  },
+  {
+    name: "Alive",
+    value: false,
+    checked: false,
+  },
+  {
+    name: "Dead",
+    value: true,
+    checked: false,
+  },
+];
 
 export default RandomizeSetup;

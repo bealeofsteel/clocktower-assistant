@@ -29,8 +29,9 @@ export class Character {
   alignment: Alignment;
   isDead: boolean;
   playerName: string;
-  isDrunkMistakenIdentity: boolean;
+  tokenUsedByCharName: string | undefined;
   inPlay: boolean;
+  actsAsChar: Character | undefined;
 
   constructor(
     name: CharacterName,
@@ -43,7 +44,6 @@ export class Character {
     this.alignment = alignment;
     this.isDead = false;
     this.playerName = "";
-    this.isDrunkMistakenIdentity = false;
     this.inPlay = false;
   }
 
@@ -57,8 +57,8 @@ export class Character {
   getDisplayName(): string {
     let name: string = this.name;
 
-    if (this.isDrunkMistakenIdentity) {
-      name += " (token used by Drunk)";
+    if (this.tokenUsedByCharName) {
+      name += ` (token used by ${this.tokenUsedByCharName})`;
     }
 
     if (this.playerName) {
@@ -81,7 +81,7 @@ export class Character {
   }
 
   getIdentityForInstructions(): CharacterName {
-    return this.name;
+    return this.actsAsChar?.name || this.name;
   }
 
   canBeDemonBluff(): boolean {
@@ -325,10 +325,6 @@ export class Imp extends Character {
 }
 
 export class Drunk extends Character {
-  mistakenIdentity: Character | undefined;
-  firstNightInstructions: string | undefined;
-  otherNightsInstructions: string | undefined;
-
   constructor() {
     super(CharacterName.Drunk, CharacterType.Outsider);
   }
@@ -339,16 +335,14 @@ export class Drunk extends Character {
     allChars: Character[],
   ) {
     const character = availableChars.townsfolk.pop() as Character;
-    character.isDrunkMistakenIdentity = true;
-    this.mistakenIdentity = character;
-    this.firstNightInstructions = character.getFirstNightInstructions();
-    this.otherNightsInstructions = character.getOtherNightsInstructions();
+    character.tokenUsedByCharName = this.name;
+    this.actsAsChar = character;
     allChars.push(character);
   }
 
   getDisplayName(): string {
-    let name = this.mistakenIdentity
-      ? `${CharacterName.Drunk} (${this.mistakenIdentity.name})`
+    let name = this.actsAsChar
+      ? `${CharacterName.Drunk} (${this.actsAsChar.name})`
       : CharacterName.Drunk;
     if (this.playerName) {
       name += ` [${this.playerName}]`;
@@ -356,24 +350,12 @@ export class Drunk extends Character {
     return name;
   }
 
-  getFirstNightInstructions() {
-    return this.firstNightInstructions;
-  }
-
-  getOtherNightsInstructions() {
-    return this.otherNightsInstructions;
-  }
-
-  getIdentityForInstructions() {
-    return this.mistakenIdentity?.name as CharacterName;
-  }
-
   canBeDemonBluff(): boolean {
     return false;
   }
 
   getStartingInfoSuggestion(gameState: GameState): string | undefined {
-    let strategies = this.mistakenIdentity?.getDrunkStrategies(this.id);
+    let strategies = this.actsAsChar?.getDrunkStrategies(this.id);
     if (strategies) {
       strategies = strategies?.filter((strategy) =>
         strategy.gameQualifiesForStrategy(gameState),
@@ -625,12 +607,12 @@ export class EvilTwin extends Character {
   }
 
   getStartingInfoSuggestion(gameState: GameState): string | undefined {
-    const inPlayGoodChars = gameState.allChars.filter(
-      (char) => char.inPlay && char.alignment === Alignment.Good,
+    const inPlayOppositeAlignmentChars = gameState.allChars.filter(
+      (char) => char.inPlay && char.alignment !== this.alignment,
     );
-    shuffleArray(inPlayGoodChars);
+    shuffleArray(inPlayOppositeAlignmentChars);
 
-    return `The good twin is {{${inPlayGoodChars[0].id}}}.`;
+    return `The good twin is {{${inPlayOppositeAlignmentChars[0].id}}}.`;
   }
 }
 

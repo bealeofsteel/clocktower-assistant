@@ -84,7 +84,7 @@ function NightInfo({
       <div className="instructions-container">
         {gameState.nightInstructions[type]?.map((instruction, index) => (
           <div
-            key={instruction.label}
+            key={instruction.key}
             className={`instruction ${instruction.character?.isDead ? "char-is-dead" : ""}`}
             onClick={() => handleCheckedChange(index)}
           >
@@ -103,14 +103,14 @@ function NightInfo({
             </span>
             <span>{instruction.message}</span>
             {instruction.character &&
-              gameState.startingInfoSuggestions[instruction.character.name] && (
+              gameState.startingInfoSuggestions[instruction.character.id] && (
                 <>
                   <strong> Suggestion: </strong>
                   <span
                     dangerouslySetInnerHTML={{
                       __html: parseCharTokens(
                         gameState.startingInfoSuggestions[
-                          instruction.character.name
+                          instruction.character.id
                         ] as string,
                         instantiatedCharsById,
                       ),

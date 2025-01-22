@@ -221,9 +221,9 @@ function App() {
                   (instruction) =>
                     instruction.character &&
                     gameState.startingInfoSuggestions[
-                      instruction.character.name
+                      instruction.character.id
                     ] ? (
-                      <div key={instruction.label}>
+                      <div key={instruction.key}>
                         <span
                           className={`char-name ${instruction.character.alignment}`}
                         >
@@ -234,7 +234,7 @@ function App() {
                           dangerouslySetInnerHTML={{
                             __html: parseCharTokens(
                               gameState.startingInfoSuggestions[
-                                instruction.character.name
+                                instruction.character.id
                               ] as string,
                               instantiatedCharsById,
                             ),
@@ -271,7 +271,10 @@ function App() {
         </>
       )}
       {selectedTab === TabName.Random && (
-        <RandomizationTools gameState={gameState}></RandomizationTools>
+        <RandomizationTools
+          gameState={gameState}
+          updateGameState={updateGameState}
+        ></RandomizationTools>
       )}
     </>
   );

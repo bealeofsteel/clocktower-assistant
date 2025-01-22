@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Alignment, CharacterType, GameState } from "../../types";
 import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
@@ -6,105 +5,27 @@ import "./RandomizationTools.css";
 
 interface RandomizationToolsProps {
   gameState: GameState;
+  updateGameState: (newState: GameState) => void;
 }
 
 interface Filter {
   checked: boolean;
 }
 
-function RandomizationTools({ gameState }: RandomizationToolsProps) {
-  const charTypeFilterOptions = [
-    {
-      name: "All",
-      checked: true,
-    },
-    {
-      name: "Townsfolk",
-      charType: CharacterType.Townsfolk,
-      checked: false,
-    },
-    {
-      name: "Outsiders",
-      charType: CharacterType.Outsider,
-      checked: false,
-    },
-    {
-      name: "Minions",
-      charType: CharacterType.Minion,
-      checked: false,
-    },
-    {
-      name: "Demons",
-      charType: CharacterType.Demon,
-      checked: false,
-    },
-  ];
-
-  const inPlayFilterOptions = [
-    {
-      name: "All",
-      checked: true,
-    },
-    {
-      name: "In play",
-      inPlay: true,
-      checked: false,
-    },
-    {
-      name: "Not in play",
-      inPlay: false,
-      checked: false,
-    },
-  ];
-
-  const alignmentFilterOptions = [
-    {
-      name: "All",
-      checked: true,
-    },
-    {
-      name: "Good",
-      alignment: Alignment.Good,
-      checked: false,
-    },
-    {
-      name: "Evil",
-      alignment: Alignment.Evil,
-      checked: false,
-    },
-  ];
-
-  const lifeStatusFilterOptions = [
-    {
-      name: "All",
-      checked: true,
-    },
-    {
-      name: "Alive",
-      isDead: false,
-      checked: false,
-    },
-    {
-      name: "Dead",
-      isDead: true,
-      checked: false,
-    },
-  ];
-
-  const [charTypeFilters, setCharTypeFilters] = useState(charTypeFilterOptions);
-  const [inPlayFilters, setInPlayFilters] = useState(inPlayFilterOptions);
-  const [alignmentFilters, setAlignmentFilters] = useState(
-    alignmentFilterOptions,
-  );
-  const [lifeStatusFilters, setLifeStatusFilters] = useState(
-    lifeStatusFilterOptions,
-  );
-
-  const [randomizedResult, setRandomizedResult] = useState<string>("");
-
+function RandomizationTools({
+  gameState,
+  updateGameState,
+}: RandomizationToolsProps) {
   if (!gameState) {
     return null;
   }
+
+  const charTypeFilters = gameState.randomTools.filters.charType;
+  const inPlayFilters = gameState.randomTools.filters.inPlay;
+  const alignmentFilters = gameState.randomTools.filters.alignment;
+  const lifeStatusFilters = gameState.randomTools.filters.lifeStatus;
+
+  const randomizedResult = gameState.randomTools.randomizedResult;
 
   const randomizeSelectedChars = () => {
     let chars: Character[] = gameState.allChars;
@@ -122,7 +43,7 @@ function RandomizationTools({ gameState }: RandomizationToolsProps) {
           break;
         }
       } else if (filter.checked) {
-        allowedCharTypes.push(filter.charType as CharacterType);
+        allowedCharTypes.push(filter.value as CharacterType);
       }
     }
 
@@ -136,7 +57,7 @@ function RandomizationTools({ gameState }: RandomizationToolsProps) {
           break;
         }
       } else if (filter.checked) {
-        allowedInPlayStatuses.push(filter.inPlay as boolean);
+        allowedInPlayStatuses.push(filter.value as boolean);
       }
     }
 
@@ -150,7 +71,7 @@ function RandomizationTools({ gameState }: RandomizationToolsProps) {
           break;
         }
       } else if (filter.checked) {
-        allowedAlignments.push(filter.alignment as Alignment);
+        allowedAlignments.push(filter.value as Alignment);
       }
     }
 
@@ -164,7 +85,7 @@ function RandomizationTools({ gameState }: RandomizationToolsProps) {
           break;
         }
       } else if (filter.checked) {
-        allowedLifeStatuses.push(filter.isDead as boolean);
+        allowedLifeStatuses.push(filter.value as boolean);
       }
     }
 
@@ -174,7 +95,13 @@ function RandomizationTools({ gameState }: RandomizationToolsProps) {
 
     const charDisplayNames = chars.map((char) => char.getDisplayName());
 
-    setRandomizedResult(charDisplayNames.join("\n"));
+    updateGameState({
+      ...gameState,
+      randomTools: {
+        ...gameState.randomTools,
+        randomizedResult: charDisplayNames.join("\n"),
+      },
+    });
   };
 
   const handleAllCheckbox = (newFilters: Filter[], index: number) => {
@@ -191,40 +118,26 @@ function RandomizationTools({ gameState }: RandomizationToolsProps) {
     }
   };
 
-  const handleCharTypeFilterChange = (index: number) => {
-    const newFilters = Array.from(charTypeFilters);
-    newFilters[index].checked = !charTypeFilters[index].checked;
+  const handleFilterChange = (
+    index: number,
+    filters: Filter[],
+    fieldName: string,
+  ) => {
+    const newFilters = Array.from(filters);
+    newFilters[index].checked = !filters[index].checked;
 
     handleAllCheckbox(newFilters, index);
 
-    setCharTypeFilters(newFilters);
-  };
-
-  const handleInPlayFilterChange = (index: number) => {
-    const newFilters = Array.from(inPlayFilters);
-    newFilters[index].checked = !inPlayFilters[index].checked;
-
-    handleAllCheckbox(newFilters, index);
-
-    setInPlayFilters(newFilters);
-  };
-
-  const handleAlignmentFilterChange = (index: number) => {
-    const newFilters = Array.from(alignmentFilters);
-    newFilters[index].checked = !alignmentFilters[index].checked;
-
-    handleAllCheckbox(newFilters, index);
-
-    setAlignmentFilters(newFilters);
-  };
-
-  const handleLifeStatusFilterChange = (index: number) => {
-    const newFilters = Array.from(lifeStatusFilters);
-    newFilters[index].checked = !lifeStatusFilters[index].checked;
-
-    handleAllCheckbox(newFilters, index);
-
-    setLifeStatusFilters(newFilters);
+    updateGameState({
+      ...gameState,
+      randomTools: {
+        ...gameState.randomTools,
+        filters: {
+          ...gameState.randomTools.filters,
+          [fieldName]: newFilters,
+        },
+      },
+    });
   };
 
   return (
@@ -236,7 +149,9 @@ function RandomizationTools({ gameState }: RandomizationToolsProps) {
               <div
                 className="filter-option"
                 key={filter.name}
-                onClick={() => handleCharTypeFilterChange(index)}
+                onClick={() =>
+                  handleFilterChange(index, charTypeFilters, "charType")
+                }
               >
                 <input
                   type="checkbox"
@@ -254,7 +169,9 @@ function RandomizationTools({ gameState }: RandomizationToolsProps) {
               <div
                 className="filter-option"
                 key={filter.name}
-                onClick={() => handleInPlayFilterChange(index)}
+                onClick={() =>
+                  handleFilterChange(index, inPlayFilters, "inPlay")
+                }
               >
                 <input
                   type="checkbox"
@@ -272,7 +189,9 @@ function RandomizationTools({ gameState }: RandomizationToolsProps) {
               <div
                 className="filter-option"
                 key={filter.name}
-                onClick={() => handleAlignmentFilterChange(index)}
+                onClick={() =>
+                  handleFilterChange(index, alignmentFilters, "alignment")
+                }
               >
                 <input
                   type="checkbox"
@@ -290,7 +209,9 @@ function RandomizationTools({ gameState }: RandomizationToolsProps) {
               <div
                 className="filter-option"
                 key={filter.name}
-                onClick={() => handleLifeStatusFilterChange(index)}
+                onClick={() =>
+                  handleFilterChange(index, lifeStatusFilters, "lifeStatus")
+                }
               >
                 <input
                   type="checkbox"
