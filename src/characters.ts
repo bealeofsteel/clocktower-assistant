@@ -438,7 +438,7 @@ export class Dreamer extends Character {
     return dreamerInstructions;
   }
 
-  getStartingInfoSuggestion(gameState: GameState): string | undefined {
+  /*getStartingInfoSuggestion(gameState: GameState): string | undefined {
     const goodChars = gameState.allChars.filter(
       (char) =>
         char.type === CharacterType.Townsfolk ||
@@ -457,7 +457,7 @@ export class Dreamer extends Character {
     } else {
       return `Show (if a Townsfolk or Outsider) the ${evilChars[0].name} token, or (if a Minion or Demon) the ${goodChars[0].name} token, then the correct character token.`;
     }
-  }
+  }*/
 }
 
 const snakeCharmerInstructions =

@@ -85,7 +85,7 @@ function CharacterSelect({
 
   return (
     <select
-      defaultValue={currentChar.name}
+      value={currentChar.name}
       onChange={(e) =>
         changeCharacter(e.target.value as CharacterName, currentChar)
       }

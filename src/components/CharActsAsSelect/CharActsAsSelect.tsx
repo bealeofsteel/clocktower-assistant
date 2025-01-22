@@ -41,7 +41,7 @@ function CharActsAsSelect({
 
   return (
     <select
-      defaultValue={currentChar.actsAsChar?.name || currentChar.name}
+      value={currentChar.actsAsChar?.name || currentChar.name}
       onChange={(e) => updateActsAs(e.target.value as CharacterName)}
     >
       <CharOptions gameState={gameState}></CharOptions>

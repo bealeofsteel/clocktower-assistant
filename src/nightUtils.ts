@@ -67,11 +67,6 @@ export const generateNightInstructions = (gameState: GameState) => {
     instructionCharNameToCharacters[identity] = charArray;
   });
 
-  console.log(
-    "instructionCharNameToCharacters",
-    instructionCharNameToCharacters,
-  );
-
   [NightType.First, NightType.Other].forEach((nightType: NightType) => {
     const instructions = [];
 
