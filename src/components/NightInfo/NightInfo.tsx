@@ -103,6 +103,10 @@ function NightInfo({
                 {instruction.charId
                   ? charsById[instruction.charId].getDisplayName()
                   : instruction.label}{" "}
+                {instruction.charId &&
+                charsById[instruction.charId].isDrunkOrPoisoned
+                  ? "🤢 "
+                  : ""}
                 |{" "}
               </strong>
             </span>

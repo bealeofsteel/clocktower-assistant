@@ -32,7 +32,8 @@ export class Character {
   tokenUsedByCharName: string | undefined;
   inPlay: boolean;
   actsAsChar: Character | undefined;
-  actsWhileDead = false;
+  actsWhileDead: boolean;
+  isDrunkOrPoisoned: boolean;
 
   constructor(
     name: CharacterName,
@@ -47,6 +48,7 @@ export class Character {
     this.playerName = "";
     this.inPlay = false;
     this.actsWhileDead = false;
+    this.isDrunkOrPoisoned = false;
   }
 
   // Do nothing, some classes will override
@@ -329,6 +331,7 @@ export class Imp extends Character {
 export class Drunk extends Character {
   constructor() {
     super(CharacterName.Drunk, CharacterType.Outsider);
+    this.isDrunkOrPoisoned = true;
   }
 
   onPicked(

@@ -27,6 +27,8 @@ function CharacterSelect({
     newChar.isDead = currentChar.isDead;
     newChar.playerName = currentChar.playerName;
     newChar.inPlay = currentChar.inPlay;
+    newChar.actsWhileDead = currentChar.actsWhileDead;
+    newChar.isDrunkOrPoisoned = currentChar.isDrunkOrPoisoned;
 
     // If the character we're switching away from will no longer be in play, we'll want to add a "not in play" dummy character
     const oldCharNoLongerInPlay =

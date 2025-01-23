@@ -123,9 +123,12 @@ export const regenerateNightInstructions = (
     [NightType.Other]: {} as Record<string, boolean | undefined>,
   };
 
-  const charsById = getCharsById(newGameState);
+  const getInstructionKey = (
+    instruction: Instruction,
+    gameState: GameState,
+  ) => {
+    const charsById = getCharsById(gameState);
 
-  const getInstructionKey = (instruction: Instruction) => {
     if (instruction.label && instruction.charId) {
       let key = `${instruction.label}_${instruction.charId}`;
 
@@ -141,8 +144,9 @@ export const regenerateNightInstructions = (
 
   [NightType.First, NightType.Other].forEach((nightType: NightType) => {
     oldNightInstructions[nightType].forEach((instruction) => {
-      checkedInstuctions[nightType][getInstructionKey(instruction)] =
-        instruction.checked;
+      checkedInstuctions[nightType][
+        getInstructionKey(instruction, oldGameState)
+      ] = instruction.checked;
     });
   });
 
@@ -150,7 +154,11 @@ export const regenerateNightInstructions = (
 
   [NightType.First, NightType.Other].forEach((nightType: NightType) => {
     newNightInstructions[nightType].forEach((instruction) => {
-      if (checkedInstuctions[nightType][getInstructionKey(instruction)]) {
+      if (
+        checkedInstuctions[nightType][
+          getInstructionKey(instruction, newGameState)
+        ]
+      ) {
         instruction.checked = true;
       }
     });

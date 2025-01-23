@@ -69,6 +69,23 @@ function CharacterMangement({
     });
   };
 
+  const toggleIsDrunkOrPoisoned = (char: Character) => {
+    const newChars = gameState.allChars.map((oldChar) => {
+      if (oldChar.id === char.id) {
+        const newChar = cloneChar(oldChar);
+        newChar.isDrunkOrPoisoned = !oldChar.isDrunkOrPoisoned;
+        return newChar;
+      } else {
+        return oldChar;
+      }
+    });
+
+    updateGameState({
+      ...gameState,
+      allChars: newChars,
+    });
+  };
+
   return (
     <table className="char-table">
       <thead>
@@ -77,6 +94,7 @@ function CharacterMangement({
           <th>Character</th>
           <th>Alignment</th>
           <th>Life Status</th>
+          <th>Drunk/Poisoned?</th>
           <th>Acts As</th>
           <th>Acts While Dead?</th>
         </tr>
@@ -109,6 +127,14 @@ function CharacterMangement({
               onClick={() => toggleDeadAliveState(char)}
             >
               {char.isDead ? "Dead" : "Alive"}
+            </td>
+            <td>
+              <input
+                type="checkbox"
+                className="clickable"
+                checked={char.isDrunkOrPoisoned}
+                onChange={() => toggleIsDrunkOrPoisoned(char)}
+              ></input>
             </td>
             <td>
               <CharActsAsSelect
