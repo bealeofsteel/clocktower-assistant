@@ -1,5 +1,5 @@
 import { Character } from "./characters";
-import { getAllCharsInPlay } from "./charUtils";
+import { getAllCharsInPlay, getCharsById } from "./charUtils";
 import { EDITIONS_BY_NAME } from "./editions";
 import {
   GameState,
@@ -68,7 +68,7 @@ export const generateNightInstructions = (gameState: GameState) => {
   });
 
   [NightType.First, NightType.Other].forEach((nightType: NightType) => {
-    const instructions = [];
+    const instructions: Instruction[] = [];
 
     for (const instructionKey of EDITIONS_BY_NAME[gameState.edition]
       .nightInstructions[nightType]) {
@@ -97,8 +97,7 @@ export const generateNightInstructions = (gameState: GameState) => {
               key: char.id,
               label: char.name,
               message: instructionsForChar,
-              alignment: char.alignment,
-              character: char,
+              charId: char.id,
               checked: false,
             });
           }
@@ -124,11 +123,15 @@ export const regenerateNightInstructions = (
     [NightType.Other]: {} as Record<string, boolean | undefined>,
   };
 
+  const charsById = getCharsById(newGameState);
+
   const getInstructionKey = (instruction: Instruction) => {
-    if (instruction.label && instruction.character) {
-      let key = `${instruction.label}_${instruction.character.id}`;
-      if (instruction.character.actsAsChar) {
-        key += `_${instruction.character.actsAsChar.id}`;
+    if (instruction.label && instruction.charId) {
+      let key = `${instruction.label}_${instruction.charId}`;
+
+      const actsAsChar = charsById[instruction.charId].actsAsChar;
+      if (actsAsChar) {
+        key += `_${actsAsChar.id}`;
       }
       return key;
     } else {

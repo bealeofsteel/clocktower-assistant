@@ -32,6 +32,7 @@ export class Character {
   tokenUsedByCharName: string | undefined;
   inPlay: boolean;
   actsAsChar: Character | undefined;
+  actsWhileDead = false;
 
   constructor(
     name: CharacterName,
@@ -45,6 +46,7 @@ export class Character {
     this.isDead = false;
     this.playerName = "";
     this.inPlay = false;
+    this.actsWhileDead = false;
   }
 
   // Do nothing, some classes will override

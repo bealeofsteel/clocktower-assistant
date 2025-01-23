@@ -163,3 +163,11 @@ export const pickDemonBluffOfType = (
 export const cloneChar = (char: Character) => {
   return new characterClassNameMap[char.name](char.name).fromJson(char);
 };
+
+export const getCharsById = (gameState: GameState) => {
+  const charMap: Record<string, Character> = {};
+  gameState.allChars.forEach((char) => {
+    charMap[char.id] = char;
+  });
+  return charMap;
+};

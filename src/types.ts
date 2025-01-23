@@ -132,8 +132,7 @@ export interface Instruction {
   key: string;
   label: string;
   message: string;
-  alignment?: Alignment;
-  character?: Character;
+  charId?: string;
   checked?: boolean;
 }
 

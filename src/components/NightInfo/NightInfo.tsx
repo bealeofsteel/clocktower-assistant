@@ -1,7 +1,7 @@
 import { GameState, NightType } from "../../types";
 import { Character } from "../../characters";
 import "./NightInfo.css";
-import { parseCharTokens } from "../../charUtils";
+import { getCharsById, parseCharTokens } from "../../charUtils";
 
 interface NightInfoProps {
   gameState: GameState;
@@ -72,6 +72,8 @@ function NightInfo({
     return null;
   }
 
+  const charsById = getCharsById(gameState);
+
   return (
     <>
       <h2>{type === NightType.First ? "First Night" : "Other Nights"}</h2>
@@ -85,32 +87,35 @@ function NightInfo({
         {gameState.nightInstructions[type]?.map((instruction, index) => (
           <div
             key={instruction.key}
-            className={`instruction ${instruction.character?.isDead ? "char-is-dead" : ""}`}
+            className={`instruction ${charsById[instruction.charId as string]?.isDead && !charsById[instruction.charId as string]?.actsWhileDead ? "char-is-dead" : ""}`}
             onClick={() => handleCheckedChange(index)}
           >
             <input
               type="checkbox"
+              className="clickable"
               checked={instruction.checked}
               onChange={() => {}}
             />
-            <span className={`char-name ${instruction.alignment}`}>
+            <span
+              className={`char-name ${charsById[instruction.charId as string]?.alignment}`}
+            >
               <strong>
-                {instruction.character
-                  ? instruction.character.getDisplayName()
+                {instruction.charId
+                  ? charsById[instruction.charId].getDisplayName()
                   : instruction.label}{" "}
                 |{" "}
               </strong>
             </span>
             <span>{instruction.message}</span>
-            {instruction.character &&
-              gameState.startingInfoSuggestions[instruction.character.id] && (
+            {instruction.charId &&
+              gameState.startingInfoSuggestions[instruction.charId] && (
                 <>
                   <strong> Suggestion: </strong>
                   <span
                     dangerouslySetInnerHTML={{
                       __html: parseCharTokens(
                         gameState.startingInfoSuggestions[
-                          instruction.character.id
+                          instruction.charId
                         ] as string,
                         instantiatedCharsById,
                       ),

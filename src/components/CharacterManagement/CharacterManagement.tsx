@@ -52,6 +52,23 @@ function CharacterMangement({
     });
   };
 
+  const toggleActsWhileDead = (char: Character) => {
+    const newChars = gameState.allChars.map((oldChar) => {
+      if (oldChar.id === char.id) {
+        const newChar = cloneChar(oldChar);
+        newChar.actsWhileDead = !oldChar.actsWhileDead;
+        return newChar;
+      } else {
+        return oldChar;
+      }
+    });
+
+    updateGameState({
+      ...gameState,
+      allChars: newChars,
+    });
+  };
+
   return (
     <table className="char-table">
       <thead>
@@ -61,6 +78,7 @@ function CharacterMangement({
           <th>Alignment</th>
           <th>Life Status</th>
           <th>Acts As</th>
+          <th>Acts While Dead?</th>
         </tr>
       </thead>
       <tbody>
@@ -98,6 +116,14 @@ function CharacterMangement({
                 updateGameState={updateGameState}
                 currentChar={char}
               ></CharActsAsSelect>
+            </td>
+            <td>
+              <input
+                type="checkbox"
+                className="clickable"
+                checked={char.actsWhileDead}
+                onChange={() => toggleActsWhileDead(char)}
+              ></input>
             </td>
           </tr>
         ))}

@@ -2,16 +2,10 @@ import { useState } from "react";
 import "./App.css";
 import PlayerCountSelect from "./components/PlayerCountSelect/PlayerCountSelect";
 import RandomizeSetup from "./components/RandomizeSetup/RandomizeSetup";
-import {
-  EditionName,
-  GameState,
-  CharacterType,
-  Instruction,
-  NightType,
-} from "./types";
+import { EditionName, GameState, CharacterType, NightType } from "./types";
 import { Character } from "./characters";
 import { EDITIONS_BY_NAME } from "./editions";
-import { cloneChar, parseCharTokens } from "./charUtils";
+import { cloneChar, getCharsById, parseCharTokens } from "./charUtils";
 import RandomizationTools from "./components/RandomizationTools/RandomizationTools";
 import CharacterManagement from "./components/CharacterManagement/CharacterManagement";
 import CharNameDisplay from "./components/CharNameDisplay/CharNameDisplay";
@@ -56,20 +50,6 @@ function App() {
 
     initialState.allChars = chars;
     initialState.demonBluffs = demonBluffs;
-
-    const nightTypes = [NightType.First, NightType.Other];
-
-    nightTypes.forEach((nightType) => {
-      initialState.nightInstructions[nightType].forEach(
-        (instruction: Instruction) => {
-          if (instruction.character) {
-            instruction.character = instantiatedCharsById.get(
-              instruction.character.id,
-            );
-          }
-        },
-      );
-    });
   };
 
   if (initialState) {
@@ -108,6 +88,8 @@ function App() {
   const notInPlayChars = gameState?.allChars.filter(
     (char) => !char.inPlay && !demonBluffCharNames.includes(char.name),
   );
+
+  const charsById = getCharsById(gameState);
 
   return (
     <>
@@ -223,22 +205,20 @@ function App() {
                 <strong>Starting Info:</strong>
                 {gameState.nightInstructions[NightType.First]?.map(
                   (instruction) =>
-                    instruction.character &&
-                    gameState.startingInfoSuggestions[
-                      instruction.character.id
-                    ] ? (
+                    instruction.charId &&
+                    gameState.startingInfoSuggestions[instruction.charId] ? (
                       <div key={instruction.key}>
                         <span
-                          className={`char-name ${instruction.character.alignment}`}
+                          className={`char-name ${charsById[instruction.charId].alignment}`}
                         >
-                          {instruction.character.getDisplayName()}
+                          {charsById[instruction.charId].getDisplayName()}
                         </span>
                         :{" "}
                         <span
                           dangerouslySetInnerHTML={{
                             __html: parseCharTokens(
                               gameState.startingInfoSuggestions[
-                                instruction.character.id
+                                instruction.charId
                               ] as string,
                               instantiatedCharsById,
                             ),
