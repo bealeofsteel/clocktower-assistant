@@ -114,9 +114,10 @@ export const generateNightInstructions = (gameState: GameState) => {
 
 // Regenerates night instructions, with checked statuses carrying over
 export const regenerateNightInstructions = (
-  gameState: GameState,
+  oldGameState: GameState,
+  newGameState: GameState,
 ): Record<NightType, Instruction[]> => {
-  const oldNightInstructions = gameState.nightInstructions;
+  const oldNightInstructions = oldGameState.nightInstructions;
 
   const checkedInstuctions = {
     [NightType.First]: {} as Record<string, boolean | undefined>,
@@ -125,7 +126,11 @@ export const regenerateNightInstructions = (
 
   const getInstructionKey = (instruction: Instruction) => {
     if (instruction.label && instruction.character) {
-      return `${instruction.label}_${instruction.character.id}`;
+      let key = `${instruction.label}_${instruction.character.id}`;
+      if (instruction.character.actsAsChar) {
+        key += `_${instruction.character.actsAsChar.id}`;
+      }
+      return key;
     } else {
       return instruction.label;
     }
@@ -138,7 +143,7 @@ export const regenerateNightInstructions = (
     });
   });
 
-  const newNightInstructions = generateNightInstructions(gameState);
+  const newNightInstructions = generateNightInstructions(newGameState);
 
   [NightType.First, NightType.Other].forEach((nightType: NightType) => {
     newNightInstructions[nightType].forEach((instruction) => {

@@ -1,4 +1,5 @@
 import { Character, characterClassNameMap } from "../../characters";
+import { cloneChar } from "../../charUtils";
 import { regenerateNightInstructions } from "../../nightUtils";
 import { CharacterName, GameState } from "../../types";
 import CharOptions from "../CharOptions/CharOptions";
@@ -20,7 +21,9 @@ function CharActsAsSelect({
 
     const newChars = gameState.allChars.map((oldChar) => {
       if (oldChar.id === currentChar.id) {
-        return Object.assign(oldChar, { actsAsChar });
+        const newChar = cloneChar(oldChar);
+        newChar.actsAsChar = actsAsChar;
+        return newChar;
       } else {
         return oldChar;
       }
@@ -31,12 +34,17 @@ function CharActsAsSelect({
       allChars: newChars,
     };
 
-    const nightInstructions = regenerateNightInstructions(newGameState);
+    const startingInfo = actsAsChar.getStartingInfoSuggestion(gameState);
+    if (startingInfo) {
+      newGameState.startingInfoSuggestions[currentChar.id] = startingInfo;
+    }
 
-    updateGameState({
-      ...newGameState,
-      nightInstructions: nightInstructions,
-    });
+    newGameState.nightInstructions = regenerateNightInstructions(
+      gameState,
+      newGameState,
+    );
+
+    updateGameState(newGameState);
   };
 
   return (

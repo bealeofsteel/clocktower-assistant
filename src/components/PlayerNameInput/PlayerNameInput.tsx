@@ -1,6 +1,7 @@
 import { ChangeEvent } from "react";
 import { Character } from "../../characters";
 import { GameState } from "../../types";
+import { cloneChar } from "../../charUtils";
 
 interface PlayerNameInputDisplayProps {
   gameState: GameState;
@@ -19,7 +20,9 @@ function PlayerNameInput({
   ) => {
     const newChars = gameState.allChars.map((oldChar) => {
       if (oldChar.id === char.id) {
-        return Object.assign(oldChar, { playerName: e.target.value });
+        const newChar = cloneChar(oldChar);
+        newChar.playerName = e.target.value;
+        return newChar;
       } else {
         return oldChar;
       }

@@ -9,9 +9,9 @@ import {
   Instruction,
   NightType,
 } from "./types";
-import { Character, characterClassNameMap } from "./characters";
+import { Character } from "./characters";
 import { EDITIONS_BY_NAME } from "./editions";
-import { parseCharTokens } from "./charUtils";
+import { cloneChar, parseCharTokens } from "./charUtils";
 import RandomizationTools from "./components/RandomizationTools/RandomizationTools";
 import CharacterManagement from "./components/CharacterManagement/CharacterManagement";
 import CharNameDisplay from "./components/CharNameDisplay/CharNameDisplay";
@@ -41,8 +41,12 @@ function App() {
     const demonBluffs: Character[] = [];
 
     initialState.allChars?.forEach((charJson: Character) => {
-      const Klass = characterClassNameMap[charJson.name];
-      const char = new Klass(charJson.name).fromJson(charJson);
+      const char = cloneChar(charJson);
+
+      if (char.actsAsChar) {
+        char.actsAsChar = cloneChar(char.actsAsChar);
+      }
+
       chars.push(char);
       instantiatedCharsById.set(charJson.id, char);
       if (demonBluffIds.includes(char.id)) {

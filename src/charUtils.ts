@@ -1,4 +1,4 @@
-import { Character } from "./characters";
+import { Character, characterClassNameMap } from "./characters";
 import { shuffleArray } from "./randomUtils";
 import { GameState, CharacterName, CharacterType, Alignment } from "./types";
 
@@ -8,7 +8,7 @@ export const getAllCharsInPlay = (gameState: GameState): Character[] => {
 
 export interface InPlayCharResult {
   character: Character;
-  registersAs?: Character;
+  registersAs?: CharacterName;
 }
 
 // Picks a random in-play char of the specified type, with the spy and recluse possibly registering as another character
@@ -37,7 +37,7 @@ export const pickRandomCharOfTypeInPlay = (
         charType,
         excludeCharId,
       );
-      inPlayCharResults.push({ character: spy, registersAs: randomChar });
+      inPlayCharResults.push({ character: spy, registersAs: randomChar.name });
     }
   } else if (
     charType === CharacterType.Minion ||
@@ -50,7 +50,10 @@ export const pickRandomCharOfTypeInPlay = (
         charType,
         excludeCharId,
       );
-      inPlayCharResults.push({ character: recluse, registersAs: randomChar });
+      inPlayCharResults.push({
+        character: recluse,
+        registersAs: randomChar.name,
+      });
     }
   }
 
@@ -97,16 +100,8 @@ const findCharIfInPlay = (gameState: GameState, charName: CharacterName) => {
 
 export const pickFortuneTellerRedHerring = (gameState: GameState) => {
   const chars = gameState.allChars.filter(
-    (char) =>
-      char.inPlay &&
-      char.alignment === Alignment.Good &&
-      char.name !== CharacterName.Recluse,
+    (char) => char.inPlay && char.alignment === Alignment.Good,
   );
-
-  /*const spy = findCharIfInPlay(gameState, CharacterName.Spy);
-    if (spy) {
-        chars.push(spy);
-    }*/
 
   shuffleArray(chars);
   return chars[0];
@@ -163,4 +158,8 @@ export const pickDemonBluffOfType = (
 
   shuffleArray(bluffs);
   return bluffs[0];
+};
+
+export const cloneChar = (char: Character) => {
+  return new characterClassNameMap[char.name](char.name).fromJson(char);
 };

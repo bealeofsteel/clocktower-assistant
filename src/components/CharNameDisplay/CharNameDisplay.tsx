@@ -2,6 +2,7 @@ import "./CharNameDisplay.css";
 import { Character } from "../../characters";
 import { GameState } from "../../types";
 import PlayerNameInput from "../PlayerNameInput/PlayerNameInput";
+import { cloneChar } from "../../charUtils";
 
 interface CharNameDisplayProps {
   gameState: GameState;
@@ -19,7 +20,9 @@ function CharNameDisplay({
   const toggleDeadAliveState = (char: Character) => {
     const newChars = gameState.allChars.map((oldChar) => {
       if (oldChar.id === char.id) {
-        return Object.assign(oldChar, { isDead: !char.isDead });
+        const newChar = cloneChar(oldChar);
+        newChar.isDead = !oldChar.isDead;
+        return newChar;
       } else {
         return oldChar;
       }

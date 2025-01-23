@@ -373,7 +373,8 @@ const getPointToCharOfTypeAndOtherCharSuggestion = (
   currentCharId: string,
 ) => {
   if (
-    gameState.allChars.filter((char) => char.type === charType).length === 0
+    gameState.allChars.filter((char) => char.inPlay && char.type === charType)
+      .length === 0
   ) {
     return "Show a zero.";
   }
@@ -392,17 +393,17 @@ const getPointToCharOfTypeAndOtherCharSuggestion = (
   const charsToPointTo = [pickedCharResult.character, otherChar];
   shuffleArray(charsToPointTo);
 
-  const char = pickedCharResult.registersAs
+  const charName = pickedCharResult.registersAs
     ? pickedCharResult.registersAs
-    : pickedCharResult.character;
+    : pickedCharResult.character.name;
 
-  const prefix = `Show the ${char.name} character token. `;
+  const prefix = `Show the ${charName} character token. `;
   let suffix = "";
 
   if (Math.random() < 0.5) {
-    suffix = `Point to {{${char.id}}} (${charType}) and {{${otherChar.id}}} (Wrong).`;
+    suffix = `Point to {{${pickedCharResult.character.id}}} (${charType}) and {{${otherChar.id}}} (Wrong).`;
   } else {
-    suffix = `Point to {{${otherChar.id}}} (Wrong) and {{${char.id}}} (${charType}).`;
+    suffix = `Point to {{${otherChar.id}}} (Wrong) and {{${pickedCharResult.character.id}}} (${charType}).`;
   }
 
   return prefix + suffix;

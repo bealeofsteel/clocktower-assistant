@@ -75,12 +75,12 @@ function CharacterSelect({
       newGameState.startingInfoSuggestions[newChar.id] = startingInfo;
     }
 
-    const newNightInstructions = regenerateNightInstructions(newGameState);
+    newGameState.nightInstructions = regenerateNightInstructions(
+      gameState,
+      newGameState,
+    );
 
-    updateGameState({
-      ...newGameState,
-      nightInstructions: newNightInstructions,
-    });
+    updateGameState(newGameState);
   };
 
   return (

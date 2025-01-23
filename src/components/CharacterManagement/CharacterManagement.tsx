@@ -1,5 +1,5 @@
 import "./CharacterManagement.css";
-import { getAllCharsInPlay } from "../../charUtils";
+import { cloneChar, getAllCharsInPlay } from "../../charUtils";
 import { Alignment, GameState } from "../../types";
 import PlayerNameInput from "../PlayerNameInput/PlayerNameInput";
 import { Character } from "../../characters";
@@ -18,10 +18,12 @@ function CharacterMangement({
   const toggleAlignment = (char: Character) => {
     const newChars = gameState.allChars.map((oldChar) => {
       if (oldChar.id === char.id) {
-        return Object.assign(oldChar, {
-          alignment:
-            char.alignment === Alignment.Good ? Alignment.Evil : Alignment.Good,
-        });
+        const newChar = cloneChar(oldChar);
+        newChar.alignment =
+          oldChar.alignment === Alignment.Good
+            ? Alignment.Evil
+            : Alignment.Good;
+        return newChar;
       } else {
         return oldChar;
       }
@@ -36,7 +38,9 @@ function CharacterMangement({
   const toggleDeadAliveState = (char: Character) => {
     const newChars = gameState.allChars.map((oldChar) => {
       if (oldChar.id === char.id) {
-        return Object.assign(oldChar, { isDead: !char.isDead });
+        const newChar = cloneChar(oldChar);
+        newChar.isDead = !oldChar.isDead;
+        return newChar;
       } else {
         return oldChar;
       }
