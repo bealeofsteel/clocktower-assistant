@@ -100,6 +100,7 @@ export interface GameState {
     };
     randomizedResult: string;
   };
+  generatedInfo: Partial<Record<CharacterName, Record<string, string[]>>>;
 }
 
 export interface PlayerSetup {

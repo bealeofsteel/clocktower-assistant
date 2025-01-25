@@ -100,7 +100,7 @@ function CharacterMangement({
         </tr>
       </thead>
       <tbody>
-        {getAllCharsInPlay(gameState).map((char) => (
+        {getAllCharsInPlay(gameState)?.map((char) => (
           <tr
             key={char.id}
             className={`char-table-row char-name ${char.alignment} ${char.isDead ? "is-dead" : ""}`}

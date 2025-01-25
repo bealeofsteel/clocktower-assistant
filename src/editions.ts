@@ -37,6 +37,7 @@ import {
   Vigormortis,
   NoDashii,
   Vortox,
+  Savant,
 } from "./characters";
 import {
   CharacterName,
@@ -130,7 +131,7 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         new Flowergirl(),
         new TownCrier(),
         new Oracle(),
-        new Character(CharacterName.Savant),
+        new Savant(),
         new Seamstress(),
         new Philosopher(),
         new Character(CharacterName.Artist),

@@ -1,0 +1,70 @@
+import { Character } from "../../characters";
+import { CharacterName, GameState } from "../../types";
+import "./InfoGenerator.css";
+
+interface InfoGeneratorProps {
+  gameState: GameState;
+  updateGameState: (gameState: GameState) => void;
+}
+
+function InfoGenerator({ gameState, updateGameState }: InfoGeneratorProps) {
+  if (!gameState) {
+    return null;
+  }
+
+  const whitelistedChars = [CharacterName.Dreamer, CharacterName.Savant];
+
+  const getInfoForChar = (charName: CharacterName, char: Character) => {
+    const info =
+      char.name === charName
+        ? char.generateInfo(gameState)
+        : char.actsAsChar?.generateInfo(gameState);
+
+    const infoMap = {
+      ...gameState.generatedInfo,
+    };
+
+    if (!infoMap[charName]) {
+      infoMap[charName] = {};
+    }
+
+    infoMap[charName][char.id] = info as string[];
+
+    updateGameState({
+      ...gameState,
+      generatedInfo: infoMap,
+    });
+  };
+
+  return (
+    <>
+      {whitelistedChars.map((charName) =>
+        gameState.allChars
+          .filter((char) => {
+            return (
+              char.inPlay &&
+              ((char.actsAsChar && char.actsAsChar.name === charName) ||
+                (!char.actsAsChar && char.name === charName))
+            );
+          })
+          .map((char) => (
+            <div className="info-container" key={char.id}>
+              <button
+                className="info-button"
+                onClick={() => getInfoForChar(charName, char)}
+              >
+                {char.getDisplayName()}
+              </button>
+              {gameState?.generatedInfo?.[charName]?.[char.id]?.map(
+                (info, index) => (
+                  <div key={`${char.id}-info-${index}`}>{info}</div>
+                ),
+              )}
+            </div>
+          )),
+      )}
+    </>
+  );
+}
+
+export default InfoGenerator;

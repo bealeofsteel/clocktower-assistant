@@ -74,6 +74,7 @@ function RandomizeSetup({
         },
         randomizedResult: "",
       },
+      generatedInfo: {},
     };
 
     const availableChars: CharacterSet = {

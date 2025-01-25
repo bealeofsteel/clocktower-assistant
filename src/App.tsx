@@ -10,12 +10,14 @@ import RandomizationTools from "./components/RandomizationTools/RandomizationToo
 import CharacterManagement from "./components/CharacterManagement/CharacterManagement";
 import CharNameDisplay from "./components/CharNameDisplay/CharNameDisplay";
 import NightInfo from "./components/NightInfo/NightInfo";
+import InfoGenerator from "./components/InfoGenerator/InfoGenerator";
 
 enum TabName {
   Setup = "setup",
   Characters = "characters",
   Nights = "nights",
   Random = "random",
+  Info = "info",
 }
 
 const LOCAL_STORAGE_KEY = "gameState";
@@ -101,6 +103,7 @@ function App() {
         </button>
         <button onClick={() => setSelectedTab(TabName.Nights)}>Nights</button>
         <button onClick={() => setSelectedTab(TabName.Random)}>Random</button>
+        <button onClick={() => setSelectedTab(TabName.Info)}>Info</button>
       </div>
       {selectedTab === TabName.Setup && (
         <>
@@ -259,6 +262,12 @@ function App() {
           gameState={gameState}
           updateGameState={updateGameState}
         ></RandomizationTools>
+      )}
+      {selectedTab === TabName.Info && (
+        <InfoGenerator
+          gameState={gameState}
+          updateGameState={updateGameState}
+        ></InfoGenerator>
       )}
     </>
   );

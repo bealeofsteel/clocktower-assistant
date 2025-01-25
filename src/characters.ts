@@ -14,6 +14,24 @@ import {
 } from "./drunkStrategies";
 import { shuffleArray } from "./randomUtils";
 import {
+  CharInPlayStatus,
+  ChefInfo,
+  ClockmakerInfo,
+  DidPlayersGetTrueInformationLastNight,
+  DreamerInfo,
+  EmpathInfo,
+  InvestigatorInfo,
+  LibrarianInfo,
+  NumOutsidersInPlay,
+  SeamstressInfo,
+  PlayerAlignment,
+  SavantInfoStrategy,
+  WasherwomanInfo,
+  OracleInfo,
+  ChambermaidInfo,
+  ProfessorInfo,
+} from "./savantStrategies";
+import {
   Alignment,
   CharacterName,
   CharacterSet,
@@ -61,6 +79,10 @@ export class Character {
   getDisplayName(): string {
     let name: string = this.name;
 
+    if (this.actsAsChar) {
+      name += ` (${this.actsAsChar.name})`;
+    }
+
     if (this.tokenUsedByCharName) {
       name += ` (token used by ${this.tokenUsedByCharName})`;
     }
@@ -98,6 +120,18 @@ export class Character {
 
   fromJson(json: Character): Character {
     return Object.assign(this, json);
+  }
+
+  generateInfo(_gameState: GameState): string[] | undefined {
+    return;
+  }
+
+  getPlayerNameForDisplay(): string {
+    if (this.playerName) {
+      return this.playerName;
+    }
+
+    return `[${this.name} player name]`;
   }
 }
 
@@ -345,16 +379,6 @@ export class Drunk extends Character {
     allChars.push(character);
   }
 
-  getDisplayName(): string {
-    let name = this.actsAsChar
-      ? `${CharacterName.Drunk} (${this.actsAsChar.name})`
-      : CharacterName.Drunk;
-    if (this.playerName) {
-      name += ` [${this.playerName}]`;
-    }
-    return name;
-  }
-
   canBeDemonBluff(): boolean {
     return false;
   }
@@ -444,26 +468,33 @@ export class Dreamer extends Character {
     return dreamerInstructions;
   }
 
-  /*getStartingInfoSuggestion(gameState: GameState): string | undefined {
+  generateInfo(gameState: GameState): string[] | undefined {
     const goodChars = gameState.allChars.filter(
       (char) =>
-        char.type === CharacterType.Townsfolk ||
-        char.type === CharacterType.Outsider,
+        (char.type === CharacterType.Townsfolk ||
+          char.type === CharacterType.Outsider) &&
+        char.id !== this.id,
     );
     const evilChars = gameState.allChars.filter(
       (char) =>
-        char.type === CharacterType.Minion || char.type === CharacterType.Demon,
+        (char.type === CharacterType.Minion ||
+          char.type === CharacterType.Demon) &&
+        char.id !== this.id,
     );
 
     shuffleArray(goodChars);
     shuffleArray(evilChars);
 
     if (Math.random() < 0.5) {
-      return `Show the correct character token, then (if a Townsfolk or Outsider) the ${evilChars[0].name} token, or (if a Minion or Demon) the ${goodChars[0].name} token.`;
+      return [
+        `Show the correct character token, then (if a Townsfolk or Outsider) the ${evilChars[0].name} token, or (if a Minion or Demon) the ${goodChars[0].name} token.`,
+      ];
     } else {
-      return `Show (if a Townsfolk or Outsider) the ${evilChars[0].name} token, or (if a Minion or Demon) the ${goodChars[0].name} token, then the correct character token.`;
+      return [
+        `Show (if a Townsfolk or Outsider) the ${evilChars[0].name} token, or (if a Minion or Demon) the ${goodChars[0].name} token, then the correct character token.`,
+      ];
     }
-  }*/
+  }
 }
 
 const snakeCharmerInstructions =
@@ -526,6 +557,58 @@ export class Oracle extends Character {
 
   getOtherNightsInstructions(): string | undefined {
     return giveAFingerSignal;
+  }
+}
+
+export class Savant extends Character {
+  constructor() {
+    super(CharacterName.Savant);
+  }
+
+  generateInfo(gameState: GameState): string[] | undefined {
+    const strategies: SavantInfoStrategy[] = [
+      new CharInPlayStatus(),
+      new DidPlayersGetTrueInformationLastNight(),
+      new PlayerAlignment(),
+      new NumOutsidersInPlay(),
+      new WasherwomanInfo(),
+      new LibrarianInfo(),
+      new InvestigatorInfo(),
+      new ChefInfo(),
+      new EmpathInfo(),
+      new ClockmakerInfo(),
+      new DreamerInfo(),
+      new OracleInfo(),
+      new SeamstressInfo(),
+      new ChambermaidInfo(),
+      new ProfessorInfo(),
+    ];
+
+    const trueStrategies = strategies?.filter((strategy) =>
+      strategy.gameQualifiesForTrueInfo(gameState),
+    );
+    shuffleArray(trueStrategies);
+
+    const trueInfo = trueStrategies[0].getTrueInfo(gameState, this.id);
+
+    const falseStrategies = strategies?.filter((strategy) =>
+      strategy.gameQualifiesForFalseInfo(gameState),
+    );
+    shuffleArray(falseStrategies);
+
+    const falseInfo = falseStrategies[0].getFalseInfo(gameState, this.id);
+
+    const result = [];
+
+    if (Math.random() < 0.5) {
+      result.push(`(True): ${trueInfo}`);
+      result.push(`(False): ${falseInfo}`);
+    } else {
+      result.push(`(False): ${falseInfo}`);
+      result.push(`(True): ${trueInfo}`);
+    }
+
+    return result;
   }
 }
 
@@ -755,7 +838,7 @@ export const characterClassNameMap: Record<
   [CharacterName.Flowergirl]: Flowergirl,
   [CharacterName.TownCrier]: TownCrier,
   [CharacterName.Oracle]: Oracle,
-  [CharacterName.Savant]: Character,
+  [CharacterName.Savant]: Savant,
   [CharacterName.Seamstress]: Seamstress,
   [CharacterName.Philosopher]: Philosopher,
   [CharacterName.Artist]: Character,

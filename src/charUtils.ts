@@ -3,7 +3,7 @@ import { shuffleArray } from "./randomUtils";
 import { GameState, CharacterName, CharacterType, Alignment } from "./types";
 
 export const getAllCharsInPlay = (gameState: GameState): Character[] => {
-  return gameState.allChars.filter((char) => char.inPlay);
+  return gameState?.allChars?.filter((char) => char.inPlay);
 };
 
 export interface InPlayCharResult {
@@ -166,7 +166,7 @@ export const cloneChar = (char: Character) => {
 
 export const getCharsById = (gameState: GameState) => {
   const charMap: Record<string, Character> = {};
-  gameState.allChars.forEach((char) => {
+  gameState?.allChars?.forEach((char) => {
     charMap[char.id] = char;
   });
   return charMap;
