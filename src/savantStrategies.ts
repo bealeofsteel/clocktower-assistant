@@ -412,7 +412,7 @@ export class SeamstressInfo extends SavantInfoStrategy {
 export class ChambermaidInfo extends SavantInfoStrategy {
   getTrueInfo(gameState: GameState, currentCharId: string): string {
     const chars = gameState.allChars.filter(
-      (char) => char.inPlay && char.id !== currentCharId,
+      (char) => char.inPlay && !char.isDead && char.id !== currentCharId,
     );
     shuffleArray(chars);
 
@@ -421,7 +421,7 @@ export class ChambermaidInfo extends SavantInfoStrategy {
 
   getFalseInfo(gameState: GameState, currentCharId: string): string {
     const chars = gameState.allChars.filter(
-      (char) => char.inPlay && char.id !== currentCharId,
+      (char) => char.inPlay && !char.isDead && char.id !== currentCharId,
     );
     shuffleArray(chars);
 

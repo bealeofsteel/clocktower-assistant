@@ -38,6 +38,12 @@ function InfoGenerator({ gameState, updateGameState }: InfoGeneratorProps) {
 
   return (
     <>
+      <div className="info-intro">
+        This page suggests info to tell characters who receive more complex info
+        (i.e., not just a number) on an ongoing basis. So far the supported
+        characters are the Dreamer and the Savant. If one or more of those
+        characters are in play, you'll see buttons below for each character.
+      </div>
       {whitelistedChars.map((charName) =>
         gameState.allChars
           .filter((char) => {
