@@ -9,3 +9,12 @@
 .info-intro {
   margin-top: 50px;
 }
+
+.storyteller-notes-container {
+  margin-top: 50px;
+}
+
+.storyteller-notes {
+  width: 100%;
+  height: 400px;
+}

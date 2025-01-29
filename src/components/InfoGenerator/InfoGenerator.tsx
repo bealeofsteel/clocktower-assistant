@@ -36,6 +36,13 @@ function InfoGenerator({ gameState, updateGameState }: InfoGeneratorProps) {
     });
   };
 
+  const updateStorytellerNotes = (notes: string) => {
+    updateGameState({
+      ...gameState,
+      storytellerNotes: notes,
+    });
+  };
+
   return (
     <>
       <div className="info-intro">
@@ -69,6 +76,14 @@ function InfoGenerator({ gameState, updateGameState }: InfoGeneratorProps) {
             </div>
           )),
       )}
+      <div className="storyteller-notes-container">
+        <h4>Storyteller Notes</h4>
+        <textarea
+          className="storyteller-notes"
+          value={gameState?.storytellerNotes}
+          onChange={(e) => updateStorytellerNotes(e.target.value)}
+        ></textarea>
+      </div>
     </>
   );
 }

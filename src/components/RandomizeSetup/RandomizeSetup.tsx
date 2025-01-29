@@ -75,6 +75,7 @@ function RandomizeSetup({
         randomizedResult: "",
       },
       generatedInfo: {},
+      storytellerNotes: "",
     };
 
     const availableChars: CharacterSet = {
