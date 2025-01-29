@@ -1,51 +1,57 @@
-import { ChangeEvent, useState } from 'react';
-import './App.css'
-import PlayerCountSelect from './components/PlayerCountSelect/PlayerCountSelect'
-import RandomizeSetup from './components/RandomizeSetup/RandomizeSetup'
-import { EditionName, GameState, CharacterName, CharGroup } from './types';
-import { Character, characterClassNameMap } from './characters';
-import { EDITIONS_BY_NAME } from './editions';
-import NightInfo, { Instruction, NightType } from './components/NightInfo/NightInfo';
-import { parseCharTokens } from './charUtils';
-import RandomizationTools from './components/RandomizationTools/RandomizationTools';
+import { useState } from "react";
+import "./App.css";
+import PlayerCountSelect from "./components/PlayerCountSelect/PlayerCountSelect";
+import RandomizeSetup from "./components/RandomizeSetup/RandomizeSetup";
+import { EditionName, GameState, CharacterType, NightType } from "./types";
+import { Character } from "./characters";
+import { EDITIONS_BY_NAME } from "./editions";
+import { cloneChar, getCharsById, parseCharTokens } from "./charUtils";
+import RandomizationTools from "./components/RandomizationTools/RandomizationTools";
+import CharacterManagement from "./components/CharacterManagement/CharacterManagement";
+import CharNameDisplay from "./components/CharNameDisplay/CharNameDisplay";
+import NightInfo from "./components/NightInfo/NightInfo";
+import InfoGenerator from "./components/InfoGenerator/InfoGenerator";
 
 enum TabName {
   Setup = "setup",
+  Characters = "characters",
   Nights = "nights",
-  Random = "random"
+  Random = "random",
+  Info = "info",
 }
 
 const LOCAL_STORAGE_KEY = "gameState";
 
 function App() {
-
-  const initialState = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) as string);
-  const instantiatedCharsByName = new Map<CharacterName, Character>();
+  const initialState = JSON.parse(
+    localStorage.getItem(LOCAL_STORAGE_KEY) as string,
+  );
+  const instantiatedCharsById = new Map<string, Character>();
 
   // To take advantage of Character functionality, we need to instantiate Character objects from the saved JSON
   const populateCharacters = () => {
-    const charGroups = [CharGroup.Townsfolk, CharGroup.Outsiders, CharGroup.Minions, CharGroup.Demons, CharGroup.DemonBluffs, CharGroup.NotInPlay];
+    const chars: Character[] = [];
 
-    charGroups.forEach((charGroup) => {
-      const chars: Character[] = [];
-      initialState[charGroup].forEach((charJson: Character) => {
-        const Klass = characterClassNameMap[charJson.name] || Character;
-        const char = new Klass(charJson.name).fromJson(charJson);
-        chars.push(char);
-        instantiatedCharsByName.set(charJson.name, char);
-      });
-      initialState[charGroup] = chars;
+    const demonBluffIds =
+      initialState.demonBluffs.map((char: Character) => char.id) || [];
+    const demonBluffs: Character[] = [];
+
+    initialState.allChars?.forEach((charJson: Character) => {
+      const char = cloneChar(charJson);
+
+      if (char.actsAsChar) {
+        char.actsAsChar = cloneChar(char.actsAsChar);
+      }
+
+      chars.push(char);
+      instantiatedCharsById.set(charJson.id, char);
+      if (demonBluffIds.includes(char.id)) {
+        demonBluffs.push(char);
+      }
     });
 
-    const nightTypes = [NightType.First, NightType.Other];
-
-    nightTypes.forEach((nightType) => {
-      initialState.nightInstructions[nightType].forEach((instruction: Instruction) => {
-        if (instruction.character) {
-          instruction.character = instantiatedCharsByName.get(instruction.character.name);
-        }
-      });
-    })
+    initialState.allChars = chars;
+    initialState.demonBluffs = demonBluffs;
   };
 
   if (initialState) {
@@ -53,8 +59,12 @@ function App() {
   }
 
   const [selectedTab, setSelectedTab] = useState(TabName.Setup);
-  const [playerCount, setPlayerCount] = useState(initialState?.playerCount || 12);
-  const [selectedEdition, setSelectedEdition] = useState(initialState?.edition || EditionName.TroubleBrewing);
+  const [playerCount, setPlayerCount] = useState(
+    initialState?.playerCount || 12,
+  );
+  const [selectedEdition, setSelectedEdition] = useState(
+    initialState?.edition || EditionName.TroubleBrewing,
+  );
 
   const [gameState, setGameState] = useState<GameState>(initialState);
 
@@ -63,131 +73,204 @@ function App() {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
   };
 
-  const toggleDeadAliveState = (char: Character, category: CharGroup) => {
-    const newChars = gameState[category].map((oldChar) => {
-      if (oldChar.name === char.name) {
-        return Object.assign(oldChar, { isDead: !char.isDead });
-      } else {
-        return oldChar;
-      }
-    });
+  const inPlayTownsfolk = gameState?.allChars.filter(
+    (char) => char.inPlay && char.type === CharacterType.Townsfolk,
+  );
+  const inPlayOutsiders = gameState?.allChars.filter(
+    (char) => char.inPlay && char.type === CharacterType.Outsider,
+  );
+  const inPlayMinions = gameState?.allChars.filter(
+    (char) => char.inPlay && char.type === CharacterType.Minion,
+  );
+  const inPlayDemons = gameState?.allChars.filter(
+    (char) => char.inPlay && char.type === CharacterType.Demon,
+  );
 
-    updateGameState({
-      ...gameState,
-      [category]: newChars
-    });
-  };
+  const demonBluffCharNames = gameState?.demonBluffs.map((char) => char.name);
+  const notInPlayChars = gameState?.allChars.filter(
+    (char) => !char.inPlay && !demonBluffCharNames.includes(char.name),
+  );
 
-  const updatePlayerName = (e: ChangeEvent<HTMLInputElement>, char: Character, category: CharGroup) => {
-    const newChars = gameState[category].map((oldChar) => {
-      if (oldChar.name === char.name) {
-        return Object.assign(oldChar, { playerName: e.target.value });
-      } else {
-        return oldChar;
-      }
-    });
-
-    updateGameState({
-      ...gameState,
-      [category]: newChars
-    });
-  };
-  
-  const displayCharName = (char: Character, category?: CharGroup) => {
-    return (
-      <div key={`${char.name}-name`} className="char-name-container">
-        <span className={`char-name clickable ${char.alignment} ${char.isDead ? "is-dead" : ""}`} 
-          onClick={category ? () => toggleDeadAliveState(char, category) : () => {}}>{char.getDisplayName()} 
-        </span>
-        { category && <input type="text" value={char.playerName} onChange={(e) => updatePlayerName(e, char, category)}></input> }
-      </div>
-    )
-
-  };
+  const charsById = getCharsById(gameState);
 
   return (
     <>
       <h1>Clocktower Assistant</h1>
       <div className="tabs">
         <button onClick={() => setSelectedTab(TabName.Setup)}>Setup</button>
+        <button onClick={() => setSelectedTab(TabName.Characters)}>
+          Characters
+        </button>
         <button onClick={() => setSelectedTab(TabName.Nights)}>Nights</button>
         <button onClick={() => setSelectedTab(TabName.Random)}>Random</button>
+        <button onClick={() => setSelectedTab(TabName.Info)}>Info</button>
       </div>
-      {selectedTab === TabName.Setup && 
+      {selectedTab === TabName.Setup && (
         <>
           <div className="edition-container">
             <strong>Edition: </strong>
-            <select value={selectedEdition} onChange={e => setSelectedEdition(e.target.value)}>
-              {Object.keys(EDITIONS_BY_NAME).map(editionName => (
-                <option key={editionName} value={editionName}>{editionName}</option>
+            <select
+              value={selectedEdition}
+              onChange={(e) => setSelectedEdition(e.target.value)}
+            >
+              {Object.keys(EDITIONS_BY_NAME).map((editionName) => (
+                <option key={editionName} value={editionName}>
+                  {editionName}
+                </option>
               ))}
             </select>
           </div>
-          <PlayerCountSelect playerCount={playerCount} setPlayerCount={setPlayerCount}></PlayerCountSelect>
-          <RandomizeSetup playerCount={playerCount} updateGameState={updateGameState} editionName={selectedEdition}></RandomizeSetup>
+          <PlayerCountSelect
+            playerCount={playerCount}
+            setPlayerCount={setPlayerCount}
+          ></PlayerCountSelect>
+          <RandomizeSetup
+            playerCount={playerCount}
+            updateGameState={updateGameState}
+            editionName={selectedEdition}
+          ></RandomizeSetup>
 
-          {gameState && 
+          {gameState && (
             <>
               <div>
                 <strong>Townsfolk:</strong>
-                {gameState.townsfolk.map((char) => displayCharName(char, CharGroup.Townsfolk))}
+                {inPlayTownsfolk.map((char) => (
+                  <CharNameDisplay
+                    key={char.id}
+                    gameState={gameState}
+                    updateGameState={updateGameState}
+                    char={char}
+                    playable={true}
+                  />
+                ))}
               </div>
               <div>
                 <strong>Outsiders:</strong>
-                {gameState.outsiders.map((char) => displayCharName(char, CharGroup.Outsiders))}
+                {inPlayOutsiders.map((char) => (
+                  <CharNameDisplay
+                    key={char.id}
+                    gameState={gameState}
+                    updateGameState={updateGameState}
+                    char={char}
+                    playable={true}
+                  />
+                ))}
               </div>
               <div>
                 <strong>Minions:</strong>
-                {gameState.minions.map((char) => displayCharName(char, CharGroup.Minions))}
+                {inPlayMinions.map((char) => (
+                  <CharNameDisplay
+                    key={char.id}
+                    gameState={gameState}
+                    updateGameState={updateGameState}
+                    char={char}
+                    playable={true}
+                  />
+                ))}
               </div>
               <div>
                 <strong>Demons:</strong>
-                {gameState.demons.map((char) => displayCharName(char, CharGroup.Demons))}
+                {inPlayDemons.map((char) => (
+                  <CharNameDisplay
+                    key={char.id}
+                    gameState={gameState}
+                    updateGameState={updateGameState}
+                    char={char}
+                    playable={true}
+                  />
+                ))}
               </div>
               <div>
                 <strong>Demon Bluffs:</strong>
-                {gameState.demonBluffs.map((char) => displayCharName(char))}
+                {gameState.demonBluffs.map((char) => (
+                  <CharNameDisplay
+                    key={char.id}
+                    gameState={gameState}
+                    updateGameState={updateGameState}
+                    char={char}
+                    playable={false}
+                  />
+                ))}
               </div>
               <div>
                 <strong>Not in play:</strong>
-                {gameState.notInPlay.map((char) => displayCharName(char))}
+                {notInPlayChars.map((char) => (
+                  <CharNameDisplay
+                    key={char.id}
+                    gameState={gameState}
+                    updateGameState={updateGameState}
+                    char={char}
+                    playable={false}
+                  />
+                ))}
               </div>
               <div>
                 <strong>Starting Info:</strong>
-                {gameState.nightInstructions[NightType.First]?.map((instruction) => (
-                  instruction.character && gameState.startingInfoSuggestions[instruction.character.name] ? (
-                    <div key={instruction.label}>
-                      <span className={`char-name ${instruction.character.alignment}`}>{instruction.character.getDisplayName()}</span>
-                      : {parseCharTokens(gameState.startingInfoSuggestions[instruction.character.name] as string, instantiatedCharsByName)}
-                    </div>
-                  ) : null
-                ))}
+                {gameState.nightInstructions[NightType.First]?.map(
+                  (instruction) =>
+                    instruction.charId &&
+                    gameState.startingInfoSuggestions[instruction.charId] ? (
+                      <div key={instruction.key}>
+                        <span
+                          className={`char-name ${charsById[instruction.charId].alignment}`}
+                        >
+                          {charsById[instruction.charId].getDisplayName()}
+                        </span>
+                        :{" "}
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: parseCharTokens(
+                              gameState.startingInfoSuggestions[
+                                instruction.charId
+                              ] as string,
+                              instantiatedCharsById,
+                            ),
+                          }}
+                        ></span>
+                      </div>
+                    ) : null,
+                )}
               </div>
             </>
-          }
+          )}
         </>
-      }
-      {selectedTab === TabName.Nights && 
+      )}
+      {selectedTab === TabName.Characters && (
+        <CharacterManagement
+          gameState={gameState}
+          updateGameState={updateGameState}
+        ></CharacterManagement>
+      )}
+      {selectedTab === TabName.Nights && (
         <>
-          <NightInfo 
-            gameState={gameState} 
-            type={NightType.First} 
-            updateGameState={updateGameState} 
-            instantiatedCharsByName={instantiatedCharsByName}>
-          </NightInfo>
-          <NightInfo 
-            gameState={gameState} 
-            type={NightType.Other} 
-            updateGameState={updateGameState} 
-            instantiatedCharsByName={instantiatedCharsByName}>
-          </NightInfo>
+          <NightInfo
+            gameState={gameState}
+            type={NightType.First}
+            updateGameState={updateGameState}
+            instantiatedCharsById={instantiatedCharsById}
+          ></NightInfo>
+          <NightInfo
+            gameState={gameState}
+            type={NightType.Other}
+            updateGameState={updateGameState}
+            instantiatedCharsById={instantiatedCharsById}
+          ></NightInfo>
         </>
-      }
-      {selectedTab === TabName.Random && 
-        <RandomizationTools gameState={gameState}></RandomizationTools>
-      }
+      )}
+      {selectedTab === TabName.Random && (
+        <RandomizationTools
+          gameState={gameState}
+          updateGameState={updateGameState}
+        ></RandomizationTools>
+      )}
+      {selectedTab === TabName.Info && (
+        <InfoGenerator
+          gameState={gameState}
+          updateGameState={updateGameState}
+        ></InfoGenerator>
+      )}
     </>
-  )
+  );
 }
 
 export default App;

@@ -12,16 +12,12 @@ div.tabs {
 }
 
 .char-name {
-  &.good {
+  &.Good {
     color: blue;
   }
 
-  &.evil {
+  &.Evil {
     color: red;
-  }
-
-  &.clickable {
-    cursor: pointer;
   }
 
   &.is-dead {
@@ -29,15 +25,8 @@ div.tabs {
   }
 }
 
-.char-name-container {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 3px;
-  padding: 2px;
-
-  &:hover {
-    background-color: #e9e9e9;
-  }
+.clickable {
+  cursor: pointer;
 }
 
 .edition-container {

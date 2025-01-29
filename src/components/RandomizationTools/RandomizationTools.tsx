@@ -1,244 +1,245 @@
-import { useState } from "react";
-import { Alignment, CharGroup, GameState } from "../../types";
+import { Alignment, CharacterType, GameState } from "../../types";
 import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
-import './RandomizationTools.css'
+import "./RandomizationTools.css";
 
 interface RandomizationToolsProps {
-    gameState: GameState;
+  gameState: GameState;
+  updateGameState: (newState: GameState) => void;
 }
 
 interface Filter {
-    checked: boolean;
+  checked: boolean;
 }
 
-function RandomizationTools({gameState}: RandomizationToolsProps) {
+function RandomizationTools({
+  gameState,
+  updateGameState,
+}: RandomizationToolsProps) {
+  if (!gameState) {
+    return null;
+  }
 
-    if (!gameState || !gameState.townsfolk) {
-        return null;
+  const charTypeFilters = gameState.randomTools.filters.charType;
+  const inPlayFilters = gameState.randomTools.filters.inPlay;
+  const alignmentFilters = gameState.randomTools.filters.alignment;
+  const lifeStatusFilters = gameState.randomTools.filters.lifeStatus;
+
+  const randomizedResult = gameState.randomTools.randomizedResult;
+
+  const randomizeSelectedChars = () => {
+    let chars: Character[] = gameState.allChars;
+
+    let allowedCharTypes: CharacterType[] = [];
+    for (const filter of charTypeFilters) {
+      if (filter.name === "All") {
+        if (filter.checked) {
+          allowedCharTypes = [
+            CharacterType.Townsfolk,
+            CharacterType.Outsider,
+            CharacterType.Minion,
+            CharacterType.Demon,
+          ];
+          break;
+        }
+      } else if (filter.checked) {
+        allowedCharTypes.push(filter.value as CharacterType);
+      }
     }
 
-    const charGroupFilterOptions = [
-        {
-            name: "All",
-            checked: true
-        },
-        {
-            name: "Townsfolk",
-            charGroup: CharGroup.Townsfolk,
-            checked: false
-        },
-        {
-            name: "Outsiders",
-            charGroup: CharGroup.Outsiders,
-            checked: false
-        },
-        {
-            name: "Minions",
-            charGroup: CharGroup.Minions,
-            checked: false
-        },
-        {
-            name: "Demons",
-            charGroup: CharGroup.Demons,
-            checked: false
-        },
-        {
-            name: "Demon Bluffs",
-            charGroup: CharGroup.DemonBluffs,
-            checked: false
-        },
-        {
-            name: "Not in play",
-            charGroup: CharGroup.NotInPlay,
-            checked: false
+    chars = chars.filter((char) => allowedCharTypes.includes(char.type));
+
+    let allowedInPlayStatuses: boolean[] = [];
+    for (const filter of inPlayFilters) {
+      if (filter.name === "All") {
+        if (filter.checked) {
+          allowedInPlayStatuses = [true, false];
+          break;
         }
-    ];
+      } else if (filter.checked) {
+        allowedInPlayStatuses.push(filter.value as boolean);
+      }
+    }
 
-    const alignmentFilterOptions = [
-        {
-            name: "All",
-            checked: true
-        },
-        {
-            name: "Good",
-            alignment: Alignment.Good,
-            checked: false
-        },
-        {
-            name: "Evil",
-            alignment: Alignment.Evil,
-            checked: false
+    chars = chars.filter((char) => allowedInPlayStatuses.includes(char.inPlay));
+
+    let allowedAlignments: Alignment[] = [];
+    for (const filter of alignmentFilters) {
+      if (filter.name === "All") {
+        if (filter.checked) {
+          allowedAlignments = [Alignment.Good, Alignment.Evil];
+          break;
         }
-    ];
+      } else if (filter.checked) {
+        allowedAlignments.push(filter.value as Alignment);
+      }
+    }
 
-    const lifeStatusFilterOptions = [
-        {
-            name: "All",
-            checked: true
-        },
-        {
-            name: "Alive",
-            isDead: false,
-            checked: false
-        },
-        {
-            name: "Dead",
-            isDead: true,
-            checked: false
+    chars = chars.filter((char) => allowedAlignments.includes(char.alignment));
+
+    let allowedLifeStatuses: boolean[] = [];
+    for (const filter of lifeStatusFilters) {
+      if (filter.name === "All") {
+        if (filter.checked) {
+          allowedLifeStatuses = [true, false];
+          break;
         }
-    ];
+      } else if (filter.checked) {
+        allowedLifeStatuses.push(filter.value as boolean);
+      }
+    }
 
-    const [charGroupFilters, setCharGroupFilters] = useState(charGroupFilterOptions);
-    const [alignmentFilters, setAlignmentFilters] = useState(alignmentFilterOptions);
-    const [lifeStatusFilters, setLifeStatusFilters] = useState(lifeStatusFilterOptions);
+    chars = chars.filter((char) => allowedLifeStatuses.includes(char.isDead));
 
-    const [randomizedResult, setRandomizedResult] = useState<string>("");
+    shuffleArray(chars);
 
-    const randomizeSelectedChars = () => {
+    const charDisplayNames = chars.map((char) => char.getDisplayName());
 
-        let chars: Character[] = [];
+    updateGameState({
+      ...gameState,
+      randomTools: {
+        ...gameState.randomTools,
+        randomizedResult: charDisplayNames.join("\n"),
+      },
+    });
+  };
 
-        for (const filter of charGroupFilters) {
-            if (filter.name === "All") {
-                if (filter.checked) {
-                    chars = chars.concat(gameState[CharGroup.Townsfolk], 
-                        gameState[CharGroup.Outsiders], 
-                        gameState[CharGroup.Minions], 
-                        gameState[CharGroup.Demons], 
-                        gameState[CharGroup.DemonBluffs], 
-                        gameState[CharGroup.NotInPlay]
-                    );
-                    break;
+  const handleAllCheckbox = (newFilters: Filter[], index: number) => {
+    if (newFilters[index].checked) {
+      // If "All" is checked, uncheck all other checkboxes in the filter group
+      if (index === 0) {
+        for (let i = 1; i < newFilters.length; i++) {
+          newFilters[i].checked = false;
+        }
+      } else {
+        // If any other box is checked, uncheck "All"
+        newFilters[0].checked = false;
+      }
+    }
+  };
+
+  const handleFilterChange = (
+    index: number,
+    filters: Filter[],
+    fieldName: string,
+  ) => {
+    const newFilters = Array.from(filters);
+    newFilters[index].checked = !filters[index].checked;
+
+    handleAllCheckbox(newFilters, index);
+
+    updateGameState({
+      ...gameState,
+      randomTools: {
+        ...gameState.randomTools,
+        filters: {
+          ...gameState.randomTools.filters,
+          [fieldName]: newFilters,
+        },
+      },
+    });
+  };
+
+  return (
+    <div className="randomization-tools">
+      <div className="filters-container">
+        <div>
+          {charTypeFilters.map((filter, index) => {
+            return (
+              <div
+                className="filter-option"
+                key={filter.name}
+                onClick={() =>
+                  handleFilterChange(index, charTypeFilters, "charType")
                 }
-            } else if (filter.checked) {
-                chars = chars.concat(gameState[filter.charGroup as CharGroup]);
-            }
-        }
-
-        let allowedAlignments: Alignment[] = [];
-        for (const filter of alignmentFilters) {
-            if (filter.name === "All") {
-                if (filter.checked) {
-                    allowedAlignments = [Alignment.Good, Alignment.Evil]
-                    break;
-                }
-            } else if (filter.checked) {
-                allowedAlignments.push(filter.alignment as Alignment);
-            }
-        }
-
-        chars = chars.filter((char) => allowedAlignments.includes(char.alignment));
-
-        let allowedLifeStatuses: boolean[] = [];
-        for (const filter of lifeStatusFilters) {
-            if (filter.name === "All") {
-                if (filter.checked) {
-                    allowedLifeStatuses = [true, false];
-                    break;
-                }
-            } else if (filter.checked) {
-                allowedLifeStatuses.push(filter.isDead as boolean);
-            }
-        }
-
-        chars = chars.filter((char) => allowedLifeStatuses.includes(char.isDead));
-
-        shuffleArray(chars);
-
-        const charDisplayNames = chars.map((char) => char.getDisplayName());
-
-        setRandomizedResult(charDisplayNames.join("\n"));
-    };
-
-    const handleAllCheckbox = (newFilters: Filter[], index: number) => {
-        if (newFilters[index].checked) {
-            // If "All" is checked, uncheck all other checkboxes in the filter group
-            if (index === 0) {
-                for (let i = 1; i < newFilters.length; i++) {
-                    newFilters[i].checked = false;
-                }
-            } else {
-                // If any other box is checked, uncheck "All"
-                newFilters[0].checked = false;
-            }
-        }
-    };
-
-    const handleCharGroupFilterChange = (index: number) => {
-        const newFilters = Array.from(charGroupFilters);
-        newFilters[index].checked = !charGroupFilters[index].checked;
-
-        handleAllCheckbox(newFilters, index);
-
-        setCharGroupFilters(newFilters);
-    };
-
-    const handleAlignmentFilterChange = (index: number) => {
-        const newFilters = Array.from(alignmentFilters);
-        newFilters[index].checked = !alignmentFilters[index].checked;
-
-        handleAllCheckbox(newFilters, index);
-
-        setAlignmentFilters(newFilters);
-    };
-
-    const handleLifeStatusFilterChange = (index: number) => {
-        const newFilters = Array.from(lifeStatusFilters);
-        newFilters[index].checked = !lifeStatusFilters[index].checked;
-
-        handleAllCheckbox(newFilters, index);
-
-        setLifeStatusFilters(newFilters);
-    };
-
-    return (
-        <div className="randomization-tools">
-            <div className="filters-container">
-                <div>
-                    {
-                        charGroupFilters.map((filter, index) => {
-                            return (
-                                <div className="filter-option" key={filter.name} onClick={() => handleCharGroupFilterChange(index)}>
-                                    <input type="checkbox" checked={filter.checked} onChange={() => {}}/>
-                                    <span>{filter.name}</span>
-                                </div>
-                            );
-                        })
-                    }
-                </div>
-                <div>
-                    {
-                        alignmentFilters.map((filter, index) => {
-                            return (
-                                <div className="filter-option" key={filter.name} onClick={() => handleAlignmentFilterChange(index)}>
-                                    <input type="checkbox" checked={filter.checked} onChange={() => handleAlignmentFilterChange(index)}/>
-                                    <span>{filter.name}</span>
-                                </div>
-                            );
-                        })
-                    }
-                </div>
-                <div>
-                    {
-                        lifeStatusFilters.map((filter, index) => {
-                            return (
-                                <div className="filter-option" key={filter.name} onClick={() => handleLifeStatusFilterChange(index)}>
-                                    <input type="checkbox" checked={filter.checked} onChange={() => handleLifeStatusFilterChange(index)}/>
-                                    <span>{filter.name}</span>
-                                </div>
-                            );
-                        })
-                    }
-                </div>
-            </div>
-
-            <button className="get-random-characters" onClick={randomizeSelectedChars}>Get Random Characters</button>
-            <div>
-                <textarea className="random-results" value={randomizedResult} readOnly={true}></textarea>
-            </div>
+              >
+                <input
+                  type="checkbox"
+                  checked={filter.checked}
+                  onChange={() => {}}
+                />
+                <span>{filter.name}</span>
+              </div>
+            );
+          })}
         </div>
-    );
+        <div>
+          {inPlayFilters.map((filter, index) => {
+            return (
+              <div
+                className="filter-option"
+                key={filter.name}
+                onClick={() =>
+                  handleFilterChange(index, inPlayFilters, "inPlay")
+                }
+              >
+                <input
+                  type="checkbox"
+                  checked={filter.checked}
+                  onChange={() => {}}
+                />
+                <span>{filter.name}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div>
+          {alignmentFilters.map((filter, index) => {
+            return (
+              <div
+                className="filter-option"
+                key={filter.name}
+                onClick={() =>
+                  handleFilterChange(index, alignmentFilters, "alignment")
+                }
+              >
+                <input
+                  type="checkbox"
+                  checked={filter.checked}
+                  onChange={() => {}}
+                />
+                <span>{filter.name}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div>
+          {lifeStatusFilters.map((filter, index) => {
+            return (
+              <div
+                className="filter-option"
+                key={filter.name}
+                onClick={() =>
+                  handleFilterChange(index, lifeStatusFilters, "lifeStatus")
+                }
+              >
+                <input
+                  type="checkbox"
+                  checked={filter.checked}
+                  onChange={() => {}}
+                />
+                <span>{filter.name}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <button
+        className="get-random-characters"
+        onClick={randomizeSelectedChars}
+      >
+        Get Random Characters
+      </button>
+      <div>
+        <textarea
+          className="random-results"
+          value={randomizedResult}
+          readOnly={true}
+        ></textarea>
+      </div>
+    </div>
+  );
 }
 
 export default RandomizationTools;

@@ -1,103 +1,145 @@
 import { Character } from "./characters";
-import { Instruction, NightType} from "./components/NightInfo/NightInfo";
 
 export interface Edition {
-    getCharactersForEdition: () => CharacterSet;
-    nightInstructions: {
-        [NightType.First]: (CharacterName | SpecialInstructionKey)[];
-        [NightType.Other]: (CharacterName | SpecialInstructionKey)[];
-    }
-}
-
-export enum CharGroup {
-    Townsfolk = "townsfolk",
-    Outsiders = "outsiders",
-    Minions = "minions",
-    Demons = "demons",
-    DemonBluffs = "demonBluffs",
-    NotInPlay = "notInPlay"
+  getCharactersForEdition: () => CharacterSet;
+  nightInstructions: {
+    [NightType.First]: (CharacterName | SpecialInstructionKey)[];
+    [NightType.Other]: (CharacterName | SpecialInstructionKey)[];
+  };
 }
 
 export interface CharacterSet {
-    townsfolk: Character[];
-    outsiders: Character[];
-    minions: Character[];
-    demons: Character[];
+  townsfolk: Character[];
+  outsiders: Character[];
+  minions: Character[];
+  demons: Character[];
 }
 
 export enum Alignment {
-    Good = "good",
-    Evil = "evil"
+  Good = "Good",
+  Evil = "Evil",
 }
 
 export enum CharacterName {
-    Washerwoman = "Washerwoman",
-    Librarian = "Librarian",
-    Investigator = "Investigator",
-    Chef = "Chef",
-    Empath = "Empath",
-    FortuneTeller = "Fortune Teller",
-    Undertaker = "Undertaker",
-    Monk = "Monk",
-    Ravenkeeper = "Ravenkeeper",
-    Virgin = "Virgin",
-    Slayer = "Slayer",
-    Soldier = "Soldier",
-    Mayor = "Mayor",
-    Butler = "Butler",
-    Drunk = "Drunk",
-    Recluse = "Recluse",
-    Saint = "Saint",
-    Poisoner = "Poisoner",
-    Spy = "Spy",
-    ScarletWoman = "Scarlet Woman",
-    Baron = "Baron",
-    Imp = "Imp"
+  Washerwoman = "Washerwoman",
+  Librarian = "Librarian",
+  Investigator = "Investigator",
+  Chef = "Chef",
+  Empath = "Empath",
+  FortuneTeller = "Fortune Teller",
+  Undertaker = "Undertaker",
+  Monk = "Monk",
+  Ravenkeeper = "Ravenkeeper",
+  Virgin = "Virgin",
+  Slayer = "Slayer",
+  Soldier = "Soldier",
+  Mayor = "Mayor",
+  Butler = "Butler",
+  Drunk = "Drunk",
+  Recluse = "Recluse",
+  Saint = "Saint",
+  Poisoner = "Poisoner",
+  Spy = "Spy",
+  ScarletWoman = "Scarlet Woman",
+  Baron = "Baron",
+  Imp = "Imp",
+  Clockmaker = "Clockmaker",
+  Dreamer = "Dreamer",
+  SnakeCharmer = "Snake Charmer",
+  Mathematician = "Mathematician",
+  Flowergirl = "Flowergirl",
+  TownCrier = "Town Crier",
+  Oracle = "Oracle",
+  Savant = "Savant",
+  Seamstress = "Seamstress",
+  Philosopher = "Philosopher",
+  Artist = "Artist",
+  Juggler = "Juggler",
+  Sage = "Sage",
+  Mutant = "Mutant",
+  Sweetheart = "Sweetheart",
+  Barber = "Barber",
+  Klutz = "Klutz",
+  EvilTwin = "Evil Twin",
+  Witch = "Witch",
+  Cerenovous = "Cerenovous",
+  PitHag = "Pit-Hag",
+  FangGu = "Fang Gu",
+  Vigormortis = "Vigormortis",
+  NoDashii = "No Dashii",
+  Vortox = "Vortox",
 }
 
 export enum EditionName {
-    TroubleBrewing = "Trouble Brewing"
+  TroubleBrewing = "Trouble Brewing",
+  SectsAndViolets = "Sects & Violets",
 }
 
-export interface AssignedChars extends CharacterSet {
-    demonBluffs: Character[];
-    notInPlay: Character[];
-}
-
-export interface GameState extends AssignedChars {
-    playerCount: number;
-    edition: EditionName;
-    nightInstructions: {
-        first: Instruction[];
-        other: Instruction[];
-    }
-    startingInfoSuggestions: Partial<Record<CharacterName, string>>;
+export interface GameState {
+  playerCount: number;
+  edition: EditionName;
+  nightInstructions: {
+    first: Instruction[];
+    other: Instruction[];
+  };
+  startingInfoSuggestions: Record<string, string>;
+  allCharNamesForEdition: {
+    townsfolk: CharacterName[];
+    outsiders: CharacterName[];
+    minions: CharacterName[];
+    demons: CharacterName[];
+  };
+  allChars: Character[];
+  demonBluffs: Character[];
+  randomTools: {
+    filters: {
+      charType: Filter[];
+      inPlay: Filter[];
+      alignment: Filter[];
+      lifeStatus: Filter[];
+    };
+    randomizedResult: string;
+  };
+  generatedInfo: Partial<Record<CharacterName, Record<string, string[]>>>;
+  storytellerNotes: string;
 }
 
 export interface PlayerSetup {
-    townsfolkToPick: number;
-    outsidersToPick: number;
-    minionsToPick: number;
-    demonsToPick: number;
+  townsfolkToPick: number;
+  outsidersToPick: number;
+  minionsToPick: number;
+  demonsToPick: number;
 }
 
 export enum SpecialInstructionKey {
-    Dusk = "Dusk",
-    MinionInfo = "Minion Info",
-    DemonInfo = "Demon Info",
-    Dawn = "Dawn"
+  Dusk = "Dusk",
+  MinionInfo = "Minion Info",
+  DemonInfo = "Demon Info",
+  Dawn = "Dawn",
 }
 
 export enum CharacterType {
-    Townsfolk = "townsfolk",
-    Outsider = "outsider",
-    Minion = "minion",
-    Demon = "demon"
+  Townsfolk = "Townsfolk",
+  Outsider = "Outsider",
+  Minion = "Minion",
+  Demon = "Demon",
 }
 
-export const charTypeToGameStateFieldMapping: Record<CharacterType, CharGroup> = {
-    [CharacterType.Townsfolk]: CharGroup.Townsfolk,
-    [CharacterType.Outsider]: CharGroup.Outsiders,
-    [CharacterType.Minion]: CharGroup.Minions,
-    [CharacterType.Demon]: CharGroup.Demons
-};
+export enum NightType {
+  First = "first",
+  Other = "other",
+}
+
+export interface Instruction {
+  key: string;
+  label: string;
+  message: string;
+  charId?: string;
+  checked?: boolean;
+}
+
+export interface Filter {
+  name: string;
+  value?: CharacterType | Alignment | boolean;
+  checked: boolean;
+}
