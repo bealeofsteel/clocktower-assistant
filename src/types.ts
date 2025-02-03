@@ -43,6 +43,7 @@ export enum CharacterName {
   ScarletWoman = "Scarlet Woman",
   Baron = "Baron",
   Imp = "Imp",
+
   Clockmaker = "Clockmaker",
   Dreamer = "Dreamer",
   SnakeCharmer = "Snake Charmer",
@@ -68,11 +69,38 @@ export enum CharacterName {
   Vigormortis = "Vigormortis",
   NoDashii = "No Dashii",
   Vortox = "Vortox",
+
+  Grandmother = "Grandmother",
+  Sailor = "Sailor",
+  Chambermaid = "Chambermaid",
+  Exorcist = "Exorcist",
+  Innkeeper = "Innkeeper",
+  Gambler = "Gambler",
+  Gossip = "Gossip",
+  Courtier = "Courtier",
+  Professor = "Professor",
+  Minstrel = "Minstrel",
+  TeaLady = "Tea Lady",
+  Pacifist = "Pacifist",
+  Fool = "Fool",
+  Goon = "Goon",
+  Lunatic = "Lunatic",
+  Tinker = "Tinker",
+  Moonchild = "Moonchild",
+  Godfather = "Godfather",
+  DevilsAdvocate = "Devil's Advocate",
+  Assassin = "Assassin",
+  Mastermind = "Mastermind",
+  Zombuul = "Zombuul",
+  Pukka = "Pukka",
+  Shabaloth = "Shabaloth",
+  Po = "Po",
 }
 
 export enum EditionName {
   TroubleBrewing = "Trouble Brewing",
   SectsAndViolets = "Sects & Violets",
+  BadMoonRising = "Bad Moon Rising",
 }
 
 export interface GameState {
@@ -83,6 +111,7 @@ export interface GameState {
     other: Instruction[];
   };
   startingInfoSuggestions: Record<string, string>;
+  otherNightSuggestions: Record<string, string>;
   allCharNamesForEdition: {
     townsfolk: CharacterName[];
     outsiders: CharacterName[];

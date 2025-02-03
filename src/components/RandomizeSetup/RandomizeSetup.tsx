@@ -63,6 +63,7 @@ function RandomizeSetup({
         other: [],
       },
       startingInfoSuggestions: {},
+      otherNightSuggestions: {},
       allCharNamesForEdition,
       allChars,
       randomTools: {
@@ -158,6 +159,7 @@ function RandomizeSetup({
 
     gameState.startingInfoSuggestions =
       generateStartingInfoSuggestions(gameState);
+    gameState.otherNightSuggestions = generateOtherNightSuggestions(gameState);
 
     updateGameState(gameState);
   };
@@ -173,6 +175,19 @@ function RandomizeSetup({
     }
 
     return startingInfoSuggestions;
+  };
+
+  const generateOtherNightSuggestions = (gameState: GameState) => {
+    const otherNightSuggestions: Record<string, string> = {};
+
+    for (const char of gameState.allChars) {
+      const suggestion = char.getOtherNightSuggestion(gameState);
+      if (suggestion) {
+        otherNightSuggestions[char.id] = suggestion;
+      }
+    }
+
+    return otherNightSuggestions;
   };
 
   return (
