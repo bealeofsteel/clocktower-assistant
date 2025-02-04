@@ -2,7 +2,7 @@ import "./CharNameDisplay.css";
 import { Character } from "../../characters";
 import { GameState } from "../../types";
 import PlayerNameInput from "../PlayerNameInput/PlayerNameInput";
-import { cloneChar } from "../../charUtils";
+import { useToggleDeadAliveState } from "../../hooks/useToggleDeadAliveState";
 
 interface CharNameDisplayProps {
   gameState: GameState;
@@ -17,22 +17,10 @@ function CharNameDisplay({
   char,
   playable,
 }: CharNameDisplayProps) {
-  const toggleDeadAliveState = (char: Character) => {
-    const newChars = gameState.allChars.map((oldChar) => {
-      if (oldChar.id === char.id) {
-        const newChar = cloneChar(oldChar);
-        newChar.isDead = !oldChar.isDead;
-        return newChar;
-      } else {
-        return oldChar;
-      }
-    });
-
-    updateGameState({
-      ...gameState,
-      allChars: newChars,
-    });
-  };
+  const toggleDeadAliveState = useToggleDeadAliveState(
+    gameState,
+    updateGameState,
+  );
 
   return (
     <div key={`${char.id}-name`} className="char-name-container">

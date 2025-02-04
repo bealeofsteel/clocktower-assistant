@@ -12,6 +12,7 @@ import {
   SupportDemonOutsiderBluff,
   SupportDemonTownsfolkBluff,
 } from "./drunkStrategies";
+import { playerCountConfig } from "./gameSettings";
 import { shuffleArray } from "./randomUtils";
 import {
   CharInPlayStatus,
@@ -106,6 +107,10 @@ export class Character {
     return;
   }
 
+  getOtherNightSuggestion(_gameState: GameState): string | undefined {
+    return;
+  }
+
   getIdentityForInstructions(): CharacterName {
     return this.actsAsChar?.name || this.name;
   }
@@ -132,6 +137,10 @@ export class Character {
     }
 
     return `[${this.name} player name]`;
+  }
+
+  gameQualifiesForFirstNightInfo(_gameState: GameState): boolean {
+    return true;
   }
 }
 
@@ -235,8 +244,11 @@ const fortuneTellerInstructions =
   "The Fortune Teller chooses 2 players. Nod if either is the Demon (or the RED HERRING).";
 
 export class FortuneTeller extends Character {
+  redHerringCharId: string;
+
   constructor() {
     super(CharacterName.FortuneTeller);
+    this.redHerringCharId = "";
   }
 
   getFirstNightInstructions() {
@@ -249,7 +261,12 @@ export class FortuneTeller extends Character {
 
   getStartingInfoSuggestion(gameState: GameState): string {
     const pickedChar = pickFortuneTellerRedHerring(gameState);
-    return `The RED HERRING is {{${pickedChar.id}}}.`;
+    this.redHerringCharId = pickedChar.id;
+    return `The RED HERRING is {{${this.redHerringCharId}}}.`;
+  }
+
+  getOtherNightSuggestion(): string | undefined {
+    return `The RED HERRING is {{${this.redHerringCharId}}}.`;
   }
 }
 
@@ -646,6 +663,13 @@ export class Philosopher extends Character {
   }
 }
 
+// This class doesn't do anything special, but I'm adding it to make it easier to re-use the character in No Greater Joy
+export class Artist extends Character {
+  constructor() {
+    super(CharacterName.Artist);
+  }
+}
+
 export class Juggler extends Character {
   constructor() {
     super(CharacterName.Juggler);
@@ -666,6 +690,16 @@ export class Sage extends Character {
   }
 }
 
+export class Mutant extends Character {
+  constructor() {
+    super(CharacterName.Sage, CharacterType.Outsider);
+  }
+
+  canBeDemonBluff(): boolean {
+    return false;
+  }
+}
+
 export class Sweetheart extends Character {
   constructor() {
     super(CharacterName.Sweetheart, CharacterType.Outsider);
@@ -683,6 +717,13 @@ export class Barber extends Character {
 
   getOtherNightsInstructions(): string | undefined {
     return "If the Barber died today or tonight, show the Demon the THIS CHARACTER SELECTED YOU & Barber tokens. If the Demon chose 2 players, wake one at a time. Show the YOU ARE token & their new character token.";
+  }
+}
+
+// This class doesn't do anything special, but I'm adding it to make it easier to re-use the character in No Greater Joy
+export class Klutz extends Character {
+  constructor() {
+    super(CharacterName.Klutz, CharacterType.Outsider);
   }
 }
 
@@ -800,6 +841,385 @@ export class Vortox extends Character {
   }
 }
 
+/* Bad Moon Rising characters */
+
+export class Grandmother extends Character {
+  grandchildCharId: string;
+
+  constructor() {
+    super(CharacterName.Grandmother);
+    this.grandchildCharId = "";
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return "Point to the grandchild player & show their character token.";
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "If the grandchild was killed by the Demon, the Grandmother dies too. ⚫️";
+  }
+
+  getStartingInfoSuggestion(gameState: GameState): string | undefined {
+    const chars = gameState.allChars.filter(
+      (char) => char.inPlay && char.alignment === Alignment.Good,
+    );
+    shuffleArray(chars);
+
+    this.grandchildCharId = chars[0].id;
+
+    return `The grandchild is {{${this.grandchildCharId}}}.`;
+  }
+
+  getOtherNightSuggestion(): string | undefined {
+    return `The grandchild is {{${this.grandchildCharId}}}.`;
+  }
+}
+
+const sailorInstructions = "The Sailor chooses a living player. ⚫️";
+
+export class Sailor extends Character {
+  constructor() {
+    super(CharacterName.Sailor);
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return sailorInstructions;
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return sailorInstructions;
+  }
+}
+
+const chambermaidInstructions =
+  "The Chambermaid chooses 2 living players. Give a finger signal.";
+
+export class Chambermaid extends Character {
+  constructor() {
+    super(CharacterName.Chambermaid);
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return chambermaidInstructions;
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return chambermaidInstructions;
+  }
+}
+
+export class Exorcist extends Character {
+  constructor() {
+    super(CharacterName.Exorcist);
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "The Exorcist chooses a player. ⚫️ Put the Exorcist to sleep. If the Exorcist chose the Demon: Wake the Demon. Show the THIS CHARACTER SELECTED YOU & Exorcist tokens. Point to the Exorcist.";
+  }
+}
+
+export class Innkeeper extends Character {
+  constructor() {
+    super(CharacterName.Innkeeper);
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "The Innkeeper chooses 2 players. ⚫️ ⚫️ ⚫️";
+  }
+}
+
+export class Gambler extends Character {
+  constructor() {
+    super(CharacterName.Gambler);
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "The Gambler chooses a player & a character. ⚫️";
+  }
+}
+
+export class Gossip extends Character {
+  constructor() {
+    super(CharacterName.Gossip);
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "If the Gossip is due to kill a player, they die. ⚫️";
+  }
+}
+
+const courtierInstructions = "The Courtier might choose a character. ⚫️ ⚫️";
+
+export class Courtier extends Character {
+  constructor() {
+    super(CharacterName.Courtier);
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return courtierInstructions;
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return courtierInstructions;
+  }
+}
+
+export class Professor extends Character {
+  constructor() {
+    super(CharacterName.Professor);
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "The Professor might choose a dead player. ⚫️ ⚫️";
+  }
+}
+
+export class Lunatic extends Character {
+  demonName: string;
+  demonFirstNightInstructions: string;
+  demonOtherNightsInstructions: string;
+
+  constructor() {
+    super(CharacterName.Lunatic, CharacterType.Outsider);
+    this.demonName = "";
+    this.demonFirstNightInstructions = "";
+    this.demonOtherNightsInstructions = "";
+  }
+
+  getDisplayName(): string {
+    let name = this.name as string;
+
+    if (this.demonName) {
+      name += ` (${this.demonName})`;
+    }
+
+    if (this.playerName) {
+      name += ` [${this.playerName}]`;
+    }
+
+    return name;
+  }
+
+  canBeDemonBluff(): boolean {
+    return false;
+  }
+
+  gameQualifiesForFirstNightInfo(gameState: GameState): boolean {
+    return gameState.playerCount >= 7;
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return "Show the THESE ARE YOUR MINIONS token. Point to any players. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 good character tokens. Put the Lunatic to sleep. Wake the Demon. Show the YOU ARE info token and the Demon token. Show the THIS PLAYER IS info token and the Lunatic token, then point to the Lunatic.";
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "Do whatever needs to be done to simulate the demon acting. Put the Lunatic to sleep. Wake the Demon. Show the Lunatic token & point to them, then their target(s).";
+  }
+
+  getStartingInfoSuggestion(gameState: GameState): string | undefined {
+    const demons = gameState.allChars.filter(
+      (char) => char.type === CharacterType.Demon,
+    );
+    shuffleArray(demons);
+    const pickedDemon = demons[0];
+
+    if (!pickedDemon.inPlay) {
+      pickedDemon.tokenUsedByCharName = this.name;
+    }
+
+    this.demonName = pickedDemon.name;
+    this.demonFirstNightInstructions =
+      pickedDemon.getFirstNightInstructions() as string;
+    this.demonOtherNightsInstructions =
+      pickedDemon.getOtherNightsInstructions() as string;
+
+    const charsInPlay = gameState.allChars.filter(
+      (char) => char.inPlay && char.id !== this.id,
+    );
+    shuffleArray(charsInPlay);
+
+    const fakeMinions = [];
+    let minionsToPick = playerCountConfig[gameState.playerCount].minions;
+    while (minionsToPick > 0) {
+      fakeMinions.push(charsInPlay.pop() as Character);
+      minionsToPick--;
+    }
+
+    const potentialOutsiderBluffs = gameState.allChars.filter(
+      (char) => char.canBeDemonBluff() && char.type === CharacterType.Outsider,
+    );
+    const potentialTownsfolkBluffs = gameState.allChars.filter(
+      (char) => char.canBeDemonBluff() && char.type === CharacterType.Townsfolk,
+    );
+    shuffleArray(potentialOutsiderBluffs);
+    shuffleArray(potentialTownsfolkBluffs);
+
+    let bluffs = [];
+
+    if (potentialOutsiderBluffs.length > 0) {
+      bluffs = [
+        potentialOutsiderBluffs[0],
+        potentialTownsfolkBluffs[0],
+        potentialTownsfolkBluffs[1],
+      ];
+    } else {
+      bluffs = [
+        potentialTownsfolkBluffs[0],
+        potentialTownsfolkBluffs[1],
+        potentialTownsfolkBluffs[2],
+      ];
+    }
+
+    const charTokens = fakeMinions.map((char) => {
+      return `{{${char.id}}}`;
+    });
+
+    let instructions = `Point to ${charTokens.join(", ")}. Show the ${bluffs[0].name}, ${bluffs[1].name}, and ${bluffs[2].name} tokens.`;
+
+    if (this.demonFirstNightInstructions) {
+      instructions += ` ${this.demonFirstNightInstructions}`;
+    }
+
+    return instructions;
+  }
+
+  getOtherNightSuggestion(): string | undefined {
+    return this.demonOtherNightsInstructions;
+  }
+}
+
+export class Tinker extends Character {
+  constructor() {
+    super(CharacterName.Tinker, CharacterType.Outsider);
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "The Tinker might die. ⚫️";
+  }
+}
+
+export class Moonchild extends Character {
+  constructor() {
+    super(CharacterName.Moonchild, CharacterType.Outsider);
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "If the Moonchild is due to kill a good player, they die. ⚫️";
+  }
+}
+
+export class Godfather extends Character {
+  constructor() {
+    super(CharacterName.Godfather, CharacterType.Minion, Alignment.Evil);
+  }
+
+  onPicked(playerSetup: PlayerSetup): void {
+    if (playerSetup.outsidersToPick === 0) {
+      playerSetup.outsidersToPick++;
+      playerSetup.townsfolkToPick--;
+    } else {
+      if (Math.random() < 0.5) {
+        playerSetup.outsidersToPick--;
+        playerSetup.townsfolkToPick++;
+      } else {
+        playerSetup.outsidersToPick++;
+        playerSetup.townsfolkToPick--;
+      }
+    }
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return "Show the character tokens of all in-play Outsiders.";
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "If an Outsider died today, the Godfather chooses a player. ⚫️";
+  }
+
+  getStartingInfoSuggestion(gameState: GameState): string | undefined {
+    const outsiders = gameState.allChars.filter(
+      (char) => char.inPlay && char.type === CharacterType.Outsider,
+    );
+
+    const charTokens = outsiders.map((char) => {
+      return `${char.name}`;
+    });
+
+    return `Show character tokens: ${charTokens.join(", ")}.`;
+  }
+}
+
+const devilsAdvocateInstructions =
+  "The Devil's Advocate chooses a living player. ⚫️";
+
+export class DevilsAdvocate extends Character {
+  constructor() {
+    super(CharacterName.DevilsAdvocate, CharacterType.Minion, Alignment.Evil);
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return devilsAdvocateInstructions;
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return devilsAdvocateInstructions;
+  }
+}
+
+export class Assassin extends Character {
+  constructor() {
+    super(CharacterName.Assassin, CharacterType.Minion, Alignment.Evil);
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "The Assassin might choose a player. ⚫️ ⚫️";
+  }
+}
+
+export class Zombuul extends Character {
+  constructor() {
+    super(CharacterName.Zombuul, CharacterType.Demon, Alignment.Evil);
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "If no one died today, the Zombuul chooses a player. ⚫️";
+  }
+}
+
+export class Pukka extends Character {
+  constructor() {
+    super(CharacterName.Pukka, CharacterType.Demon, Alignment.Evil);
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return "The Pukka chooses a player. ⚫️";
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "The Pukka chooses a player. ⚫️ The previously poisoned player dies then becomes healthy. ⚫️";
+  }
+}
+
+export class Shabaloth extends Character {
+  constructor() {
+    super(CharacterName.Shabaloth, CharacterType.Demon, Alignment.Evil);
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "A previously chosen player might be resurrected. ⚫️ The Shabaloth chooses 2 players. ⚫️ ⚫️";
+  }
+}
+
+export class Po extends Character {
+  constructor() {
+    super(CharacterName.Po, CharacterType.Demon, Alignment.Evil);
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "The Po may choose a player OR chooses 3 player if they chose no-one last night. ⚫️ or ⚫️ ⚫️ ⚫️";
+  }
+}
+
 export const characterClassNameMap: Record<
   CharacterName,
   new (
@@ -841,13 +1261,13 @@ export const characterClassNameMap: Record<
   [CharacterName.Savant]: Savant,
   [CharacterName.Seamstress]: Seamstress,
   [CharacterName.Philosopher]: Philosopher,
-  [CharacterName.Artist]: Character,
+  [CharacterName.Artist]: Artist,
   [CharacterName.Juggler]: Juggler,
   [CharacterName.Sage]: Sage,
   [CharacterName.Mutant]: Character,
   [CharacterName.Sweetheart]: Sweetheart,
   [CharacterName.Barber]: Barber,
-  [CharacterName.Klutz]: Character,
+  [CharacterName.Klutz]: Klutz,
   [CharacterName.EvilTwin]: EvilTwin,
   [CharacterName.Witch]: Witch,
   [CharacterName.Cerenovous]: Cerenovous,
@@ -856,4 +1276,30 @@ export const characterClassNameMap: Record<
   [CharacterName.Vigormortis]: Vigormortis,
   [CharacterName.NoDashii]: NoDashii,
   [CharacterName.Vortox]: Vortox,
+
+  [CharacterName.Grandmother]: Grandmother,
+  [CharacterName.Sailor]: Sailor,
+  [CharacterName.Chambermaid]: Chambermaid,
+  [CharacterName.Exorcist]: Exorcist,
+  [CharacterName.Innkeeper]: Innkeeper,
+  [CharacterName.Gambler]: Gambler,
+  [CharacterName.Gossip]: Gossip,
+  [CharacterName.Courtier]: Courtier,
+  [CharacterName.Professor]: Professor,
+  [CharacterName.Minstrel]: Character,
+  [CharacterName.TeaLady]: Character,
+  [CharacterName.Pacifist]: Character,
+  [CharacterName.Fool]: Character,
+  [CharacterName.Goon]: Character,
+  [CharacterName.Lunatic]: Lunatic,
+  [CharacterName.Tinker]: Tinker,
+  [CharacterName.Moonchild]: Moonchild,
+  [CharacterName.Godfather]: Godfather,
+  [CharacterName.DevilsAdvocate]: DevilsAdvocate,
+  [CharacterName.Assassin]: Assassin,
+  [CharacterName.Mastermind]: Character,
+  [CharacterName.Zombuul]: Zombuul,
+  [CharacterName.Pukka]: Pukka,
+  [CharacterName.Shabaloth]: Shabaloth,
+  [CharacterName.Po]: Po,
 };

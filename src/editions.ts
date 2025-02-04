@@ -38,8 +38,30 @@ import {
   NoDashii,
   Vortox,
   Savant,
+  Grandmother,
+  Sailor,
+  Chambermaid,
+  Exorcist,
+  Innkeeper,
+  Gambler,
+  Gossip,
+  Courtier,
+  Professor,
+  Lunatic,
+  Tinker,
+  Moonchild,
+  Godfather,
+  DevilsAdvocate,
+  Assassin,
+  Zombuul,
+  Pukka,
+  Shabaloth,
+  Po,
+  Artist,
+  Klutz,
 } from "./characters";
 import {
+  Alignment,
   CharacterName,
   CharacterType,
   Edition,
@@ -134,7 +156,7 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         new Savant(),
         new Seamstress(),
         new Philosopher(),
-        new Character(CharacterName.Artist),
+        new Artist(),
         new Juggler(),
         new Sage(),
       ];
@@ -143,7 +165,7 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         new Character(CharacterName.Mutant, CharacterType.Outsider),
         new Sweetheart(),
         new Barber(),
-        new Character(CharacterName.Klutz, CharacterType.Outsider),
+        new Klutz(),
       ];
 
       const minions = [
@@ -204,6 +226,138 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         CharacterName.Seamstress,
         CharacterName.Juggler,
         CharacterName.Mathematician,
+        SpecialInstructionKey.Dawn,
+      ],
+    },
+  },
+  [EditionName.BadMoonRising]: {
+    getCharactersForEdition: () => {
+      const townsfolk = [
+        new Grandmother(),
+        new Sailor(),
+        new Chambermaid(),
+        new Exorcist(),
+        new Innkeeper(),
+        new Gambler(),
+        new Gossip(),
+        new Courtier(),
+        new Professor(),
+        new Character(CharacterName.Minstrel),
+        new Character(CharacterName.TeaLady),
+        new Character(CharacterName.Pacifist),
+        new Character(CharacterName.Fool),
+      ];
+
+      const outsiders = [
+        new Character(CharacterName.Goon, CharacterType.Outsider),
+        new Lunatic(),
+        new Tinker(),
+        new Moonchild(),
+      ];
+
+      const minions = [
+        new Godfather(),
+        new DevilsAdvocate(),
+        new Assassin(),
+        new Character(
+          CharacterName.Mastermind,
+          CharacterType.Minion,
+          Alignment.Evil,
+        ),
+      ];
+
+      const demons = [new Zombuul(), new Pukka(), new Shabaloth(), new Po()];
+
+      return {
+        townsfolk,
+        outsiders,
+        minions,
+        demons,
+      };
+    },
+    nightInstructions: {
+      first: [
+        SpecialInstructionKey.Dusk,
+        SpecialInstructionKey.MinionInfo,
+        CharacterName.Lunatic,
+        SpecialInstructionKey.DemonInfo,
+        CharacterName.Sailor,
+        CharacterName.Courtier,
+        CharacterName.Godfather,
+        CharacterName.DevilsAdvocate,
+        CharacterName.Pukka,
+        CharacterName.Grandmother,
+        CharacterName.Chambermaid,
+        SpecialInstructionKey.Dawn,
+      ],
+      other: [
+        SpecialInstructionKey.Dusk,
+        CharacterName.Sailor,
+        CharacterName.Innkeeper,
+        CharacterName.Courtier,
+        CharacterName.Gambler,
+        CharacterName.DevilsAdvocate,
+        CharacterName.Lunatic,
+        CharacterName.Exorcist,
+        CharacterName.Zombuul,
+        CharacterName.Pukka,
+        CharacterName.Shabaloth,
+        CharacterName.Po,
+        CharacterName.Assassin,
+        CharacterName.Godfather,
+        CharacterName.Professor,
+        CharacterName.Gossip,
+        CharacterName.Tinker,
+        CharacterName.Moonchild,
+        CharacterName.Grandmother,
+        CharacterName.Chambermaid,
+        SpecialInstructionKey.Dawn,
+      ],
+    },
+  },
+  [EditionName.NoGreaterJoy]: {
+    isTeensyville: true,
+    getCharactersForEdition: () => {
+      const townsfolk = [
+        new Clockmaker(),
+        new Investigator(),
+        new Empath(),
+        new Chambermaid(),
+        new Artist(),
+        new Sage(),
+      ];
+
+      const outsiders = [new Drunk(), new Klutz()];
+
+      const minions = [new ScarletWoman(), new Baron()];
+
+      const demons = [new Imp()];
+
+      return {
+        townsfolk,
+        outsiders,
+        minions,
+        demons,
+      };
+    },
+    nightInstructions: {
+      first: [
+        SpecialInstructionKey.Dusk,
+        SpecialInstructionKey.MinionInfo,
+        SpecialInstructionKey.DemonInfo,
+        CharacterName.Investigator,
+        CharacterName.Empath,
+        CharacterName.Clockmaker,
+        CharacterName.Chambermaid,
+        SpecialInstructionKey.Dawn,
+      ],
+      other: [
+        SpecialInstructionKey.Dusk,
+        CharacterName.ScarletWoman,
+        CharacterName.Imp,
+        CharacterName.Sage,
+        CharacterName.Empath,
+        CharacterName.Chambermaid,
         SpecialInstructionKey.Dawn,
       ],
     },

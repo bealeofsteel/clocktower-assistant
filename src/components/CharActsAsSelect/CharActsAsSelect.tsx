@@ -39,6 +39,11 @@ function CharActsAsSelect({
       newGameState.startingInfoSuggestions[currentChar.id] = startingInfo;
     }
 
+    const otherNightSuggestion = actsAsChar.getOtherNightSuggestion(gameState);
+    if (otherNightSuggestion) {
+      newGameState.otherNightSuggestions[currentChar.id] = otherNightSuggestion;
+    }
+
     newGameState.nightInstructions = regenerateNightInstructions(
       gameState,
       newGameState,

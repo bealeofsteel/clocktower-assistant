@@ -5,6 +5,7 @@ import PlayerNameInput from "../PlayerNameInput/PlayerNameInput";
 import { Character } from "../../characters";
 import CharacterSelect from "../CharacterSelect/CharacterSelect";
 import CharActsAsSelect from "../CharActsAsSelect/CharActsAsSelect";
+import { useToggleDeadAliveState } from "../../hooks/useToggleDeadAliveState";
 
 interface CharacterManagementProps {
   gameState: GameState;
@@ -35,22 +36,10 @@ function CharacterMangement({
     });
   };
 
-  const toggleDeadAliveState = (char: Character) => {
-    const newChars = gameState.allChars.map((oldChar) => {
-      if (oldChar.id === char.id) {
-        const newChar = cloneChar(oldChar);
-        newChar.isDead = !oldChar.isDead;
-        return newChar;
-      } else {
-        return oldChar;
-      }
-    });
-
-    updateGameState({
-      ...gameState,
-      allChars: newChars,
-    });
-  };
+  const toggleDeadAliveState = useToggleDeadAliveState(
+    gameState,
+    updateGameState,
+  );
 
   const toggleActsWhileDead = (char: Character) => {
     const newChars = gameState.allChars.map((oldChar) => {
