@@ -35,6 +35,12 @@ function RandomizeSetup({
   };
 
   const generateRandomSetup = () => {
+    const edition = EDITIONS_BY_NAME[editionName];
+    if (edition.isTeensyville && playerCount > 6) {
+      window.alert("Teensyville games can only handle 6 players max!");
+      return;
+    }
+
     const playerSetup: PlayerSetup = {
       townsfolkToPick: playerCountConfig[playerCount].townsfolk,
       outsidersToPick: playerCountConfig[playerCount].outsiders,
@@ -42,8 +48,7 @@ function RandomizeSetup({
       demonsToPick: playerCountConfig[playerCount].demons,
     };
 
-    const characterSet =
-      EDITIONS_BY_NAME[editionName].getCharactersForEdition();
+    const characterSet = edition.getCharactersForEdition();
 
     const allCharNamesForEdition = {
       townsfolk: characterSet.townsfolk.map((char) => char.name),
@@ -101,13 +106,22 @@ function RandomizeSetup({
       playerSetup.minionsToPick--;
     }
 
-    while (playerSetup.outsidersToPick > 0) {
+    while (
+      playerSetup.outsidersToPick > 0 &&
+      availableChars.outsiders.length > 0
+    ) {
       const character = pickAvailableCharacter(
         availableChars.outsiders,
         allChars,
       );
       character.onPicked(playerSetup, availableChars, allChars);
       playerSetup.outsidersToPick--;
+    }
+
+    // Special handling for Teensyville, since there may not be enough Outsiders to choose from.
+    // For example, at 6 players 1 Outsider starts in play. The Baron adds 2 more, but only 2 Outsiders are on the script.
+    if (playerSetup.outsidersToPick > 0) {
+      playerSetup.townsfolkToPick += playerSetup.outsidersToPick;
     }
 
     while (playerSetup.townsfolkToPick > 0) {

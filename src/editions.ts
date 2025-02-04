@@ -57,6 +57,8 @@ import {
   Pukka,
   Shabaloth,
   Po,
+  Artist,
+  Klutz,
 } from "./characters";
 import {
   Alignment,
@@ -154,7 +156,7 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         new Savant(),
         new Seamstress(),
         new Philosopher(),
-        new Character(CharacterName.Artist),
+        new Artist(),
         new Juggler(),
         new Sage(),
       ];
@@ -163,7 +165,7 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         new Character(CharacterName.Mutant, CharacterType.Outsider),
         new Sweetheart(),
         new Barber(),
-        new Character(CharacterName.Klutz, CharacterType.Outsider),
+        new Klutz(),
       ];
 
       const minions = [
@@ -308,6 +310,53 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         CharacterName.Tinker,
         CharacterName.Moonchild,
         CharacterName.Grandmother,
+        CharacterName.Chambermaid,
+        SpecialInstructionKey.Dawn,
+      ],
+    },
+  },
+  [EditionName.NoGreaterJoy]: {
+    isTeensyville: true,
+    getCharactersForEdition: () => {
+      const townsfolk = [
+        new Clockmaker(),
+        new Investigator(),
+        new Empath(),
+        new Chambermaid(),
+        new Artist(),
+        new Sage(),
+      ];
+
+      const outsiders = [new Drunk(), new Klutz()];
+
+      const minions = [new ScarletWoman(), new Baron()];
+
+      const demons = [new Imp()];
+
+      return {
+        townsfolk,
+        outsiders,
+        minions,
+        demons,
+      };
+    },
+    nightInstructions: {
+      first: [
+        SpecialInstructionKey.Dusk,
+        SpecialInstructionKey.MinionInfo,
+        SpecialInstructionKey.DemonInfo,
+        CharacterName.Investigator,
+        CharacterName.Empath,
+        CharacterName.Clockmaker,
+        CharacterName.Chambermaid,
+        SpecialInstructionKey.Dawn,
+      ],
+      other: [
+        SpecialInstructionKey.Dusk,
+        CharacterName.ScarletWoman,
+        CharacterName.Imp,
+        CharacterName.Sage,
+        CharacterName.Empath,
         CharacterName.Chambermaid,
         SpecialInstructionKey.Dawn,
       ],

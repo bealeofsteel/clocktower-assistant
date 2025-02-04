@@ -663,6 +663,13 @@ export class Philosopher extends Character {
   }
 }
 
+// This class doesn't do anything special, but I'm adding it to make it easier to re-use the character in No Greater Joy
+export class Artist extends Character {
+  constructor() {
+    super(CharacterName.Artist);
+  }
+}
+
 export class Juggler extends Character {
   constructor() {
     super(CharacterName.Juggler);
@@ -710,6 +717,13 @@ export class Barber extends Character {
 
   getOtherNightsInstructions(): string | undefined {
     return "If the Barber died today or tonight, show the Demon the THIS CHARACTER SELECTED YOU & Barber tokens. If the Demon chose 2 players, wake one at a time. Show the YOU ARE token & their new character token.";
+  }
+}
+
+// This class doesn't do anything special, but I'm adding it to make it easier to re-use the character in No Greater Joy
+export class Klutz extends Character {
+  constructor() {
+    super(CharacterName.Klutz, CharacterType.Outsider);
   }
 }
 
@@ -1247,13 +1261,13 @@ export const characterClassNameMap: Record<
   [CharacterName.Savant]: Savant,
   [CharacterName.Seamstress]: Seamstress,
   [CharacterName.Philosopher]: Philosopher,
-  [CharacterName.Artist]: Character,
+  [CharacterName.Artist]: Artist,
   [CharacterName.Juggler]: Juggler,
   [CharacterName.Sage]: Sage,
   [CharacterName.Mutant]: Character,
   [CharacterName.Sweetheart]: Sweetheart,
   [CharacterName.Barber]: Barber,
-  [CharacterName.Klutz]: Character,
+  [CharacterName.Klutz]: Klutz,
   [CharacterName.EvilTwin]: EvilTwin,
   [CharacterName.Witch]: Witch,
   [CharacterName.Cerenovous]: Cerenovous,
