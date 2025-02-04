@@ -74,6 +74,11 @@ function NightInfo({
 
   const charsById = getCharsById(gameState);
 
+  const infoField =
+    type === NightType.First
+      ? "startingInfoSuggestions"
+      : "otherNightSuggestions";
+
   return (
     <>
       <h2>{type === NightType.First ? "First Night" : "Other Nights"}</h2>
@@ -111,22 +116,19 @@ function NightInfo({
               </strong>
             </span>
             <span>{instruction.message}</span>
-            {instruction.charId &&
-              gameState.startingInfoSuggestions[instruction.charId] && (
-                <>
-                  <strong> Suggestion: </strong>
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: parseCharTokens(
-                        gameState.startingInfoSuggestions[
-                          instruction.charId
-                        ] as string,
-                        instantiatedCharsById,
-                      ),
-                    }}
-                  ></span>
-                </>
-              )}
+            {instruction.charId && gameState[infoField][instruction.charId] && (
+              <>
+                <strong> Suggestion: </strong>
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: parseCharTokens(
+                      gameState[infoField][instruction.charId] as string,
+                      instantiatedCharsById,
+                    ),
+                  }}
+                ></span>
+              </>
+            )}
           </div>
         ))}
       </div>

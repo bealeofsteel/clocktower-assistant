@@ -167,7 +167,8 @@ function RandomizeSetup({
   const generateStartingInfoSuggestions = (gameState: GameState) => {
     const startingInfoSuggestions: Record<string, string> = {};
 
-    for (const char of gameState.allChars) {
+    const inPlayChars = gameState.allChars.filter((char) => char.inPlay);
+    for (const char of inPlayChars) {
       const suggestion = char.getStartingInfoSuggestion(gameState);
       if (suggestion) {
         startingInfoSuggestions[char.id] = suggestion;
@@ -180,7 +181,8 @@ function RandomizeSetup({
   const generateOtherNightSuggestions = (gameState: GameState) => {
     const otherNightSuggestions: Record<string, string> = {};
 
-    for (const char of gameState.allChars) {
+    const inPlayChars = gameState.allChars.filter((char) => char.inPlay);
+    for (const char of inPlayChars) {
       const suggestion = char.getOtherNightSuggestion(gameState);
       if (suggestion) {
         otherNightSuggestions[char.id] = suggestion;

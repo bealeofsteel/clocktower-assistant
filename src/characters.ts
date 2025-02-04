@@ -12,6 +12,7 @@ import {
   SupportDemonOutsiderBluff,
   SupportDemonTownsfolkBluff,
 } from "./drunkStrategies";
+import { playerCountConfig } from "./gameSettings";
 import { shuffleArray } from "./randomUtils";
 import {
   CharInPlayStatus,
@@ -829,8 +830,11 @@ export class Vortox extends Character {
 /* Bad Moon Rising characters */
 
 export class Grandmother extends Character {
+  grandchildCharId: string;
+
   constructor() {
     super(CharacterName.Grandmother);
+    this.grandchildCharId = "";
   }
 
   getFirstNightInstructions(): string | undefined {
@@ -847,7 +851,13 @@ export class Grandmother extends Character {
     );
     shuffleArray(chars);
 
-    return `The grandchild is {{${chars[0].id}}}.`;
+    this.grandchildCharId = chars[0].id;
+
+    return `The grandchild is {{${this.grandchildCharId}}}.`;
+  }
+
+  getOtherNightSuggestion(): string | undefined {
+    return `The grandchild is {{${this.grandchildCharId}}}.`;
   }
 }
 
@@ -1014,13 +1024,18 @@ export class Lunatic extends Character {
     );
     shuffleArray(charsInPlay);
 
-    const fakeMinions = [charsInPlay[0], charsInPlay[1], charsInPlay[2]];
+    const fakeMinions = [];
+    let minionsToPick = playerCountConfig[gameState.playerCount].minions;
+    while (minionsToPick > 0) {
+      fakeMinions.push(charsInPlay.pop() as Character);
+      minionsToPick--;
+    }
 
     const potentialOutsiderBluffs = gameState.allChars.filter(
       (char) => char.canBeDemonBluff() && char.type === CharacterType.Outsider,
     );
     const potentialTownsfolkBluffs = gameState.allChars.filter(
-      (char) => char.canBeDemonBluff() && char.type === CharacterType.Outsider,
+      (char) => char.canBeDemonBluff() && char.type === CharacterType.Townsfolk,
     );
     shuffleArray(potentialOutsiderBluffs);
     shuffleArray(potentialTownsfolkBluffs);
@@ -1045,17 +1060,17 @@ export class Lunatic extends Character {
       return `{{${char.id}}}`;
     });
 
-    let instructions = `Point to ${charTokens[0]}, ${charTokens[1]}, and ${charTokens[2]}. Show the ${bluffs[0].name}, ${bluffs[1].name}, and ${bluffs[2].name} tokens.`;
+    let instructions = `Point to ${charTokens.join(", ")}. Show the ${bluffs[0].name}, ${bluffs[1].name}, and ${bluffs[2].name} tokens.`;
 
     if (this.demonFirstNightInstructions) {
-      instructions += ` Pretend demon steps: ${this.demonFirstNightInstructions}`;
+      instructions += ` ${this.demonFirstNightInstructions}`;
     }
 
     return instructions;
   }
 
   getOtherNightSuggestion(): string | undefined {
-    return `Pretend demon steps: ${this.demonOtherNightsInstructions}`;
+    return this.demonOtherNightsInstructions;
   }
 }
 
@@ -1064,7 +1079,7 @@ export class Tinker extends Character {
     super(CharacterName.Tinker, CharacterType.Outsider);
   }
 
-  getOtherNightSuggestion(): string | undefined {
+  getOtherNightsInstructions(): string | undefined {
     return "The Tinker might die. ⚫️";
   }
 }
@@ -1074,7 +1089,7 @@ export class Moonchild extends Character {
     super(CharacterName.Moonchild, CharacterType.Outsider);
   }
 
-  getOtherNightSuggestion(): string | undefined {
+  getOtherNightsInstructions(): string | undefined {
     return "If the Moonchild is due to kill a good player, they die. ⚫️";
   }
 }
@@ -1103,7 +1118,7 @@ export class Godfather extends Character {
     return "Show the character tokens of all in-play Outsiders.";
   }
 
-  getOtherNightSuggestion(): string | undefined {
+  getOtherNightsInstructions(): string | undefined {
     return "If an Outsider died today, the Godfather chooses a player. ⚫️";
   }
 
@@ -1132,7 +1147,7 @@ export class DevilsAdvocate extends Character {
     return devilsAdvocateInstructions;
   }
 
-  getOtherNightSuggestion(): string | undefined {
+  getOtherNightsInstructions(): string | undefined {
     return devilsAdvocateInstructions;
   }
 }
@@ -1142,7 +1157,7 @@ export class Assassin extends Character {
     super(CharacterName.Assassin, CharacterType.Minion, Alignment.Evil);
   }
 
-  getOtherNightSuggestion(): string | undefined {
+  getOtherNightsInstructions(): string | undefined {
     return "The Assassin might choose a player. ⚫️ ⚫️";
   }
 }
@@ -1152,7 +1167,7 @@ export class Zombuul extends Character {
     super(CharacterName.Zombuul, CharacterType.Demon, Alignment.Evil);
   }
 
-  getOtherNightSuggestion(): string | undefined {
+  getOtherNightsInstructions(): string | undefined {
     return "If no one died today, the Zombuul chooses a player. ⚫️";
   }
 }
@@ -1166,7 +1181,7 @@ export class Pukka extends Character {
     return "The Pukka chooses a player. ⚫️";
   }
 
-  getOtherNightSuggestion(): string | undefined {
+  getOtherNightsInstructions(): string | undefined {
     return "The Pukka chooses a player. ⚫️ The previously poisoned player dies then becomes healthy. ⚫️";
   }
 }
@@ -1176,7 +1191,7 @@ export class Shabaloth extends Character {
     super(CharacterName.Shabaloth, CharacterType.Demon, Alignment.Evil);
   }
 
-  getOtherNightSuggestion(): string | undefined {
+  getOtherNightsInstructions(): string | undefined {
     return "A previously chosen player might be resurrected. ⚫️ The Shabaloth chooses 2 players. ⚫️ ⚫️";
   }
 }
@@ -1186,7 +1201,7 @@ export class Po extends Character {
     super(CharacterName.Po, CharacterType.Demon, Alignment.Evil);
   }
 
-  getOtherNightSuggestion(): string | undefined {
+  getOtherNightsInstructions(): string | undefined {
     return "The Po may choose a player OR chooses 3 player if they chose no-one last night. ⚫️ or ⚫️ ⚫️ ⚫️";
   }
 }
