@@ -861,7 +861,8 @@ export class Grandmother extends Character {
 
   getStartingInfoSuggestion(gameState: GameState): string | undefined {
     const chars = gameState.allChars.filter(
-      (char) => char.inPlay && char.alignment === Alignment.Good,
+      (char) =>
+        char.inPlay && char.alignment === Alignment.Good && char.id !== this.id,
     );
     shuffleArray(chars);
 
