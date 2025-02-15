@@ -264,7 +264,7 @@ export class EmpathInfo extends SavantInfoStrategy {
 }
 
 const clockmakerInfo =
-  "The Demon is [number] players away from the nearest Minion.";
+  "A Demon is sitting [number] players away from the nearest Minion.";
 
 export class ClockmakerInfo extends SavantInfoStrategy {
   getTrueInfo(): string {
