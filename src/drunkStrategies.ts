@@ -5,7 +5,7 @@ import {
 } from "./charUtils";
 import { playerCountConfig } from "./gameSettings";
 import { shuffleArray } from "./randomUtils";
-import { CharacterName, CharacterType, GameState } from "./types";
+import { Alignment, CharacterName, CharacterType, GameState } from "./types";
 
 export abstract class DrunkStrategy {
   charId: string;
@@ -39,6 +39,7 @@ const supportDemonBluffOfType = (
   gameState: GameState,
   charType: CharacterType,
   excludeCharId: string,
+  supportedCharType: CharacterType,
 ) => {
   const bluff = pickDemonBluffOfType(gameState, charType);
   const goodChars = pickInPlayCharsofTypes(
@@ -48,20 +49,20 @@ const supportDemonBluffOfType = (
     1,
   );
 
-  const demons = Array.from(
+  const supportedChars = Array.from(
     gameState.allChars.filter(
-      (char) => char.inPlay && char.type === CharacterType.Demon,
+      (char) => char.inPlay && char.type === supportedCharType,
     ),
   );
-  shuffleArray(demons);
+  shuffleArray(supportedChars);
 
   const prefix = `Show the ${bluff.name} character token. `;
   let suffix = "";
 
   if (Math.random() < 0.5) {
-    suffix = `Point to {{${demons[0].id}}} (${charType}) and {{${goodChars[0].id}}} (Wrong).`;
+    suffix = `Point to {{${supportedChars[0].id}}} (${charType}) and {{${goodChars[0].id}}} (Wrong).`;
   } else {
-    suffix = `Point to {{${goodChars[0].id}}} (Wrong) and {{${demons[0].id}}} (${charType}).`;
+    suffix = `Point to {{${goodChars[0].id}}} (Wrong) and {{${supportedChars[0].id}}} (${charType}).`;
   }
 
   return prefix + suffix;
@@ -73,6 +74,18 @@ export class SupportDemonTownsfolkBluff extends DrunkStrategy {
       gameState,
       CharacterType.Townsfolk,
       this.charId,
+      CharacterType.Demon,
+    );
+  }
+}
+
+export class SupportMinionTownsfolkBluff extends DrunkStrategy {
+  getInstructionsForStrategy(gameState: GameState): string {
+    return supportDemonBluffOfType(
+      gameState,
+      CharacterType.Townsfolk,
+      this.charId,
+      CharacterType.Minion,
     );
   }
 }
@@ -91,6 +104,78 @@ export class SupportDemonOutsiderBluff extends DrunkStrategy {
     return supportDemonBluffOfType(
       gameState,
       CharacterType.Outsider,
+      this.charId,
+      CharacterType.Demon,
+    );
+  }
+}
+
+export class SupportMinionOutsiderBluff extends DrunkStrategy {
+  gameQualifiesForStrategy(gameState: GameState): boolean {
+    for (const bluff of gameState.demonBluffs) {
+      if (bluff.type === CharacterType.Outsider) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  getInstructionsForStrategy(gameState: GameState): string {
+    return supportDemonBluffOfType(
+      gameState,
+      CharacterType.Outsider,
+      this.charId,
+      CharacterType.Minion,
+    );
+  }
+}
+
+const pointToWrongGoodPlayersOfType = (
+  gameState: GameState,
+  charType: CharacterType,
+  excludeCharName: string,
+  excludeCharId: string,
+) => {
+  const demonBluffIds = gameState.demonBluffs.map((char) => char.id);
+
+  const chars = gameState.allChars.filter(
+    (char) =>
+      char.type === charType &&
+      !demonBluffIds.includes(char.id) &&
+      char.name !== excludeCharName,
+  );
+  shuffleArray(chars);
+  const charToShow = chars[0];
+
+  const goodChars = gameState.allChars.filter(
+    (char) =>
+      char.inPlay &&
+      char.alignment === Alignment.Good &&
+      char.id !== excludeCharId &&
+      char.id !== charToShow.id,
+  );
+  shuffleArray(goodChars);
+
+  return `Show the ${charToShow.name} character token. Point to {{${goodChars[0].id}}} (${charType}) and {{${goodChars[1].id}}} (Wrong).`;
+};
+
+export class ShowGoodPlayersWrongTownsfolk extends DrunkStrategy {
+  getInstructionsForStrategy(gameState: GameState): string {
+    return pointToWrongGoodPlayersOfType(
+      gameState,
+      CharacterType.Townsfolk,
+      CharacterName.Washerwoman,
+      this.charId,
+    );
+  }
+}
+
+export class ShowGoodPlayersWrongOutsider extends DrunkStrategy {
+  getInstructionsForStrategy(gameState: GameState): string {
+    return pointToWrongGoodPlayersOfType(
+      gameState,
+      CharacterType.Outsider,
+      CharacterName.Librarian,
       this.charId,
     );
   }

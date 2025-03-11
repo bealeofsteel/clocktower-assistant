@@ -251,7 +251,7 @@ export class ChefInfo extends SavantInfoStrategy {
 }
 
 const empathInfo =
-  "Of your two closest alive neighbors, exactly [number] of them are evil.";
+  "Of your two closest living neighbors, exactly [number] of them are evil.";
 
 export class EmpathInfo extends SavantInfoStrategy {
   getTrueInfo(): string {

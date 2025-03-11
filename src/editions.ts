@@ -59,6 +59,7 @@ import {
   Po,
   Artist,
   Klutz,
+  Mutant,
 } from "./characters";
 import {
   Alignment,
@@ -162,7 +163,7 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
       ];
 
       const outsiders = [
-        new Character(CharacterName.Mutant, CharacterType.Outsider),
+        new Mutant(),
         new Sweetheart(),
         new Barber(),
         new Klutz(),

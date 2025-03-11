@@ -118,7 +118,7 @@ function RandomizeSetup({
       playerSetup.outsidersToPick--;
     }
 
-    // Special handling for Teensyville, since there may not be enough Outsiders to choose from.
+    // Special handling for Teensyville / custom scripts, since there may not be enough Outsiders to choose from.
     // For example, at 6 players 1 Outsider starts in play. The Baron adds 2 more, but only 2 Outsiders are on the script.
     if (playerSetup.outsidersToPick > 0) {
       playerSetup.townsfolkToPick += playerSetup.outsidersToPick;

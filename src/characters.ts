@@ -11,6 +11,10 @@ import {
   FrameTownsfolkAsDrunk,
   SupportDemonOutsiderBluff,
   SupportDemonTownsfolkBluff,
+  SupportMinionTownsfolkBluff,
+  ShowGoodPlayersWrongTownsfolk,
+  SupportMinionOutsiderBluff,
+  ShowGoodPlayersWrongOutsider,
 } from "./drunkStrategies";
 import { playerCountConfig } from "./gameSettings";
 import { shuffleArray } from "./randomUtils";
@@ -162,7 +166,11 @@ export class Washerwoman extends Character {
   }
 
   getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
-    return [new SupportDemonTownsfolkBluff(charId)];
+    return [
+      new SupportDemonTownsfolkBluff(charId),
+      new SupportMinionTownsfolkBluff(charId),
+      new ShowGoodPlayersWrongTownsfolk(charId),
+    ];
   }
 }
 
@@ -188,6 +196,8 @@ export class Librarian extends Character {
       new ClaimZeroOutsiders(charId),
       new FrameTownsfolkAsDrunk(charId),
       new SupportDemonOutsiderBluff(charId),
+      new SupportMinionOutsiderBluff(charId),
+      new ShowGoodPlayersWrongOutsider(charId),
     ];
   }
 }
@@ -814,10 +824,8 @@ export class Vigormortis extends Character {
   }
 
   onPicked(playerSetup: PlayerSetup): void {
-    if (playerSetup.outsidersToPick > 0) {
-      playerSetup.outsidersToPick -= 1;
-      playerSetup.townsfolkToPick += 1;
-    }
+    playerSetup.outsidersToPick -= 1;
+    playerSetup.townsfolkToPick += 1;
   }
 }
 
@@ -1115,17 +1123,12 @@ export class Godfather extends Character {
   }
 
   onPicked(playerSetup: PlayerSetup): void {
-    if (playerSetup.outsidersToPick === 0) {
+    if (Math.random() < 0.75) {
       playerSetup.outsidersToPick++;
       playerSetup.townsfolkToPick--;
     } else {
-      if (Math.random() < 0.5) {
-        playerSetup.outsidersToPick--;
-        playerSetup.townsfolkToPick++;
-      } else {
-        playerSetup.outsidersToPick++;
-        playerSetup.townsfolkToPick--;
-      }
+      playerSetup.outsidersToPick--;
+      playerSetup.townsfolkToPick++;
     }
   }
 
@@ -1145,6 +1148,10 @@ export class Godfather extends Character {
     const charTokens = outsiders.map((char) => {
       return `${char.name}`;
     });
+
+    if (charTokens.length === 0) {
+      return;
+    }
 
     return `Show character tokens: ${charTokens.join(", ")}.`;
   }
@@ -1265,7 +1272,7 @@ export const characterClassNameMap: Record<
   [CharacterName.Artist]: Artist,
   [CharacterName.Juggler]: Juggler,
   [CharacterName.Sage]: Sage,
-  [CharacterName.Mutant]: Character,
+  [CharacterName.Mutant]: Mutant,
   [CharacterName.Sweetheart]: Sweetheart,
   [CharacterName.Barber]: Barber,
   [CharacterName.Klutz]: Klutz,
