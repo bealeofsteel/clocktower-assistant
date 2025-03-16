@@ -26,11 +26,11 @@ function RandomizeSetup({
 }: RandomizeSetupProps) {
   const pickAvailableCharacter = (
     availableChars: Character[],
-    inPlayChars: Character[],
+    allChars: Character[],
   ): Character => {
     const character = availableChars.pop() as Character;
     character.inPlay = true;
-    inPlayChars.push(character);
+    allChars.push(character);
     return character;
   };
 
@@ -133,27 +133,11 @@ function RandomizeSetup({
       playerSetup.townsfolkToPick--;
     }
 
-    let numDemonBluffs = 3;
-
-    if (availableChars.outsiders.length > 0) {
-      for (let i = availableChars.outsiders.length - 1; i >= 0; i--) {
-        const char = availableChars.outsiders[i];
-        if (char.canBeDemonBluff()) {
-          availableChars.outsiders.splice(i, 1);
-          allChars.push(char);
-          gameState.demonBluffs.push(char);
-          numDemonBluffs--;
-          break;
-        }
-      }
-    }
-
-    while (numDemonBluffs > 0) {
-      const character = availableChars.townsfolk.pop() as Character;
-      allChars.push(character);
-      gameState.demonBluffs.push(character);
-      numDemonBluffs--;
-    }
+    gameState.demonBluffs = generateDemonBluffs(
+      availableChars.outsiders,
+      availableChars.townsfolk,
+    );
+    gameState.demonBluffs.forEach((char) => allChars.push(char));
 
     // Add remaining available character to the allChars array (although not marked as in-play)
     while (availableChars.townsfolk.length > 0) {
@@ -178,34 +162,6 @@ function RandomizeSetup({
     updateGameState(gameState);
   };
 
-  const generateStartingInfoSuggestions = (gameState: GameState) => {
-    const startingInfoSuggestions: Record<string, string> = {};
-
-    const inPlayChars = gameState.allChars.filter((char) => char.inPlay);
-    for (const char of inPlayChars) {
-      const suggestion = char.getStartingInfoSuggestion(gameState);
-      if (suggestion) {
-        startingInfoSuggestions[char.id] = suggestion;
-      }
-    }
-
-    return startingInfoSuggestions;
-  };
-
-  const generateOtherNightSuggestions = (gameState: GameState) => {
-    const otherNightSuggestions: Record<string, string> = {};
-
-    const inPlayChars = gameState.allChars.filter((char) => char.inPlay);
-    for (const char of inPlayChars) {
-      const suggestion = char.getOtherNightSuggestion(gameState);
-      if (suggestion) {
-        otherNightSuggestions[char.id] = suggestion;
-      }
-    }
-
-    return otherNightSuggestions;
-  };
-
   return (
     <>
       <button className="randomize-setup" onClick={() => generateRandomSetup()}>
@@ -214,6 +170,64 @@ function RandomizeSetup({
     </>
   );
 }
+
+export const generateDemonBluffs = (
+  availableOutsiders: Character[],
+  availableTownsfolk: Character[],
+): Character[] => {
+  let numDemonBluffs = 3;
+  const demonBluffs = [];
+
+  if (availableOutsiders.length > 0) {
+    for (let i = availableOutsiders.length - 1; i >= 0; i--) {
+      const char = availableOutsiders[i];
+      if (char.canBeDemonBluff()) {
+        availableOutsiders.splice(i, 1);
+        demonBluffs.push(char);
+        numDemonBluffs--;
+        break;
+      }
+    }
+  }
+
+  while (numDemonBluffs > 0) {
+    const char = availableTownsfolk.pop() as Character;
+    if (char.canBeDemonBluff()) {
+      demonBluffs.push(char);
+      numDemonBluffs--;
+    }
+  }
+
+  return demonBluffs;
+};
+
+export const generateStartingInfoSuggestions = (gameState: GameState) => {
+  const startingInfoSuggestions: Record<string, string> = {};
+
+  const inPlayChars = gameState.allChars.filter((char) => char.inPlay);
+  for (const char of inPlayChars) {
+    const suggestion = char.getStartingInfoSuggestion(gameState);
+    if (suggestion) {
+      startingInfoSuggestions[char.id] = suggestion;
+    }
+  }
+
+  return startingInfoSuggestions;
+};
+
+export const generateOtherNightSuggestions = (gameState: GameState) => {
+  const otherNightSuggestions: Record<string, string> = {};
+
+  const inPlayChars = gameState.allChars.filter((char) => char.inPlay);
+  for (const char of inPlayChars) {
+    const suggestion = char.getOtherNightSuggestion(gameState);
+    if (suggestion) {
+      otherNightSuggestions[char.id] = suggestion;
+    }
+  }
+
+  return otherNightSuggestions;
+};
 
 const charTypeFilterOptions = [
   {

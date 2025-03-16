@@ -52,7 +52,6 @@ export class Character {
   alignment: Alignment;
   isDead: boolean;
   playerName: string;
-  tokenUsedByCharName: string | undefined;
   inPlay: boolean;
   actsAsChar: Character | undefined;
   actsWhileDead: boolean;
@@ -86,10 +85,6 @@ export class Character {
 
     if (this.actsAsChar) {
       name += ` (${this.actsAsChar.name})`;
-    }
-
-    if (this.tokenUsedByCharName) {
-      name += ` (token used by ${this.tokenUsedByCharName})`;
     }
 
     if (this.playerName) {
@@ -145,6 +140,11 @@ export class Character {
 
   gameQualifiesForFirstNightInfo(_gameState: GameState): boolean {
     return true;
+  }
+
+  // If the class uses another character's token (like the Drunk or Lunatic), return that character's name
+  getCharTokenInUse(): CharacterName | undefined {
+    return;
   }
 }
 
@@ -401,7 +401,6 @@ export class Drunk extends Character {
     allChars: Character[],
   ) {
     const character = availableChars.townsfolk.pop() as Character;
-    character.tokenUsedByCharName = this.name;
     this.actsAsChar = character;
     allChars.push(character);
   }
@@ -420,6 +419,10 @@ export class Drunk extends Character {
       shuffleArray(strategies);
       return strategies[0].getInstructionsForStrategy(gameState);
     }
+  }
+
+  getCharTokenInUse(): CharacterName | undefined {
+    return this.actsAsChar?.name;
   }
 }
 
@@ -984,13 +987,12 @@ export class Professor extends Character {
 }
 
 export class Lunatic extends Character {
-  demonName: string;
+  demonName: CharacterName | undefined;
   demonFirstNightInstructions: string;
   demonOtherNightsInstructions: string;
 
   constructor() {
     super(CharacterName.Lunatic, CharacterType.Outsider);
-    this.demonName = "";
     this.demonFirstNightInstructions = "";
     this.demonOtherNightsInstructions = "";
   }
@@ -1031,10 +1033,6 @@ export class Lunatic extends Character {
     );
     shuffleArray(demons);
     const pickedDemon = demons[0];
-
-    if (!pickedDemon.inPlay) {
-      pickedDemon.tokenUsedByCharName = this.name;
-    }
 
     this.demonName = pickedDemon.name;
     this.demonFirstNightInstructions =
@@ -1094,6 +1092,10 @@ export class Lunatic extends Character {
 
   getOtherNightSuggestion(): string | undefined {
     return this.demonOtherNightsInstructions;
+  }
+
+  getCharTokenInUse(): CharacterName | undefined {
+    return this.demonName;
   }
 }
 

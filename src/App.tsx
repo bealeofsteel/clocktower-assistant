@@ -1,8 +1,18 @@
 import { useState } from "react";
 import "./App.css";
 import PlayerCountSelect from "./components/PlayerCountSelect/PlayerCountSelect";
-import RandomizeSetup from "./components/RandomizeSetup/RandomizeSetup";
-import { EditionName, GameState, CharacterType, NightType } from "./types";
+import RandomizeSetup, {
+  generateDemonBluffs,
+  generateOtherNightSuggestions,
+  generateStartingInfoSuggestions,
+} from "./components/RandomizeSetup/RandomizeSetup";
+import {
+  EditionName,
+  GameState,
+  CharacterType,
+  NightType,
+  CharacterName,
+} from "./types";
 import { Character } from "./characters";
 import { EDITIONS_BY_NAME } from "./editions";
 import { cloneChar, getCharsById, parseCharTokens } from "./charUtils";
@@ -11,6 +21,7 @@ import CharacterManagement from "./components/CharacterManagement/CharacterManag
 import CharNameDisplay from "./components/CharNameDisplay/CharNameDisplay";
 import NightInfo from "./components/NightInfo/NightInfo";
 import InfoGenerator from "./components/InfoGenerator/InfoGenerator";
+import { shuffleArray } from "./randomUtils";
 
 enum TabName {
   Setup = "setup",
@@ -73,6 +84,53 @@ function App() {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
   };
 
+  const regenerateStartingInfo = () => {
+    const startingInfoSuggestions = generateStartingInfoSuggestions(gameState);
+    const otherNightSuggestions = generateOtherNightSuggestions(gameState);
+
+    updateGameState({
+      ...gameState,
+      startingInfoSuggestions,
+      otherNightSuggestions,
+    });
+  };
+
+  const regenerateDemonBluffs = () => {
+    const actsAsCharNames: string[] = [];
+    gameState.allChars.forEach((char) => {
+      if (char.actsAsChar) {
+        actsAsCharNames.push(char.actsAsChar.name);
+      }
+    });
+
+    const availableOutsiders = shuffleArray(
+      gameState.allChars.filter(
+        (char) =>
+          !char.inPlay &&
+          char.type === CharacterType.Outsider &&
+          !actsAsCharNames.includes(char.name),
+      ),
+    ) as Character[];
+    const availableTownsfolk = shuffleArray(
+      gameState.allChars.filter(
+        (char) =>
+          !char.inPlay &&
+          char.type === CharacterType.Townsfolk &&
+          !actsAsCharNames.includes(char.name),
+      ),
+    ) as Character[];
+
+    const demonBluffs = generateDemonBluffs(
+      availableOutsiders,
+      availableTownsfolk,
+    );
+
+    updateGameState({
+      ...gameState,
+      demonBluffs,
+    });
+  };
+
   const inPlayTownsfolk = gameState?.allChars.filter(
     (char) => char.inPlay && char.type === CharacterType.Townsfolk,
   );
@@ -92,6 +150,14 @@ function App() {
   );
 
   const charsById = getCharsById(gameState);
+
+  const tokenInUseMap: Partial<Record<CharacterName, CharacterName>> = {};
+  gameState?.allChars.forEach((char) => {
+    const charTokenUsed = char.getCharTokenInUse();
+    if (charTokenUsed) {
+      tokenInUseMap[charTokenUsed] = char.name;
+    }
+  });
 
   return (
     <>
@@ -181,6 +247,12 @@ function App() {
                 ))}
               </div>
               <div>
+                <span
+                  className="refresh-icon"
+                  onClick={() => regenerateDemonBluffs()}
+                >
+                  ⟳
+                </span>
                 <strong>Demon Bluffs:</strong>
                 {gameState.demonBluffs.map((char) => (
                   <CharNameDisplay
@@ -201,10 +273,17 @@ function App() {
                     updateGameState={updateGameState}
                     char={char}
                     playable={false}
+                    tokenInUseMap={tokenInUseMap}
                   />
                 ))}
               </div>
               <div>
+                <span
+                  className="refresh-icon"
+                  onClick={() => regenerateStartingInfo()}
+                >
+                  ⟳
+                </span>
                 <strong>Starting Info:</strong>
                 {gameState.nightInstructions[NightType.First]?.map(
                   (instruction) =>
