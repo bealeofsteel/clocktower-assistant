@@ -22,6 +22,7 @@ import CharNameDisplay from "./components/CharNameDisplay/CharNameDisplay";
 import NightInfo from "./components/NightInfo/NightInfo";
 import InfoGenerator from "./components/InfoGenerator/InfoGenerator";
 import { shuffleArray } from "./randomUtils";
+import { regenerateNightInstructions } from "./nightUtils";
 
 enum TabName {
   Setup = "setup",
@@ -125,10 +126,18 @@ function App() {
       availableTownsfolk,
     );
 
-    updateGameState({
+    const newGameState = {
       ...gameState,
       demonBluffs,
-    });
+    };
+
+    // Regenerate night instructions to update the Demon Info
+    newGameState.nightInstructions = regenerateNightInstructions(
+      gameState,
+      newGameState,
+    );
+
+    updateGameState(newGameState);
   };
 
   const inPlayTownsfolk = gameState?.allChars.filter(

@@ -29,8 +29,7 @@ const specialInstructions = {
     if (gameState.playerCount >= 7) {
       return {
         label: SpecialInstructionKey.DemonInfo,
-        message:
-          "Show the THESE ARE YOUR MINIONS token. Point to all Minions. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 not-in-play good character tokens.",
+        message: `Show the THESE ARE YOUR MINIONS token. Point to all Minions. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 not-in-play good character tokens. <strong>Suggestion:</strong> Show ${gameState.demonBluffs[0].name}, ${gameState.demonBluffs[1].name}, and ${gameState.demonBluffs[2].name}.`,
       };
     }
   },

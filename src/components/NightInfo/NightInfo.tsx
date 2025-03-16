@@ -115,7 +115,11 @@ function NightInfo({
                 |{" "}
               </strong>
             </span>
-            <span>{instruction.message}</span>
+            <span
+              dangerouslySetInnerHTML={{
+                __html: instruction.message,
+              }}
+            ></span>
             {instruction.charId && gameState[infoField][instruction.charId] && (
               <>
                 <strong> Suggestion: </strong>
