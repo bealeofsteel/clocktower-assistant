@@ -188,11 +188,24 @@ function App() {
               value={selectedEdition}
               onChange={(e) => setSelectedEdition(e.target.value)}
             >
-              {Object.keys(EDITIONS_BY_NAME).map((editionName) => (
-                <option key={editionName} value={editionName}>
-                  {editionName}
-                </option>
-              ))}
+              <optgroup label="Base">
+                {Object.entries(EDITIONS_BY_NAME)
+                  .filter(([_editionName, edition]) => !edition.isCustom)
+                  .map(([editionName]) => (
+                    <option key={editionName} value={editionName}>
+                      {editionName}
+                    </option>
+                  ))}
+              </optgroup>
+              <optgroup label="Custom">
+                {Object.entries(EDITIONS_BY_NAME)
+                  .filter(([_editionName, edition]) => edition.isCustom)
+                  .map(([editionName]) => (
+                    <option key={editionName} value={editionName}>
+                      {editionName}
+                    </option>
+                  ))}
+              </optgroup>
             </select>
           </div>
           <PlayerCountSelect

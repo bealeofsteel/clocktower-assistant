@@ -7,6 +7,7 @@ export interface Edition {
     [NightType.Other]: (CharacterName | SpecialInstructionKey)[];
   };
   isTeensyville?: boolean;
+  isCustom?: boolean;
 }
 
 export interface CharacterSet {
@@ -103,6 +104,7 @@ export enum EditionName {
   SectsAndViolets = "Sects & Violets",
   BadMoonRising = "Bad Moon Rising",
   NoGreaterJoy = "No Greater Joy",
+  EveryoneCanPlay = "Everyone Can Play",
 }
 
 export interface GameState {

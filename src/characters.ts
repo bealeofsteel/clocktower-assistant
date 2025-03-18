@@ -15,6 +15,10 @@ import {
   ShowGoodPlayersWrongTownsfolk,
   SupportMinionOutsiderBluff,
   ShowGoodPlayersWrongOutsider,
+  GrandmotherFrameTownsfolkAsDrunk,
+  GrandmotherShowGoodPlayerWrongRole,
+  GrandmotherSupportDemonWithDemonBluff,
+  GrandmotherSupportMinionWithDemonBluff,
 } from "./drunkStrategies";
 import { playerCountConfig } from "./gameSettings";
 import { shuffleArray } from "./randomUtils";
@@ -45,7 +49,7 @@ import {
   PlayerSetup,
 } from "./types";
 
-export class Character {
+export abstract class Character {
   id: string;
   name: CharacterName;
   type: CharacterType;
@@ -296,6 +300,18 @@ export class Butler extends Character {
   }
 }
 
+export class Saint extends Character {
+  constructor() {
+    super(CharacterName.Saint, CharacterType.Outsider);
+  }
+}
+
+export class Recluse extends Character {
+  constructor() {
+    super(CharacterName.Recluse, CharacterType.Outsider);
+  }
+}
+
 export class Monk extends Character {
   constructor() {
     super(CharacterName.Monk);
@@ -313,6 +329,30 @@ export class Ravenkeeper extends Character {
 
   getOtherNightsInstructions() {
     return "If the Ravenkeeper died tonight, the Ravenkeeper chooses a player. Show that player's character token.";
+  }
+}
+
+export class Virgin extends Character {
+  constructor() {
+    super(CharacterName.Virgin);
+  }
+}
+
+export class Slayer extends Character {
+  constructor() {
+    super(CharacterName.Slayer);
+  }
+}
+
+export class Soldier extends Character {
+  constructor() {
+    super(CharacterName.Soldier);
+  }
+}
+
+export class Mayor extends Character {
+  constructor() {
+    super(CharacterName.Mayor);
   }
 }
 
@@ -875,15 +915,44 @@ export class Grandmother extends Character {
       (char) =>
         char.inPlay && char.alignment === Alignment.Good && char.id !== this.id,
     );
+
+    // Everyone Can Play includes a Spy, which can lead to this interaction
+    const spyInPlay = gameState.allChars.filter(
+      (char) => char.inPlay && char.name === CharacterName.Spy,
+    );
+    if (spyInPlay.length) {
+      chars.push(spyInPlay[0]);
+    }
+
     shuffleArray(chars);
 
-    this.grandchildCharId = chars[0].id;
+    const grandchild = chars[0];
+    this.grandchildCharId = grandchild.id;
 
-    return `The grandchild is {{${this.grandchildCharId}}}.`;
+    const prefix = `The grandchild is {{${this.grandchildCharId}}}.`;
+
+    if (grandchild.name === CharacterName.Spy) {
+      const spyCharTokens = gameState.allChars.filter(
+        (char) => char.alignment === Alignment.Good,
+      );
+      shuffleArray(spyCharTokens);
+      return prefix + ` Show the ${spyCharTokens[0].name} token.`;
+    }
+
+    return prefix;
   }
 
   getOtherNightSuggestion(): string | undefined {
     return `The grandchild is {{${this.grandchildCharId}}}.`;
+  }
+
+  getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
+    return [
+      new GrandmotherSupportDemonWithDemonBluff(charId),
+      new GrandmotherSupportMinionWithDemonBluff(charId),
+      new GrandmotherFrameTownsfolkAsDrunk(charId),
+      new GrandmotherShowGoodPlayerWrongRole(charId),
+    ];
   }
 }
 
@@ -983,6 +1052,36 @@ export class Professor extends Character {
 
   getOtherNightsInstructions(): string | undefined {
     return "The Professor might choose a dead player. ⚫️ ⚫️";
+  }
+}
+
+export class Minstrel extends Character {
+  constructor() {
+    super(CharacterName.Minstrel);
+  }
+}
+
+export class TeaLady extends Character {
+  constructor() {
+    super(CharacterName.TeaLady);
+  }
+}
+
+export class Pacifist extends Character {
+  constructor() {
+    super(CharacterName.Pacifist);
+  }
+}
+
+export class Fool extends Character {
+  constructor() {
+    super(CharacterName.Fool);
+  }
+}
+
+export class Goon extends Character {
+  constructor() {
+    super(CharacterName.Goon, CharacterType.Outsider);
   }
 }
 
@@ -1186,6 +1285,12 @@ export class Assassin extends Character {
   }
 }
 
+export class Mastermind extends Character {
+  constructor() {
+    super(CharacterName.Mastermind, CharacterType.Minion, Alignment.Evil);
+  }
+}
+
 export class Zombuul extends Character {
   constructor() {
     super(CharacterName.Zombuul, CharacterType.Demon, Alignment.Evil);
@@ -1247,13 +1352,13 @@ export const characterClassNameMap: Record<
   [CharacterName.Undertaker]: Undertaker,
   [CharacterName.Monk]: Monk,
   [CharacterName.Ravenkeeper]: Ravenkeeper,
-  [CharacterName.Virgin]: Character,
-  [CharacterName.Slayer]: Character,
-  [CharacterName.Soldier]: Character,
-  [CharacterName.Mayor]: Character,
+  [CharacterName.Virgin]: Virgin,
+  [CharacterName.Slayer]: Slayer,
+  [CharacterName.Soldier]: Soldier,
+  [CharacterName.Mayor]: Mayor,
   [CharacterName.Butler]: Butler,
-  [CharacterName.Saint]: Character,
-  [CharacterName.Recluse]: Character,
+  [CharacterName.Saint]: Saint,
+  [CharacterName.Recluse]: Recluse,
   [CharacterName.Drunk]: Drunk,
   [CharacterName.Poisoner]: Poisoner,
   [CharacterName.Spy]: Spy,
@@ -1296,18 +1401,18 @@ export const characterClassNameMap: Record<
   [CharacterName.Gossip]: Gossip,
   [CharacterName.Courtier]: Courtier,
   [CharacterName.Professor]: Professor,
-  [CharacterName.Minstrel]: Character,
-  [CharacterName.TeaLady]: Character,
-  [CharacterName.Pacifist]: Character,
-  [CharacterName.Fool]: Character,
-  [CharacterName.Goon]: Character,
+  [CharacterName.Minstrel]: Minstrel,
+  [CharacterName.TeaLady]: TeaLady,
+  [CharacterName.Pacifist]: Pacifist,
+  [CharacterName.Fool]: Fool,
+  [CharacterName.Goon]: Goon,
   [CharacterName.Lunatic]: Lunatic,
   [CharacterName.Tinker]: Tinker,
   [CharacterName.Moonchild]: Moonchild,
   [CharacterName.Godfather]: Godfather,
   [CharacterName.DevilsAdvocate]: DevilsAdvocate,
   [CharacterName.Assassin]: Assassin,
-  [CharacterName.Mastermind]: Character,
+  [CharacterName.Mastermind]: Mastermind,
   [CharacterName.Zombuul]: Zombuul,
   [CharacterName.Pukka]: Pukka,
   [CharacterName.Shabaloth]: Shabaloth,

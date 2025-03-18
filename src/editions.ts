@@ -1,7 +1,6 @@
 import {
   Baron,
   Drunk,
-  Character,
   Washerwoman,
   FortuneTeller,
   Empath,
@@ -60,11 +59,21 @@ import {
   Artist,
   Klutz,
   Mutant,
+  Virgin,
+  Mayor,
+  Slayer,
+  Soldier,
+  Recluse,
+  Saint,
+  Minstrel,
+  Fool,
+  Pacifist,
+  TeaLady,
+  Goon,
+  Mastermind,
 } from "./characters";
 import {
-  Alignment,
   CharacterName,
-  CharacterType,
   Edition,
   EditionName,
   SpecialInstructionKey,
@@ -83,18 +92,13 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         new Undertaker(),
         new Monk(),
         new Ravenkeeper(),
-        new Character(CharacterName.Virgin),
-        new Character(CharacterName.Slayer),
-        new Character(CharacterName.Soldier),
-        new Character(CharacterName.Mayor),
+        new Virgin(),
+        new Slayer(),
+        new Soldier(),
+        new Mayor(),
       ];
 
-      const outsiders = [
-        new Butler(),
-        new Drunk(),
-        new Character(CharacterName.Recluse, CharacterType.Outsider),
-        new Character(CharacterName.Saint, CharacterType.Outsider),
-      ];
+      const outsiders = [new Butler(), new Saint(), new Recluse(), new Drunk()];
 
       const minions = [
         new Poisoner(),
@@ -243,14 +247,14 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         new Gossip(),
         new Courtier(),
         new Professor(),
-        new Character(CharacterName.Minstrel),
-        new Character(CharacterName.TeaLady),
-        new Character(CharacterName.Pacifist),
-        new Character(CharacterName.Fool),
+        new Minstrel(),
+        new TeaLady(),
+        new Pacifist(),
+        new Fool(),
       ];
 
       const outsiders = [
-        new Character(CharacterName.Goon, CharacterType.Outsider),
+        new Goon(),
         new Lunatic(),
         new Tinker(),
         new Moonchild(),
@@ -260,11 +264,7 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         new Godfather(),
         new DevilsAdvocate(),
         new Assassin(),
-        new Character(
-          CharacterName.Mastermind,
-          CharacterType.Minion,
-          Alignment.Evil,
-        ),
+        new Mastermind(),
       ];
 
       const demons = [new Zombuul(), new Pukka(), new Shabaloth(), new Po()];
@@ -318,6 +318,7 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
   },
   [EditionName.NoGreaterJoy]: {
     isTeensyville: true,
+    isCustom: true,
     getCharactersForEdition: () => {
       const townsfolk = [
         new Clockmaker(),
@@ -359,6 +360,85 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         CharacterName.Sage,
         CharacterName.Empath,
         CharacterName.Chambermaid,
+        SpecialInstructionKey.Dawn,
+      ],
+    },
+  },
+  [EditionName.EveryoneCanPlay]: {
+    isCustom: true,
+    getCharactersForEdition: () => {
+      const townsfolk = [
+        new Librarian(),
+        new Clockmaker(),
+        new Grandmother(),
+        new FortuneTeller(),
+        new Empath(),
+        new Monk(),
+        new Undertaker(),
+        new Gambler(),
+        new Artist(),
+        new Slayer(),
+        new Fool(),
+        new Ravenkeeper(),
+        new Mayor(),
+      ];
+
+      const outsiders = [
+        new Drunk(),
+        new Recluse(),
+        new Saint(),
+        new Moonchild(),
+      ];
+
+      const minions = [
+        new Baron(),
+        new Poisoner(),
+        new Assassin(),
+        new DevilsAdvocate(),
+        new Spy(),
+        new ScarletWoman(),
+      ];
+
+      const demons = [new Imp()];
+
+      return {
+        townsfolk,
+        outsiders,
+        minions,
+        demons,
+      };
+    },
+    nightInstructions: {
+      first: [
+        SpecialInstructionKey.Dusk,
+        SpecialInstructionKey.MinionInfo,
+        SpecialInstructionKey.DemonInfo,
+        CharacterName.Poisoner,
+        CharacterName.DevilsAdvocate,
+        CharacterName.Librarian,
+        CharacterName.Empath,
+        CharacterName.FortuneTeller,
+        CharacterName.Grandmother,
+        CharacterName.Clockmaker,
+        CharacterName.Spy,
+        SpecialInstructionKey.Dawn,
+      ],
+      other: [
+        SpecialInstructionKey.Dusk,
+        CharacterName.Poisoner,
+        CharacterName.Gambler,
+        CharacterName.Monk,
+        CharacterName.DevilsAdvocate,
+        CharacterName.ScarletWoman,
+        CharacterName.Imp,
+        CharacterName.Assassin,
+        CharacterName.Moonchild,
+        CharacterName.Grandmother,
+        CharacterName.Ravenkeeper,
+        CharacterName.Empath,
+        CharacterName.FortuneTeller,
+        CharacterName.Undertaker,
+        CharacterName.Spy,
         SpecialInstructionKey.Dawn,
       ],
     },

@@ -203,3 +203,71 @@ export class ClaimZeroOutsiders extends DrunkStrategy {
     return "Show a zero.";
   }
 }
+
+export class GrandmotherSupportDemonWithDemonBluff extends DrunkStrategy {
+  getInstructionsForStrategy(gameState: GameState): string {
+    const bluffs = gameState.demonBluffs;
+    shuffleArray(bluffs);
+
+    const demons = gameState.allChars.filter(
+      (char) => char.inPlay && char.type === CharacterType.Demon,
+    );
+    shuffleArray(demons);
+
+    return `The grandchild is {{${demons[0].id}}}. Show the ${bluffs[0].name} token.`;
+  }
+}
+
+export class GrandmotherSupportMinionWithDemonBluff extends DrunkStrategy {
+  getInstructionsForStrategy(gameState: GameState): string {
+    const bluffs = gameState.demonBluffs;
+    shuffleArray(bluffs);
+
+    const minions = gameState.allChars.filter(
+      (char) => char.inPlay && char.type === CharacterType.Minion,
+    );
+    shuffleArray(minions);
+
+    return `The grandchild is {{${minions[0].id}}}. Show the ${bluffs[0].name} token.`;
+  }
+}
+
+export class GrandmotherFrameTownsfolkAsDrunk extends DrunkStrategy {
+  getInstructionsForStrategy(gameState: GameState): string {
+    const townsfolk = gameState.allChars.filter(
+      (char) =>
+        char.inPlay &&
+        char.type === CharacterType.Townsfolk &&
+        char.id !== this.charId,
+    );
+    shuffleArray(townsfolk);
+
+    return `The grandchild is {{${townsfolk[0].id}}}. Show the Drunk token.`;
+  }
+}
+
+export class GrandmotherShowGoodPlayerWrongRole extends DrunkStrategy {
+  getInstructionsForStrategy(gameState: GameState): string {
+    const demonBluffIds = gameState.demonBluffs.map((char) => char.id);
+
+    const chars = gameState.allChars.filter(
+      (char) =>
+        char.alignment === Alignment.Good &&
+        !demonBluffIds.includes(char.id) &&
+        char.name !== CharacterName.Grandmother,
+    );
+    shuffleArray(chars);
+    const charToShow = chars[0];
+
+    const goodChars = gameState.allChars.filter(
+      (char) =>
+        char.inPlay &&
+        char.alignment === Alignment.Good &&
+        char.id !== this.charId &&
+        char.id !== charToShow.id,
+    );
+    shuffleArray(goodChars);
+
+    return `The grandchild is {{${goodChars[0].id}}}. Show the ${charToShow.name} token.`;
+  }
+}
