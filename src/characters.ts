@@ -1086,7 +1086,7 @@ export class Goon extends Character {
 }
 
 export class Lunatic extends Character {
-  demonName: CharacterName | undefined;
+  pickedDemon: Character | undefined;
   demonFirstNightInstructions: string;
   demonOtherNightsInstructions: string;
 
@@ -1099,8 +1099,8 @@ export class Lunatic extends Character {
   getDisplayName(): string {
     let name = this.name as string;
 
-    if (this.demonName) {
-      name += ` (${this.demonName})`;
+    if (this.pickedDemon?.name) {
+      name += ` (${this.pickedDemon.name})`;
     }
 
     if (this.playerName) {
@@ -1126,18 +1126,23 @@ export class Lunatic extends Character {
     return "Do whatever needs to be done to simulate the demon acting. Put the Lunatic to sleep. Wake the Demon. Show the Lunatic token & point to them, then their target(s).";
   }
 
-  getStartingInfoSuggestion(gameState: GameState): string | undefined {
-    const demons = gameState.allChars.filter(
-      (char) => char.type === CharacterType.Demon,
+  onPicked(
+    _playerSetup: PlayerSetup,
+    availableChars: CharacterSet,
+    allChars: Character[],
+  ): void {
+    const demons = availableChars.demons.concat(
+      allChars.filter((char) => char.type === CharacterType.Demon),
     );
     shuffleArray(demons);
-    const pickedDemon = demons[0];
+    this.pickedDemon = demons[0];
+  }
 
-    this.demonName = pickedDemon.name;
+  getStartingInfoSuggestion(gameState: GameState): string | undefined {
     this.demonFirstNightInstructions =
-      pickedDemon.getFirstNightInstructions() as string;
+      this.pickedDemon?.getFirstNightInstructions() as string;
     this.demonOtherNightsInstructions =
-      pickedDemon.getOtherNightsInstructions() as string;
+      this.pickedDemon?.getOtherNightsInstructions() as string;
 
     const charsInPlay = gameState.allChars.filter(
       (char) => char.inPlay && char.id !== this.id,
@@ -1194,7 +1199,7 @@ export class Lunatic extends Character {
   }
 
   getCharTokenInUse(): CharacterName | undefined {
-    return this.demonName;
+    return this.pickedDemon?.name;
   }
 }
 
