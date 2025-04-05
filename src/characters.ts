@@ -11,14 +11,11 @@ import {
   FrameTownsfolkAsDrunk,
   SupportDemonOutsiderBluff,
   SupportDemonTownsfolkBluff,
-  SupportMinionTownsfolkBluff,
   ShowGoodPlayersWrongTownsfolk,
-  SupportMinionOutsiderBluff,
   ShowGoodPlayersWrongOutsider,
   GrandmotherFrameTownsfolkAsDrunk,
   GrandmotherShowGoodPlayerWrongRole,
   GrandmotherSupportDemonWithDemonBluff,
-  GrandmotherSupportMinionWithDemonBluff,
 } from "./drunkStrategies";
 import { playerCountConfig } from "./gameSettings";
 import { shuffleArray } from "./randomUtils";
@@ -170,9 +167,12 @@ export class Washerwoman extends Character {
   }
 
   getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
+    // SupportDemonTownsfolkBluff is here twice to weight it to occur more frequently than the other option.
+    // In general it should be the more damaging option, but we want to sometimes just spread nonsense
+    // to provide cover in case neither evil player picks the specified bluff.
     return [
       new SupportDemonTownsfolkBluff(charId),
-      new SupportMinionTownsfolkBluff(charId),
+      new SupportDemonTownsfolkBluff(charId),
       new ShowGoodPlayersWrongTownsfolk(charId),
     ];
   }
@@ -200,7 +200,6 @@ export class Librarian extends Character {
       new ClaimZeroOutsiders(charId),
       new FrameTownsfolkAsDrunk(charId),
       new SupportDemonOutsiderBluff(charId),
-      new SupportMinionOutsiderBluff(charId),
       new ShowGoodPlayersWrongOutsider(charId),
     ];
   }
@@ -949,7 +948,6 @@ export class Grandmother extends Character {
   getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
     return [
       new GrandmotherSupportDemonWithDemonBluff(charId),
-      new GrandmotherSupportMinionWithDemonBluff(charId),
       new GrandmotherFrameTownsfolkAsDrunk(charId),
       new GrandmotherShowGoodPlayerWrongRole(charId),
     ];

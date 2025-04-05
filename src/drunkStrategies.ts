@@ -1,3 +1,4 @@
+import { Character } from "./characters";
 import {
   pickDemonBluffOfType,
   pickInPlayCharsofTypes,
@@ -38,31 +39,28 @@ export class FrameGoodPlayersAsMinion extends DrunkStrategy {
 const supportDemonBluffOfType = (
   gameState: GameState,
   charType: CharacterType,
-  excludeCharId: string,
-  supportedCharType: CharacterType,
 ) => {
   const bluff = pickDemonBluffOfType(gameState, charType);
-  const goodChars = pickInPlayCharsofTypes(
-    gameState,
-    [CharacterType.Townsfolk, CharacterType.Outsider],
-    excludeCharId,
-    1,
-  );
 
-  const supportedChars = Array.from(
+  const demon = shuffleArray(
     gameState.allChars.filter(
-      (char) => char.inPlay && char.type === supportedCharType,
+      (char) => char.inPlay && char.type === CharacterType.Demon,
     ),
-  );
-  shuffleArray(supportedChars);
+  )[0] as Character;
+
+  const minion = shuffleArray(
+    gameState.allChars.filter(
+      (char) => char.inPlay && char.type === CharacterType.Minion,
+    ),
+  )[0] as Character;
 
   const prefix = `Show the ${bluff.name} character token. `;
   let suffix = "";
 
   if (Math.random() < 0.5) {
-    suffix = `Point to {{${supportedChars[0].id}}} (${charType}) and {{${goodChars[0].id}}} (Wrong).`;
+    suffix = `Point to {{${demon.id}}} (${charType}) and {{${minion.id}}} (Wrong).`;
   } else {
-    suffix = `Point to {{${goodChars[0].id}}} (Wrong) and {{${supportedChars[0].id}}} (${charType}).`;
+    suffix = `Point to {{${minion.id}}} (Wrong) and {{${demon.id}}} (${charType}).`;
   }
 
   return prefix + suffix;
@@ -70,23 +68,7 @@ const supportDemonBluffOfType = (
 
 export class SupportDemonTownsfolkBluff extends DrunkStrategy {
   getInstructionsForStrategy(gameState: GameState): string {
-    return supportDemonBluffOfType(
-      gameState,
-      CharacterType.Townsfolk,
-      this.charId,
-      CharacterType.Demon,
-    );
-  }
-}
-
-export class SupportMinionTownsfolkBluff extends DrunkStrategy {
-  getInstructionsForStrategy(gameState: GameState): string {
-    return supportDemonBluffOfType(
-      gameState,
-      CharacterType.Townsfolk,
-      this.charId,
-      CharacterType.Minion,
-    );
+    return supportDemonBluffOfType(gameState, CharacterType.Townsfolk);
   }
 }
 
@@ -101,32 +83,7 @@ export class SupportDemonOutsiderBluff extends DrunkStrategy {
   }
 
   getInstructionsForStrategy(gameState: GameState): string {
-    return supportDemonBluffOfType(
-      gameState,
-      CharacterType.Outsider,
-      this.charId,
-      CharacterType.Demon,
-    );
-  }
-}
-
-export class SupportMinionOutsiderBluff extends DrunkStrategy {
-  gameQualifiesForStrategy(gameState: GameState): boolean {
-    for (const bluff of gameState.demonBluffs) {
-      if (bluff.type === CharacterType.Outsider) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  getInstructionsForStrategy(gameState: GameState): string {
-    return supportDemonBluffOfType(
-      gameState,
-      CharacterType.Outsider,
-      this.charId,
-      CharacterType.Minion,
-    );
+    return supportDemonBluffOfType(gameState, CharacterType.Outsider);
   }
 }
 
@@ -215,20 +172,6 @@ export class GrandmotherSupportDemonWithDemonBluff extends DrunkStrategy {
     shuffleArray(demons);
 
     return `The grandchild is {{${demons[0].id}}}. Show the ${bluffs[0].name} token.`;
-  }
-}
-
-export class GrandmotherSupportMinionWithDemonBluff extends DrunkStrategy {
-  getInstructionsForStrategy(gameState: GameState): string {
-    const bluffs = gameState.demonBluffs;
-    shuffleArray(bluffs);
-
-    const minions = gameState.allChars.filter(
-      (char) => char.inPlay && char.type === CharacterType.Minion,
-    );
-    shuffleArray(minions);
-
-    return `The grandchild is {{${minions[0].id}}}. Show the ${bluffs[0].name} token.`;
   }
 }
 
