@@ -744,7 +744,7 @@ export class Sage extends Character {
 
 export class Mutant extends Character {
   constructor() {
-    super(CharacterName.Sage, CharacterType.Outsider);
+    super(CharacterName.Mutant, CharacterType.Outsider);
   }
 
   canBeDemonBluff(): boolean {
