@@ -1,3 +1,4 @@
+import { Character } from "./characters";
 import { shuffleArray } from "./randomUtils";
 import { Alignment, CharacterName, CharacterType, GameState } from "./types";
 
@@ -9,6 +10,12 @@ const charNameStartsWithVowel = (charName: CharacterName) => {
 };
 
 export abstract class SavantInfoStrategy {
+  isBinary: boolean;
+
+  constructor() {
+    this.isBinary = false;
+  }
+
   gameQualifiesForTrueInfo(_gameState: GameState) {
     return true;
   }
@@ -62,6 +69,11 @@ const playersGotTrueInformationText =
   "[No players / At least one player] received false information last night.";
 
 export class DidPlayersGetTrueInformationLastNight extends SavantInfoStrategy {
+  constructor() {
+    super();
+    this.isBinary = true;
+  }
+
   getTrueInfo(_gameState: GameState, _currentCharId: string): string {
     return playersGotTrueInformationText;
   }
@@ -251,7 +263,7 @@ export class ChefInfo extends SavantInfoStrategy {
 }
 
 const empathInfo =
-  "Of your two closest living neighbors, exactly [number] of them are evil.";
+  "Exactly [number] of your two closest living neighbors are evil.";
 
 export class EmpathInfo extends SavantInfoStrategy {
   getTrueInfo(): string {
@@ -293,14 +305,16 @@ export class DreamerInfo extends SavantInfoStrategy {
         (char) =>
           char.id !== currentCharId &&
           (char.type === CharacterType.Minion ||
-            char.type === CharacterType.Demon),
+            char.type === CharacterType.Demon) &&
+          char.canBeSeenInPlay(),
       );
     } else {
       otherChars = gameState.allChars.filter(
         (char) =>
           char.id !== currentCharId &&
           (char.type === CharacterType.Townsfolk ||
-            char.type === CharacterType.Outsider),
+            char.type === CharacterType.Outsider) &&
+          char.canBeSeenInPlay(),
       );
     }
 
@@ -326,7 +340,8 @@ export class DreamerInfo extends SavantInfoStrategy {
         char.id !== currentCharId &&
         char.id !== pickedChar.id &&
         (char.type === CharacterType.Townsfolk ||
-          char.type === CharacterType.Outsider),
+          char.type === CharacterType.Outsider) &&
+        char.canBeSeenInPlay(),
     );
 
     const falseEvilChars = gameState.allChars.filter(
@@ -334,7 +349,8 @@ export class DreamerInfo extends SavantInfoStrategy {
         char.id !== currentCharId &&
         char.id !== pickedChar.id &&
         (char.type === CharacterType.Minion ||
-          char.type === CharacterType.Demon),
+          char.type === CharacterType.Demon) &&
+        char.canBeSeenInPlay(),
     );
 
     shuffleArray(falseGoodChars);
@@ -468,5 +484,83 @@ export class ProfessorInfo extends SavantInfoStrategy {
     } else {
       return `${pickedChar.getPlayerNameForDisplay()} is a Townsfolk.`;
     }
+  }
+}
+
+export class NobleInfo extends SavantInfoStrategy {
+  getTrueInfo(gameState: GameState, currentCharId: string): string {
+    const evilChar = shuffleArray(
+      gameState.allChars.filter(
+        (char) =>
+          char.alignment === Alignment.Evil && char.id !== currentCharId,
+      ),
+    )[0];
+
+    const goodChars = shuffleArray(
+      gameState.allChars.filter(
+        (char) =>
+          char.alignment === Alignment.Good && char.id !== currentCharId,
+      ),
+    );
+
+    const chars = shuffleArray([
+      evilChar,
+      goodChars[0],
+      goodChars[1],
+    ] as Character[]) as Character[];
+
+    return `Exactly one of ${chars[0].getPlayerNameForDisplay()}, ${chars[1].getPlayerNameForDisplay()}, ${chars[2].getPlayerNameForDisplay()} is evil.`;
+  }
+
+  getFalseInfo(gameState: GameState, currentCharId: string): string {
+    const chars: Character[] = [];
+
+    // Three good characters
+    if (Math.random() < 0.5) {
+      const goodChars = shuffleArray(
+        gameState.allChars.filter(
+          (char) =>
+            char.alignment === Alignment.Good && char.id !== currentCharId,
+        ),
+      ) as Character[];
+      chars.push(goodChars[0]);
+      chars.push(goodChars[1]);
+      chars.push(goodChars[2]);
+      // Two evil characters plus any other character
+    } else {
+      const evilChars = shuffleArray(
+        gameState.allChars.filter(
+          (char) =>
+            char.alignment === Alignment.Evil && char.id !== currentCharId,
+        ),
+      ) as Character[];
+
+      const randomOtherChar = shuffleArray(
+        gameState.allChars.filter(
+          (char) =>
+            char.id !== currentCharId &&
+            char.id !== evilChars[0].id &&
+            char.id !== evilChars[1].id,
+        ),
+      )[0] as Character;
+
+      chars.push(evilChars[0]);
+      chars.push(evilChars[1]);
+      chars.push(randomOtherChar);
+    }
+
+    shuffleArray(chars);
+
+    return `Exactly one of ${chars[0].getPlayerNameForDisplay()}, ${chars[1].getPlayerNameForDisplay()}, ${chars[2].getPlayerNameForDisplay()} is evil.`;
+  }
+}
+
+export class ShugenjaInfo extends SavantInfoStrategy {
+  getTrueInfo(): string {
+    return "The closest evil player sits [clockwise/counterclockwise] from you [reroll if equidistant].";
+  }
+
+  getFalseInfo() {
+    return "The closest evil player sits [clockwise/counterclockwise] from you [reroll if equidistant].";
   }
 }

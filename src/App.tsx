@@ -96,6 +96,23 @@ function App() {
     });
   };
 
+  const regenerateStartingInfoForChar = (charId: string) => {
+    const char = gameState.allChars.find(
+      (char) => char.id === charId,
+    ) as Character;
+    const suggestion = char.getStartingInfoSuggestion(gameState) as string;
+
+    const startingInfoSuggestions = {
+      ...gameState.startingInfoSuggestions,
+      [charId]: suggestion,
+    };
+
+    updateGameState({
+      ...gameState,
+      startingInfoSuggestions,
+    });
+  };
+
   const regenerateDemonBluffs = () => {
     const actsAsCharNames: string[] = [];
     gameState.allChars.forEach((char) => {
@@ -312,6 +329,16 @@ function App() {
                     instruction.charId &&
                     gameState.startingInfoSuggestions[instruction.charId] ? (
                       <div key={instruction.key}>
+                        <span
+                          className="refresh-icon"
+                          onClick={() =>
+                            regenerateStartingInfoForChar(
+                              instruction.charId as string,
+                            )
+                          }
+                        >
+                          ⟳
+                        </span>
                         <span
                           className={`char-name ${charsById[instruction.charId].alignment}`}
                         >

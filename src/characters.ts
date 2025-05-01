@@ -36,6 +36,8 @@ import {
   OracleInfo,
   ChambermaidInfo,
   ProfessorInfo,
+  NobleInfo,
+  ShugenjaInfo,
 } from "./savantStrategies";
 import {
   Alignment,
@@ -146,6 +148,11 @@ export abstract class Character {
   // If the class uses another character's token (like the Drunk or Lunatic), return that character's name
   getCharTokenInUse(): CharacterName | undefined {
     return;
+  }
+
+  // True for most chars, but the Vortox can't be seen by information gatherers since it causes all info to be false
+  canBeSeenInPlay(): boolean {
+    return true;
   }
 }
 
@@ -542,27 +549,23 @@ export class Dreamer extends Character {
       (char) =>
         (char.type === CharacterType.Townsfolk ||
           char.type === CharacterType.Outsider) &&
-        char.id !== this.id,
+        char.id !== this.id &&
+        char.canBeSeenInPlay(),
     );
     const evilChars = gameState.allChars.filter(
       (char) =>
         (char.type === CharacterType.Minion ||
           char.type === CharacterType.Demon) &&
-        char.id !== this.id,
+        char.id !== this.id &&
+        char.canBeSeenInPlay(),
     );
 
     shuffleArray(goodChars);
     shuffleArray(evilChars);
 
-    if (Math.random() < 0.5) {
-      return [
-        `Show the correct character token, then (if a Townsfolk or Outsider) the ${evilChars[0].name} token, or (if a Minion or Demon) the ${goodChars[0].name} token.`,
-      ];
-    } else {
-      return [
-        `Show (if a Townsfolk or Outsider) the ${evilChars[0].name} token, or (if a Minion or Demon) the ${goodChars[0].name} token, then the correct character token.`,
-      ];
-    }
+    return [
+      `Incorrect character to show: ${goodChars[0].name} or ${evilChars[0].name}`,
+    ];
   }
 }
 
@@ -651,6 +654,8 @@ export class Savant extends Character {
       new SeamstressInfo(),
       new ChambermaidInfo(),
       new ProfessorInfo(),
+      new NobleInfo(),
+      new ShugenjaInfo(),
     ];
 
     const trueStrategies = strategies?.filter((strategy) =>
@@ -658,14 +663,29 @@ export class Savant extends Character {
     );
     shuffleArray(trueStrategies);
 
-    const trueInfo = trueStrategies[0].getTrueInfo(gameState, this.id);
-
     const falseStrategies = strategies?.filter((strategy) =>
       strategy.gameQualifiesForFalseInfo(gameState),
     );
     shuffleArray(falseStrategies);
 
-    const falseInfo = falseStrategies[0].getFalseInfo(gameState, this.id);
+    let trueStrategy = trueStrategies[0];
+    let falseStrategy = falseStrategies[0];
+
+    // Don't allow two of the same strategies for binary strategy types
+    if (
+      trueStrategies[0].constructor.name ===
+        falseStrategies[0].constructor.name &&
+      trueStrategies[0].isBinary
+    ) {
+      if (Math.random() < 0.5) {
+        trueStrategy = trueStrategies[1];
+      } else {
+        falseStrategy = falseStrategies[1];
+      }
+    }
+
+    const trueInfo = trueStrategy.getTrueInfo(gameState, this.id);
+    const falseInfo = falseStrategy.getFalseInfo(gameState, this.id);
 
     const result = [];
 
@@ -888,6 +908,10 @@ export class Vortox extends Character {
 
   getOtherNightsInstructions(): string | undefined {
     return "The Vortox chooses a player. ⚫️";
+  }
+
+  canBeSeenInPlay(): boolean {
+    return false;
   }
 }
 
