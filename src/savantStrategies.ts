@@ -492,14 +492,18 @@ export class NobleInfo extends SavantInfoStrategy {
     const evilChar = shuffleArray(
       gameState.allChars.filter(
         (char) =>
-          char.alignment === Alignment.Evil && char.id !== currentCharId,
+          char.alignment === Alignment.Evil &&
+          char.inPlay &&
+          char.id !== currentCharId,
       ),
     )[0];
 
     const goodChars = shuffleArray(
       gameState.allChars.filter(
         (char) =>
-          char.alignment === Alignment.Good && char.id !== currentCharId,
+          char.alignment === Alignment.Good &&
+          char.inPlay &&
+          char.id !== currentCharId,
       ),
     );
 
@@ -509,7 +513,7 @@ export class NobleInfo extends SavantInfoStrategy {
       goodChars[1],
     ] as Character[]) as Character[];
 
-    return `Exactly one of ${chars[0].getPlayerNameForDisplay()}, ${chars[1].getPlayerNameForDisplay()}, ${chars[2].getPlayerNameForDisplay()} is evil.`;
+    return `Exactly one of ${chars[0].getPlayerNameForDisplay()}, ${chars[1].getPlayerNameForDisplay()}, and ${chars[2].getPlayerNameForDisplay()} is evil.`;
   }
 
   getFalseInfo(gameState: GameState, currentCharId: string): string {
@@ -520,7 +524,9 @@ export class NobleInfo extends SavantInfoStrategy {
       const goodChars = shuffleArray(
         gameState.allChars.filter(
           (char) =>
-            char.alignment === Alignment.Good && char.id !== currentCharId,
+            char.alignment === Alignment.Good &&
+            char.inPlay &&
+            char.id !== currentCharId,
         ),
       ) as Character[];
       chars.push(goodChars[0]);
@@ -531,7 +537,9 @@ export class NobleInfo extends SavantInfoStrategy {
       const evilChars = shuffleArray(
         gameState.allChars.filter(
           (char) =>
-            char.alignment === Alignment.Evil && char.id !== currentCharId,
+            char.alignment === Alignment.Evil &&
+            char.inPlay &&
+            char.id !== currentCharId,
         ),
       ) as Character[];
 
@@ -551,11 +559,16 @@ export class NobleInfo extends SavantInfoStrategy {
 
     shuffleArray(chars);
 
-    return `Exactly one of ${chars[0].getPlayerNameForDisplay()}, ${chars[1].getPlayerNameForDisplay()}, ${chars[2].getPlayerNameForDisplay()} is evil.`;
+    return `Exactly one of ${chars[0].getPlayerNameForDisplay()}, ${chars[1].getPlayerNameForDisplay()}, and ${chars[2].getPlayerNameForDisplay()} is evil.`;
   }
 }
 
 export class ShugenjaInfo extends SavantInfoStrategy {
+  constructor() {
+    super();
+    this.isBinary = true;
+  }
+
   getTrueInfo(): string {
     return "The closest evil player sits [clockwise/counterclockwise] from you [reroll if equidistant].";
   }
