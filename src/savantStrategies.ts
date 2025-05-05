@@ -546,6 +546,7 @@ export class NobleInfo extends SavantInfoStrategy {
       const randomOtherChar = shuffleArray(
         gameState.allChars.filter(
           (char) =>
+            char.inPlay &&
             char.id !== currentCharId &&
             char.id !== evilChars[0].id &&
             char.id !== evilChars[1].id,
