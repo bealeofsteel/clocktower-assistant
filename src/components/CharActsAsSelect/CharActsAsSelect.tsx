@@ -19,9 +19,11 @@ function CharActsAsSelect({
     const Klass = characterClassNameMap[charName];
     const actsAsChar = new Klass(charName);
 
+    let newChar;
+
     const newChars = gameState.allChars.map((oldChar) => {
       if (oldChar.id === currentChar.id) {
-        const newChar = cloneChar(oldChar);
+        newChar = cloneChar(oldChar);
         newChar.actsAsChar = actsAsChar;
         return newChar;
       } else {
@@ -34,12 +36,12 @@ function CharActsAsSelect({
       allChars: newChars,
     };
 
-    const startingInfo = actsAsChar.getStartingInfoSuggestion(gameState);
+    const startingInfo = newChar!.getStartingInfoSuggestion(gameState);
     if (startingInfo) {
       newGameState.startingInfoSuggestions[currentChar.id] = startingInfo;
     }
 
-    const otherNightSuggestion = actsAsChar.getOtherNightSuggestion(gameState);
+    const otherNightSuggestion = newChar!.getOtherNightSuggestion(gameState);
     if (otherNightSuggestion) {
       newGameState.otherNightSuggestions[currentChar.id] = otherNightSuggestion;
     }
@@ -56,6 +58,7 @@ function CharActsAsSelect({
     <select
       value={currentChar.actsAsChar?.name || currentChar.name}
       onChange={(e) => updateActsAs(e.target.value as CharacterName)}
+      disabled={!currentChar.canActAsOtherChar()}
     >
       <CharOptions gameState={gameState}></CharOptions>
     </select>

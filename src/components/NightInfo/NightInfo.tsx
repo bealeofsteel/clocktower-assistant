@@ -117,7 +117,10 @@ function NightInfo({
             </span>
             <span
               dangerouslySetInnerHTML={{
-                __html: instruction.message,
+                __html: parseCharTokens(
+                  instruction.message,
+                  instantiatedCharsById,
+                ),
               }}
             ></span>
             {instruction.charId && gameState[infoField][instruction.charId] && (

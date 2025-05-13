@@ -179,7 +179,7 @@ function App() {
 
   const tokenInUseMap: Partial<Record<CharacterName, CharacterName>> = {};
   gameState?.allChars.forEach((char) => {
-    const charTokenUsed = char.getCharTokenInUse();
+    const charTokenUsed = char.actsAsChar?.name;
     if (charTokenUsed) {
       tokenInUseMap[charTokenUsed] = char.name;
     }

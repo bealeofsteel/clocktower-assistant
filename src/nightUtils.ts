@@ -7,6 +7,7 @@ import {
   SpecialInstructionKey,
   Instruction,
   NightType,
+  CharacterType,
 } from "./types";
 
 const specialInstructions = {
@@ -20,8 +21,12 @@ const specialInstructions = {
     if (gameState.playerCount >= 7) {
       return {
         label: SpecialInstructionKey.MinionInfo,
-        message:
-          "Wake all Minions. Show the THIS IS THE DEMON token. Point to the Demon.",
+        message: `Wake all Minions. Show the THIS IS THE DEMON token. Point to the Demon. <strong>Suggestion:</strong> Wake ${gameState.allChars
+          .filter((char) => char.inPlay && char.type === CharacterType.Minion)
+          .map((char) => `{{${char.id}}}`)
+          .join(
+            ", ",
+          )}. Point to {{${gameState.allChars.filter((char) => char.inPlay && char.type === CharacterType.Demon)[0].id}}}.`,
       };
     }
   },
@@ -29,7 +34,12 @@ const specialInstructions = {
     if (gameState.playerCount >= 7) {
       return {
         label: SpecialInstructionKey.DemonInfo,
-        message: `Show the THESE ARE YOUR MINIONS token. Point to all Minions. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 not-in-play good character tokens. <strong>Suggestion:</strong> Show ${gameState.demonBluffs[0].name}, ${gameState.demonBluffs[1].name}, and ${gameState.demonBluffs[2].name}.`,
+        message: `Show the THESE ARE YOUR MINIONS token. Point to all Minions. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 not-in-play good character tokens. <strong>Suggestion:</strong> Wake {{${gameState.allChars.filter((char) => char.inPlay && char.type === CharacterType.Demon)[0].id}}}. Point to ${gameState.allChars
+          .filter((char) => char.inPlay && char.type === CharacterType.Minion)
+          .map((char) => `{{${char.id}}}`)
+          .join(
+            ", ",
+          )}. Show ${gameState.demonBluffs[0].name}, ${gameState.demonBluffs[1].name}, and ${gameState.demonBluffs[2].name}.`,
       };
     }
   },
@@ -87,10 +97,8 @@ export const generateNightInstructions = (gameState: GameState) => {
         characters.forEach((char) => {
           const instructionsForChar =
             nightType === NightType.First
-              ? char.actsAsChar?.getFirstNightInstructions() ||
-                char.getFirstNightInstructions()
-              : char.actsAsChar?.getOtherNightsInstructions() ||
-                char.getOtherNightsInstructions();
+              ? char.getFirstNightInstructions()
+              : char.getOtherNightsInstructions();
           if (instructionsForChar) {
             instructions.push({
               key: char.id,

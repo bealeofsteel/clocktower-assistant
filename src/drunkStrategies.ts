@@ -39,18 +39,23 @@ export class FrameGoodPlayersAsMinion extends DrunkStrategy {
 const supportDemonBluffOfType = (
   gameState: GameState,
   charType: CharacterType,
+  excludeCharId: string,
 ) => {
   const bluff = pickDemonBluffOfType(gameState, charType);
 
-  const demon = shuffleArray(
+  const evilChar = shuffleArray(
     gameState.allChars.filter(
-      (char) => char.inPlay && char.type === CharacterType.Demon,
+      (char) =>
+        char.inPlay &&
+        char.alignment === Alignment.Evil &&
+        char.id !== excludeCharId,
     ),
   )[0] as Character;
 
-  const minion = shuffleArray(
+  const otherChar = shuffleArray(
     gameState.allChars.filter(
-      (char) => char.inPlay && char.type === CharacterType.Minion,
+      (char) =>
+        char.inPlay && char.id !== evilChar.id && char.id !== excludeCharId,
     ),
   )[0] as Character;
 
@@ -58,9 +63,9 @@ const supportDemonBluffOfType = (
   let suffix = "";
 
   if (Math.random() < 0.5) {
-    suffix = `Point to {{${demon.id}}} (${charType}) and {{${minion.id}}} (Wrong).`;
+    suffix = `Point to {{${evilChar.id}}} (${charType}) and {{${otherChar.id}}} (Wrong).`;
   } else {
-    suffix = `Point to {{${minion.id}}} (Wrong) and {{${demon.id}}} (${charType}).`;
+    suffix = `Point to {{${otherChar.id}}} (Wrong) and {{${evilChar.id}}} (${charType}).`;
   }
 
   return prefix + suffix;
@@ -68,7 +73,11 @@ const supportDemonBluffOfType = (
 
 export class SupportDemonTownsfolkBluff extends DrunkStrategy {
   getInstructionsForStrategy(gameState: GameState): string {
-    return supportDemonBluffOfType(gameState, CharacterType.Townsfolk);
+    return supportDemonBluffOfType(
+      gameState,
+      CharacterType.Townsfolk,
+      this.charId,
+    );
   }
 }
 
@@ -83,7 +92,11 @@ export class SupportDemonOutsiderBluff extends DrunkStrategy {
   }
 
   getInstructionsForStrategy(gameState: GameState): string {
-    return supportDemonBluffOfType(gameState, CharacterType.Outsider);
+    return supportDemonBluffOfType(
+      gameState,
+      CharacterType.Outsider,
+      this.charId,
+    );
   }
 }
 

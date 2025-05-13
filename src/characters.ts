@@ -145,14 +145,13 @@ export abstract class Character {
     return true;
   }
 
-  // If the class uses another character's token (like the Drunk or Lunatic), return that character's name
-  getCharTokenInUse(): CharacterName | undefined {
-    return;
-  }
-
   // True for most chars, but the Vortox can't be seen by information gatherers since it causes all info to be false
   canBeSeenInPlay(): boolean {
     return true;
+  }
+
+  canActAsOtherChar(): boolean {
+    return false;
   }
 }
 
@@ -467,8 +466,16 @@ export class Drunk extends Character {
     }
   }
 
-  getCharTokenInUse(): CharacterName | undefined {
-    return this.actsAsChar?.name;
+  getFirstNightInstructions(): string | undefined {
+    return this.actsAsChar?.getFirstNightInstructions();
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return this.actsAsChar?.getOtherNightsInstructions();
+  }
+
+  canActAsOtherChar(): boolean {
+    return true;
   }
 }
 
@@ -726,12 +733,28 @@ export class Philosopher extends Character {
     super(CharacterName.Philosopher);
   }
 
+  getStartingInfoSuggestion(gameState: GameState): string | undefined {
+    return this.actsAsChar?.getStartingInfoSuggestion(gameState);
+  }
+
   getFirstNightInstructions(): string | undefined {
+    if (this.actsAsChar) {
+      return this.actsAsChar.getFirstNightInstructions();
+    }
+
     return philosopherInstructions;
   }
 
   getOtherNightsInstructions(): string | undefined {
+    if (this.actsAsChar) {
+      return this.actsAsChar.getFirstNightInstructions();
+    }
+
     return philosopherInstructions;
+  }
+
+  canActAsOtherChar(): boolean {
+    return true;
   }
 }
 
@@ -1108,28 +1131,8 @@ export class Goon extends Character {
 }
 
 export class Lunatic extends Character {
-  pickedDemon: Character | undefined;
-  demonFirstNightInstructions: string;
-  demonOtherNightsInstructions: string;
-
   constructor() {
     super(CharacterName.Lunatic, CharacterType.Outsider);
-    this.demonFirstNightInstructions = "";
-    this.demonOtherNightsInstructions = "";
-  }
-
-  getDisplayName(): string {
-    let name = this.name as string;
-
-    if (this.pickedDemon?.name) {
-      name += ` (${this.pickedDemon.name})`;
-    }
-
-    if (this.playerName) {
-      name += ` [${this.playerName}]`;
-    }
-
-    return name;
   }
 
   canBeDemonBluff(): boolean {
@@ -1157,15 +1160,10 @@ export class Lunatic extends Character {
       allChars.filter((char) => char.type === CharacterType.Demon),
     );
     shuffleArray(demons);
-    this.pickedDemon = demons[0];
+    this.actsAsChar = demons[0];
   }
 
   getStartingInfoSuggestion(gameState: GameState): string | undefined {
-    this.demonFirstNightInstructions =
-      this.pickedDemon?.getFirstNightInstructions() as string;
-    this.demonOtherNightsInstructions =
-      this.pickedDemon?.getOtherNightsInstructions() as string;
-
     const charsInPlay = gameState.allChars.filter(
       (char) => char.inPlay && char.id !== this.id,
     );
@@ -1209,19 +1207,26 @@ export class Lunatic extends Character {
 
     let instructions = `Point to ${charTokens.join(", ")}. Show the ${bluffs[0].name}, ${bluffs[1].name}, and ${bluffs[2].name} tokens.`;
 
-    if (this.demonFirstNightInstructions) {
-      instructions += ` ${this.demonFirstNightInstructions}`;
+    const demonFirstNightInstructions =
+      this.actsAsChar?.getFirstNightInstructions() as string;
+
+    if (demonFirstNightInstructions) {
+      instructions += ` ${demonFirstNightInstructions}`;
     }
 
     return instructions;
   }
 
   getOtherNightSuggestion(): string | undefined {
-    return this.demonOtherNightsInstructions;
+    return this.actsAsChar?.getOtherNightsInstructions();
   }
 
-  getCharTokenInUse(): CharacterName | undefined {
-    return this.pickedDemon?.name;
+  canActAsOtherChar(): boolean {
+    return true;
+  }
+
+  getIdentityForInstructions(): CharacterName {
+    return this.name;
   }
 }
 
@@ -1358,7 +1363,7 @@ export class Po extends Character {
   }
 
   getOtherNightsInstructions(): string | undefined {
-    return "The Po may choose a player OR chooses 3 player if they chose no-one last night. ⚫️ or ⚫️ ⚫️ ⚫️";
+    return "The Po may choose a player OR chooses 3 players if they chose no-one last night. ⚫️ or ⚫️ ⚫️ ⚫️";
   }
 }
 
