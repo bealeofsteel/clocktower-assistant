@@ -26,7 +26,7 @@ const specialInstructions = {
           .map((char) => `{{${char.id}}}`)
           .join(
             ", ",
-          )}. Point to {{${gameState.allChars.filter((char) => char.inPlay && char.type === CharacterType.Demon)[0].id}}}.`,
+          )}. Point to {{${gameState.allChars.filter((char) => char.inPlay && char.type === CharacterType.Demon)?.[0]?.id}}}.`,
       };
     }
   },
@@ -34,7 +34,7 @@ const specialInstructions = {
     if (gameState.playerCount >= 7) {
       return {
         label: SpecialInstructionKey.DemonInfo,
-        message: `Show the THESE ARE YOUR MINIONS token. Point to all Minions. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 not-in-play good character tokens. <strong>Suggestion:</strong> Wake {{${gameState.allChars.filter((char) => char.inPlay && char.type === CharacterType.Demon)[0].id}}}. Point to ${gameState.allChars
+        message: `Show the THESE ARE YOUR MINIONS token. Point to all Minions. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 not-in-play good character tokens. <strong>Suggestion:</strong> Wake {{${gameState.allChars.filter((char) => char.inPlay && char.type === CharacterType.Demon)?.[0]?.id}}}. Point to ${gameState.allChars
           .filter((char) => char.inPlay && char.type === CharacterType.Minion)
           .map((char) => `{{${char.id}}}`)
           .join(
