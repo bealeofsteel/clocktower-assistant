@@ -15,7 +15,7 @@ import {
   ShowGoodPlayersWrongOutsider,
   GrandmotherFrameTownsfolkAsDrunk,
   GrandmotherShowGoodPlayerWrongRole,
-  GrandmotherSupportDemonWithDemonBluff,
+  GrandmotherSupportDemonBluff,
 } from "./drunkStrategies";
 import { playerCountConfig } from "./gameSettings";
 import { shuffleArray } from "./randomUtils";
@@ -994,7 +994,7 @@ export class Grandmother extends Character {
 
   getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
     return [
-      new GrandmotherSupportDemonWithDemonBluff(charId),
+      new GrandmotherSupportDemonBluff(charId),
       new GrandmotherFrameTownsfolkAsDrunk(charId),
       new GrandmotherShowGoodPlayerWrongRole(charId),
     ];

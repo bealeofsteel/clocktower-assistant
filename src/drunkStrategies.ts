@@ -174,17 +174,17 @@ export class ClaimZeroOutsiders extends DrunkStrategy {
   }
 }
 
-export class GrandmotherSupportDemonWithDemonBluff extends DrunkStrategy {
+export class GrandmotherSupportDemonBluff extends DrunkStrategy {
   getInstructionsForStrategy(gameState: GameState): string {
     const bluffs = gameState.demonBluffs;
     shuffleArray(bluffs);
 
-    const demons = gameState.allChars.filter(
-      (char) => char.inPlay && char.type === CharacterType.Demon,
+    const evilChars = gameState.allChars.filter(
+      (char) => char.inPlay && char.alignment === Alignment.Evil,
     );
-    shuffleArray(demons);
+    shuffleArray(evilChars);
 
-    return `The grandchild is {{${demons[0].id}}}. Show the ${bluffs[0].name} token.`;
+    return `The grandchild is {{${evilChars[0].id}}}. Show the ${bluffs[0].name} token.`;
   }
 }
 
