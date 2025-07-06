@@ -32,7 +32,7 @@ function CharNameDisplay({
       >
         {char.getDisplayName()}
         {tokenInUseMap && tokenInUseMap[char.name]
-          ? ` (token used by ${tokenInUseMap[char.name]}}`
+          ? ` (token used by ${tokenInUseMap[char.name]})`
           : ""}
       </span>
       {playable && (
