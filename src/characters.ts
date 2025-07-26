@@ -16,6 +16,9 @@ import {
   GrandmotherFrameTownsfolkAsDrunk,
   GrandmotherShowGoodPlayerWrongRole,
   GrandmotherSupportDemonBluff,
+  NobleFrameGoodCharsAsEvil,
+  ConfirmMarionetteAsOutsider,
+  ConfirmMarionetteAsTownsfolk,
 } from "./drunkStrategies";
 import { playerCountConfig } from "./gameSettings";
 import { shuffleArray } from "./randomUtils";
@@ -153,6 +156,14 @@ export abstract class Character {
   canActAsOtherChar(): boolean {
     return false;
   }
+
+  isIncludedInMinionAndDemonInfo(): boolean {
+    return true;
+  }
+
+  canMisregisterAlignment(): boolean {
+    return false;
+  }
 }
 
 export class Washerwoman extends Character {
@@ -173,12 +184,12 @@ export class Washerwoman extends Character {
   }
 
   getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
-    // SupportDemonTownsfolkBluff is here twice to weight it to occur more frequently than the other option.
-    // In general it should be the more damaging option, but we want to sometimes just spread nonsense
-    // to provide cover in case neither evil player picks the specified bluff.
+    // Include certain strategies multiple times to make them more likely to occur
     return [
       new SupportDemonTownsfolkBluff(charId),
       new SupportDemonTownsfolkBluff(charId),
+      new ConfirmMarionetteAsTownsfolk(charId),
+      new ConfirmMarionetteAsTownsfolk(charId),
       new ShowGoodPlayersWrongTownsfolk(charId),
     ];
   }
@@ -202,10 +213,16 @@ export class Librarian extends Character {
   }
 
   getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
+    // Include certain options multiple times to make them more likely to occur
     return [
       new ClaimZeroOutsiders(charId),
+      new ClaimZeroOutsiders(charId),
+      new FrameTownsfolkAsDrunk(charId),
       new FrameTownsfolkAsDrunk(charId),
       new SupportDemonOutsiderBluff(charId),
+      new SupportDemonOutsiderBluff(charId),
+      new ConfirmMarionetteAsOutsider(charId),
+      new ConfirmMarionetteAsOutsider(charId),
       new ShowGoodPlayersWrongOutsider(charId),
     ];
   }
@@ -315,6 +332,10 @@ export class Recluse extends Character {
   constructor() {
     super(CharacterName.Recluse, CharacterType.Outsider);
   }
+
+  canMisregisterAlignment() {
+    return true;
+  }
 }
 
 export class Monk extends Character {
@@ -411,6 +432,10 @@ export class Spy extends Character {
 
   getOtherNightsInstructions() {
     return spyInstructions;
+  }
+
+  canMisregisterAlignment() {
+    return true;
   }
 }
 
@@ -1367,6 +1392,77 @@ export class Po extends Character {
   }
 }
 
+export class Noble extends Character {
+  constructor() {
+    super(CharacterName.Noble);
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return "Point to 3 players including one evil player, in no particular order.";
+  }
+
+  getStartingInfoSuggestion(gameState: GameState): string | undefined {
+    const evilChar = shuffleArray(
+      gameState.allChars.filter(
+        (char) =>
+          char.id !== this.id &&
+          char.inPlay &&
+          (char.alignment === Alignment.Evil || char.canMisregisterAlignment()),
+      ),
+    )[0] as Character;
+
+    const goodChars = shuffleArray(
+      gameState.allChars.filter(
+        (char) =>
+          char.id !== this.id &&
+          char.id !== evilChar.id && //Prevent duplicate char in case of misregistration
+          char.inPlay &&
+          (char.alignment === Alignment.Good || char.canMisregisterAlignment()),
+      ),
+    );
+
+    const chars = [evilChar, goodChars[0], goodChars[1]] as Character[];
+    shuffleArray(chars);
+
+    return `Point to {{${chars[0].id}}}, {{${chars[1].id}}}, and {{${chars[2].id}}}.`;
+  }
+
+  getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
+    return [new NobleFrameGoodCharsAsEvil(charId)];
+  }
+}
+
+export class Cannibal extends Character {
+  constructor() {
+    super(CharacterName.Cannibal);
+  }
+
+  canActAsOtherChar(): boolean {
+    return true;
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return this.actsAsChar?.getFirstNightInstructions();
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return this.actsAsChar?.getOtherNightsInstructions();
+  }
+}
+
+export class Marionette extends Drunk {
+  constructor() {
+    super();
+    this.name = CharacterName.Marionette;
+    this.type = CharacterType.Minion;
+    this.alignment = Alignment.Evil;
+  }
+
+  isIncludedInMinionAndDemonInfo(): boolean {
+    return false;
+  }
+}
+
 export const characterClassNameMap: Record<
   CharacterName,
   new (
@@ -1449,4 +1545,8 @@ export const characterClassNameMap: Record<
   [CharacterName.Pukka]: Pukka,
   [CharacterName.Shabaloth]: Shabaloth,
   [CharacterName.Po]: Po,
+
+  [CharacterName.Noble]: Noble,
+  [CharacterName.Cannibal]: Cannibal,
+  [CharacterName.Marionette]: Marionette,
 };

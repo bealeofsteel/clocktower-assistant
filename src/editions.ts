@@ -71,6 +71,9 @@ import {
   TeaLady,
   Goon,
   Mastermind,
+  Noble,
+  Cannibal,
+  Marionette,
 } from "./characters";
 import {
   CharacterName,
@@ -438,6 +441,78 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         CharacterName.Empath,
         CharacterName.FortuneTeller,
         CharacterName.Undertaker,
+        CharacterName.Spy,
+        SpecialInstructionKey.Dawn,
+      ],
+    },
+  },
+  [EditionName.PiesBaking]: {
+    isCustom: true,
+    getCharactersForEdition: () => {
+      const townsfolk = [
+        new Washerwoman(),
+        new Librarian(),
+        new Noble(),
+        new Chef(),
+        new Empath(),
+        new FortuneTeller(),
+        new Cannibal(),
+        new Monk(),
+        new Ravenkeeper(),
+        new Virgin(),
+        new Slayer(),
+        new Soldier(),
+        new Mayor(),
+      ];
+
+      const outsiders = [new Butler(), new Saint(), new Recluse(), new Drunk()];
+
+      const minions = [
+        new Poisoner(),
+        new Spy(),
+        new ScarletWoman(),
+        new Baron(),
+        new Marionette(),
+      ];
+
+      const demons = [new Imp()];
+
+      return {
+        townsfolk,
+        outsiders,
+        minions,
+        demons,
+      };
+    },
+    nightInstructions: {
+      first: [
+        SpecialInstructionKey.Dusk,
+        SpecialInstructionKey.MarionetteSetup,
+        SpecialInstructionKey.MinionInfo,
+        SpecialInstructionKey.DemonInfo,
+        SpecialInstructionKey.MarionetteInfo,
+        CharacterName.Poisoner,
+        CharacterName.Washerwoman,
+        CharacterName.Librarian,
+        CharacterName.Chef,
+        CharacterName.Empath,
+        CharacterName.FortuneTeller,
+        CharacterName.Butler,
+        CharacterName.Noble,
+        CharacterName.Spy,
+        SpecialInstructionKey.Dawn,
+      ],
+      other: [
+        SpecialInstructionKey.Dusk,
+        SpecialInstructionKey.CannibalReminder,
+        CharacterName.Poisoner,
+        CharacterName.Monk,
+        CharacterName.ScarletWoman,
+        CharacterName.Imp,
+        CharacterName.Ravenkeeper,
+        CharacterName.Empath,
+        CharacterName.FortuneTeller,
+        CharacterName.Butler,
         CharacterName.Spy,
         SpecialInstructionKey.Dawn,
       ],

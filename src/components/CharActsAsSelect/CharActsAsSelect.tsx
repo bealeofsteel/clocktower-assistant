@@ -24,7 +24,8 @@ function CharActsAsSelect({
     const newChars = gameState.allChars.map((oldChar) => {
       if (oldChar.id === currentChar.id) {
         newChar = cloneChar(oldChar);
-        newChar.actsAsChar = actsAsChar;
+        newChar.actsAsChar =
+          currentChar.name === actsAsChar.name ? undefined : actsAsChar;
         return newChar;
       } else {
         return oldChar;
@@ -58,7 +59,7 @@ function CharActsAsSelect({
     <select
       value={currentChar.actsAsChar?.name || currentChar.name}
       onChange={(e) => updateActsAs(e.target.value as CharacterName)}
-      disabled={!currentChar.canActAsOtherChar()}
+      disabled={!currentChar.actsAsChar && !currentChar.canActAsOtherChar()}
     >
       <CharOptions gameState={gameState}></CharOptions>
     </select>

@@ -174,6 +174,66 @@ export class ClaimZeroOutsiders extends DrunkStrategy {
   }
 }
 
+const confirmMarionette = (gameState: GameState, excludeCharId: string) => {
+  const marionette = gameState.allChars.filter(
+    (char) => char.inPlay && char.name === CharacterName.Marionette,
+  )[0];
+
+  const otherChar = shuffleArray(
+    gameState.allChars.filter(
+      (char) =>
+        char.inPlay && char.id !== marionette.id && char.id !== excludeCharId,
+    ),
+  )[0] as Character;
+
+  const prefix = `Show the ${marionette.actsAsChar?.name} character token. `;
+  let suffix = "";
+
+  if (Math.random() < 0.5) {
+    suffix = `Point to {{${marionette.id}}} (${marionette.actsAsChar?.type}) and {{${otherChar.id}}} (Wrong).`;
+  } else {
+    suffix = `Point to {{${otherChar.id}}} (Wrong) and {{${marionette.id}}} (${marionette.actsAsChar?.type}).`;
+  }
+
+  return prefix + suffix;
+};
+
+export class ConfirmMarionetteAsTownsfolk extends DrunkStrategy {
+  gameQualifiesForStrategy(gameState: GameState): boolean {
+    return (
+      gameState.allChars.filter(
+        (char) =>
+          char.inPlay &&
+          char.name === CharacterName.Marionette &&
+          char.actsAsChar?.type === CharacterType.Townsfolk &&
+          char.id !== this.charId,
+      ).length > 0
+    );
+  }
+
+  getInstructionsForStrategy(gameState: GameState): string {
+    return confirmMarionette(gameState, this.charId);
+  }
+}
+
+export class ConfirmMarionetteAsOutsider extends DrunkStrategy {
+  gameQualifiesForStrategy(gameState: GameState): boolean {
+    return (
+      gameState.allChars.filter(
+        (char) =>
+          char.inPlay &&
+          char.name === CharacterName.Marionette &&
+          char.actsAsChar?.type === CharacterType.Outsider &&
+          char.id !== this.charId,
+      ).length > 0
+    );
+  }
+
+  getInstructionsForStrategy(gameState: GameState): string {
+    return confirmMarionette(gameState, this.charId);
+  }
+}
+
 export class GrandmotherSupportDemonBluff extends DrunkStrategy {
   getInstructionsForStrategy(gameState: GameState): string {
     const bluffs = gameState.demonBluffs;
@@ -225,5 +285,34 @@ export class GrandmotherShowGoodPlayerWrongRole extends DrunkStrategy {
     shuffleArray(goodChars);
 
     return `The grandchild is {{${goodChars[0].id}}}. Show the ${charToShow.name} token.`;
+  }
+}
+
+export class NobleFrameGoodCharsAsEvil extends DrunkStrategy {
+  gameQualifiesForStrategy(gameState: GameState): boolean {
+    return (
+      gameState.allChars.filter(
+        (char) =>
+          char.id !== this.charId &&
+          char.inPlay &&
+          char.alignment === Alignment.Good,
+      ).length >= 3
+    );
+  }
+
+  getInstructionsForStrategy(gameState: GameState): string {
+    const goodChars = shuffleArray(
+      gameState.allChars.filter(
+        (char) =>
+          char.id !== this.charId &&
+          char.inPlay &&
+          char.alignment === Alignment.Good,
+      ),
+    );
+
+    const chars = [goodChars[0], goodChars[1], goodChars[2]] as Character[];
+    shuffleArray(chars);
+
+    return `Point to {{${chars[0].id}}}, {{${chars[1].id}}}, and {{${chars[2].id}}}.`;
   }
 }

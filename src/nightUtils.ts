@@ -17,12 +17,43 @@ const specialInstructions = {
       message: "Check that all eyes are closed. Some Travellers & Fabled act.",
     };
   },
+  [SpecialInstructionKey.MarionetteSetup]: (gameState: GameState) => {
+    const minions = gameState.allChars.filter(
+      (char) => char.inPlay && char.type === CharacterType.Minion,
+    );
+
+    if (
+      minions.length === 3 &&
+      minions.filter((char) => char.name === CharacterName.Marionette).length >
+        0
+    ) {
+      let message = `Swap a good player's character token with a not-in-play Minion character token. Wake this player, show them the YOU ARE info token then their Minion character token, then the YOU ARE info token then a thumbs down, then put them to sleep.`;
+
+      const minionSuggestion = minions.filter(
+        (char) => char.name !== CharacterName.Marionette && char.actsAsChar,
+      )[0];
+
+      if (minionSuggestion) {
+        message += ` <strong>Suggestion:</strong> If seat positioning allows it, wake up {{${minionSuggestion.id}}} and show them the ${minionSuggestion.name} token.`;
+      }
+
+      return {
+        label: SpecialInstructionKey.MarionetteSetup,
+        message: message,
+      };
+    }
+  },
   [SpecialInstructionKey.MinionInfo]: (gameState: GameState) => {
     if (gameState.playerCount >= 7) {
       return {
         label: SpecialInstructionKey.MinionInfo,
         message: `Wake all Minions. Show the THIS IS THE DEMON token. Point to the Demon. <strong>Suggestion:</strong> Wake ${gameState.allChars
-          .filter((char) => char.inPlay && char.type === CharacterType.Minion)
+          .filter(
+            (char) =>
+              char.inPlay &&
+              char.type === CharacterType.Minion &&
+              char.isIncludedInMinionAndDemonInfo(),
+          )
           .map((char) => `{{${char.id}}}`)
           .join(
             ", ",
@@ -35,11 +66,16 @@ const specialInstructions = {
       return {
         label: SpecialInstructionKey.DemonInfo,
         message: `Show the THESE ARE YOUR MINIONS token. Point to all Minions. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 not-in-play good character tokens. <strong>Suggestion:</strong> Wake {{${gameState.allChars.filter((char) => char.inPlay && char.type === CharacterType.Demon)?.[0]?.id}}}. Point to ${gameState.allChars
-          .filter((char) => char.inPlay && char.type === CharacterType.Minion)
+          .filter(
+            (char) =>
+              char.inPlay &&
+              char.type === CharacterType.Minion &&
+              char.isIncludedInMinionAndDemonInfo(),
+          )
           .map((char) => `{{${char.id}}}`)
           .join(
             ", ",
-          )}. Show ${gameState.demonBluffs[0].name}, ${gameState.demonBluffs[1].name}, and ${gameState.demonBluffs[2].name}.`,
+          )}. Show ${gameState.demonBluffs.map((bluff) => bluff.name).join(", ")}.`,
       };
     }
   },
@@ -55,6 +91,36 @@ const specialInstructions = {
       label: SpecialInstructionKey.Dawn,
       message,
     };
+  },
+  [SpecialInstructionKey.MarionetteInfo]: (gameState: GameState) => {
+    const marionetteInPlay = gameState.allChars.filter(
+      (char) => char.inPlay && char.name === CharacterName.Marionette,
+    )?.[0];
+
+    if (marionetteInPlay) {
+      const message = `Mark a good player neighboring the Demon with the IS THE MARIONETTE reminder. Wake the Demon. Point to the player marked IS THE MARIONETTE and show the Marionette character token. Put the Demon to sleep. <strong>Suggestion:</strong> If seat positioning allows it, point to {{${marionetteInPlay.id}}}.`;
+
+      return {
+        label: SpecialInstructionKey.MarionetteInfo,
+        message: message,
+      };
+    }
+  },
+  [SpecialInstructionKey.CannibalReminder]: (gameState: GameState) => {
+    const cannibalInPlay = gameState.allChars.filter(
+      (char) =>
+        char.inPlay &&
+        (char.name === CharacterName.Cannibal ||
+          char.actsAsChar?.name === CharacterName.Cannibal),
+    )?.[0];
+
+    if (cannibalInPlay) {
+      return {
+        label: SpecialInstructionKey.CannibalReminder,
+        message:
+          "If a good player died by execution today, mark them with the LUNCH reminder, and remove the Cannibal's POISONED reminder if necessary. If an evil player died by execution today, mark them with the LUNCH reminder and mark the Cannibal with the POISONED reminder.",
+      };
+    }
   },
 };
 

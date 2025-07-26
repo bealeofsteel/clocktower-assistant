@@ -1,6 +1,7 @@
 import { playerCountConfig } from "../../gameSettings";
 import {
   Alignment,
+  CharacterName,
   CharacterSet,
   CharacterType,
   EditionName,
@@ -106,6 +107,24 @@ function RandomizeSetup({
       playerSetup.minionsToPick--;
     }
 
+    if (
+      allChars.filter((char) => char.name === CharacterName.Marionette).length >
+        0 &&
+      playerCountConfig[playerCount].minions === 3
+    ) {
+      const minion = shuffleArray(
+        allChars.filter(
+          (char) =>
+            char.type === CharacterType.Minion &&
+            char.name !== CharacterName.Marionette,
+        ),
+      )[0] as Character;
+
+      const actsAsChar = availableChars.townsfolk.pop() as Character;
+      minion.actsAsChar = actsAsChar;
+      allChars.push(actsAsChar);
+    }
+
     while (
       playerSetup.outsidersToPick > 0 &&
       availableChars.outsiders.length > 0
@@ -190,11 +209,32 @@ export const generateDemonBluffs = (
     }
   }
 
-  while (numDemonBluffs > 0) {
-    const char = availableTownsfolk.pop() as Character;
-    if (char.canBeDemonBluff()) {
-      demonBluffs.push(char);
-      numDemonBluffs--;
+  while (numDemonBluffs > 0 && availableTownsfolk.length > 0) {
+    for (let i = availableTownsfolk.length - 1; i >= 0; i--) {
+      const char = availableTownsfolk[i];
+      if (char.canBeDemonBluff()) {
+        availableTownsfolk.splice(i, 1);
+        demonBluffs.push(char);
+        numDemonBluffs--;
+        if (numDemonBluffs === 0) {
+          break;
+        }
+      }
+    }
+  }
+
+  // If not enough townsfolk are available, fill out the rest with outsiders
+  while (numDemonBluffs > 0 && availableOutsiders.length > 0) {
+    for (let i = availableOutsiders.length - 1; i >= 0; i--) {
+      const char = availableOutsiders[i];
+      if (char.canBeDemonBluff()) {
+        availableOutsiders.splice(i, 1);
+        demonBluffs.push(char);
+        numDemonBluffs--;
+        if (numDemonBluffs === 0) {
+          break;
+        }
+      }
     }
   }
 

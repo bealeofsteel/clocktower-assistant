@@ -97,6 +97,10 @@ export enum CharacterName {
   Pukka = "Pukka",
   Shabaloth = "Shabaloth",
   Po = "Po",
+
+  Noble = "Noble",
+  Cannibal = "Cannibal",
+  Marionette = "Marionette",
 }
 
 export enum EditionName {
@@ -105,6 +109,7 @@ export enum EditionName {
   BadMoonRising = "Bad Moon Rising",
   NoGreaterJoy = "No Greater Joy",
   EveryoneCanPlay = "Everyone Can Play",
+  PiesBaking = "Pies Baking",
 }
 
 export interface GameState {
@@ -149,6 +154,9 @@ export enum SpecialInstructionKey {
   MinionInfo = "Minion Info",
   DemonInfo = "Demon Info",
   Dawn = "Dawn",
+  MarionetteSetup = "Marionette Setup",
+  MarionetteInfo = "Marionette Info",
+  CannibalReminder = "Cannibal Reminder",
 }
 
 export enum CharacterType {
