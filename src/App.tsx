@@ -33,11 +33,18 @@ enum TabName {
 }
 
 const LOCAL_STORAGE_KEY = "gameState";
+const STATE_HISTORY_KEY = "gameStateHistory";
+
+const MAX_STATE_HISTORY = 100;
 
 function App() {
   const initialState = JSON.parse(
     localStorage.getItem(LOCAL_STORAGE_KEY) as string,
   );
+  const initialGameStateHistory = JSON.parse(
+    localStorage.getItem(STATE_HISTORY_KEY) as string,
+  );
+
   const instantiatedCharsById = new Map<string, Character>();
 
   // To take advantage of Character functionality, we need to instantiate Character objects from the saved JSON
@@ -79,10 +86,42 @@ function App() {
   );
 
   const [gameState, setGameState] = useState<GameState>(initialState);
+  const [gameStateHistory, setGameStateHistory] = useState<GameState[]>(
+    initialGameStateHistory || [],
+  );
 
   const updateGameState = (newState: GameState) => {
+    const previousState = gameState;
+
     setGameState(newState);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
+
+    const newGameStateHistory = [...gameStateHistory, previousState];
+    if (newGameStateHistory.length > MAX_STATE_HISTORY) {
+      newGameStateHistory.shift();
+    }
+
+    setGameStateHistory(newGameStateHistory);
+    localStorage.setItem(
+      STATE_HISTORY_KEY,
+      JSON.stringify(newGameStateHistory),
+    );
+  };
+
+  const undoLastStateChange = () => {
+    const previousState = gameStateHistory.pop() as GameState;
+
+    if (previousState) {
+      setGameState(previousState);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(previousState));
+
+      const newGameStateHistory = [...gameStateHistory];
+      setGameStateHistory(newGameStateHistory);
+      localStorage.setItem(
+        STATE_HISTORY_KEY,
+        JSON.stringify(newGameStateHistory),
+      );
+    }
   };
 
   const regenerateStartingInfo = () => {
@@ -397,6 +436,9 @@ function App() {
           updateGameState={updateGameState}
         ></InfoGenerator>
       )}
+      <div className="undo-button-container">
+        <button onClick={undoLastStateChange}>Undo</button>
+      </div>
     </>
   );
 }

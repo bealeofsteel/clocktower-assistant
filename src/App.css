@@ -43,3 +43,7 @@ input[type="checkbox"] {
   cursor: pointer;
   margin-right: 5px;
 }
+
+.undo-button-container {
+  margin-top: 25px;
+}
