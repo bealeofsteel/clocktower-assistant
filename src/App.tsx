@@ -6,16 +6,15 @@ import RandomizeSetup, {
   generateOtherNightSuggestions,
   generateStartingInfoSuggestions,
 } from "./components/RandomizeSetup/RandomizeSetup";
-import {
-  EditionName,
-  GameState,
-  CharacterType,
-  NightType,
-  CharacterName,
-} from "./types";
+import { EditionName, GameState, CharacterType, NightType } from "./types";
 import { Character } from "./characters";
 import { EDITIONS_BY_NAME } from "./editions";
-import { cloneChar, getCharsById, parseCharTokens } from "./charUtils";
+import {
+  cloneChar,
+  getCharsById,
+  getTokenInUseMap,
+  parseCharTokens,
+} from "./charUtils";
 import RandomizationTools from "./components/RandomizationTools/RandomizationTools";
 import CharacterManagement from "./components/CharacterManagement/CharacterManagement";
 import CharNameDisplay from "./components/CharNameDisplay/CharNameDisplay";
@@ -139,7 +138,9 @@ function App() {
     const char = gameState.allChars.find(
       (char) => char.id === charId,
     ) as Character;
-    const suggestion = char.getStartingInfoSuggestion(gameState) as string;
+    const suggestion = char.isDrunkOrPoisoned
+      ? (char.getDroisonedInfo(gameState) as string)
+      : (char.getStartingInfoSuggestion(gameState) as string);
 
     const startingInfoSuggestions = {
       ...gameState.startingInfoSuggestions,
@@ -178,6 +179,7 @@ function App() {
     ) as Character[];
 
     const demonBluffs = generateDemonBluffs(
+      [],
       availableOutsiders,
       availableTownsfolk,
     );
@@ -216,13 +218,7 @@ function App() {
 
   const charsById = getCharsById(gameState);
 
-  const tokenInUseMap: Partial<Record<CharacterName, CharacterName>> = {};
-  gameState?.allChars.forEach((char) => {
-    const charTokenUsed = char.actsAsChar?.name;
-    if (charTokenUsed) {
-      tokenInUseMap[charTokenUsed] = char.name;
-    }
-  });
+  const tokenInUseMap = getTokenInUseMap(gameState);
 
   return (
     <>
@@ -382,6 +378,9 @@ function App() {
                           className={`char-name ${charsById[instruction.charId].alignment}`}
                         >
                           {charsById[instruction.charId].getDisplayName()}
+                          {charsById[instruction.charId].isDrunkOrPoisoned
+                            ? " 🤢"
+                            : ""}
                         </span>
                         :{" "}
                         <span

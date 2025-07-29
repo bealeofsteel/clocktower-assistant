@@ -107,6 +107,9 @@ function RandomizeSetup({
       playerSetup.minionsToPick--;
     }
 
+    // A 3 minion game with a Marionette requires special handling, see wiki for details
+    const presetDemonBluffs = [];
+
     if (
       allChars.filter((char) => char.name === CharacterName.Marionette).length >
         0 &&
@@ -122,7 +125,7 @@ function RandomizeSetup({
 
       const actsAsChar = availableChars.townsfolk.pop() as Character;
       minion.actsAsChar = actsAsChar;
-      allChars.push(actsAsChar);
+      presetDemonBluffs.push(actsAsChar);
     }
 
     while (
@@ -153,6 +156,7 @@ function RandomizeSetup({
     }
 
     gameState.demonBluffs = generateDemonBluffs(
+      presetDemonBluffs,
       availableChars.outsiders,
       availableChars.townsfolk,
     );
@@ -191,11 +195,12 @@ function RandomizeSetup({
 }
 
 export const generateDemonBluffs = (
+  presetDemonBluffs: Character[],
   availableOutsiders: Character[],
   availableTownsfolk: Character[],
 ): Character[] => {
-  let numDemonBluffs = 3;
-  const demonBluffs = [];
+  const demonBluffs = presetDemonBluffs;
+  let numDemonBluffs = 3 - demonBluffs.length;
 
   if (availableOutsiders.length > 0) {
     for (let i = availableOutsiders.length - 1; i >= 0; i--) {
@@ -237,6 +242,8 @@ export const generateDemonBluffs = (
       }
     }
   }
+
+  shuffleArray(demonBluffs);
 
   return demonBluffs;
 };

@@ -19,6 +19,8 @@ import {
   NobleFrameGoodCharsAsEvil,
   ConfirmMarionetteAsOutsider,
   ConfirmMarionetteAsTownsfolk,
+  ConfirmDrunkAsTownsfolk,
+  GrandmotherConfirmDrunkAsTownsfolk,
 } from "./drunkStrategies";
 import { playerCountConfig } from "./gameSettings";
 import { shuffleArray } from "./randomUtils";
@@ -164,6 +166,20 @@ export abstract class Character {
   canMisregisterAlignment(): boolean {
     return false;
   }
+
+  getDroisonedInfo(gameState: GameState): string | undefined {
+    let strategies = this.actsAsChar
+      ? this.actsAsChar.getDrunkStrategies(this.id)
+      : this.getDrunkStrategies(this.id);
+    if (strategies) {
+      strategies = strategies?.filter((strategy) =>
+        strategy.gameQualifiesForStrategy(gameState),
+      );
+
+      shuffleArray(strategies);
+      return strategies[0].getInstructionsForStrategy(gameState);
+    }
+  }
 }
 
 export class Washerwoman extends Character {
@@ -190,6 +206,8 @@ export class Washerwoman extends Character {
       new SupportDemonTownsfolkBluff(charId),
       new ConfirmMarionetteAsTownsfolk(charId),
       new ConfirmMarionetteAsTownsfolk(charId),
+      new ConfirmDrunkAsTownsfolk(charId),
+      new ConfirmDrunkAsTownsfolk(charId),
       new ShowGoodPlayersWrongTownsfolk(charId),
     ];
   }
@@ -480,15 +498,7 @@ export class Drunk extends Character {
   }
 
   getStartingInfoSuggestion(gameState: GameState): string | undefined {
-    let strategies = this.actsAsChar?.getDrunkStrategies(this.id);
-    if (strategies) {
-      strategies = strategies?.filter((strategy) =>
-        strategy.gameQualifiesForStrategy(gameState),
-      );
-
-      shuffleArray(strategies);
-      return strategies[0].getInstructionsForStrategy(gameState);
-    }
+    return this.getDroisonedInfo(gameState);
   }
 
   getFirstNightInstructions(): string | undefined {
@@ -1018,9 +1028,14 @@ export class Grandmother extends Character {
   }
 
   getDrunkStrategies(charId: string): DrunkStrategy[] | undefined {
+    // Include certain strategies multiple times to make them more likely to occur
     return [
       new GrandmotherSupportDemonBluff(charId),
+      new GrandmotherSupportDemonBluff(charId),
       new GrandmotherFrameTownsfolkAsDrunk(charId),
+      new GrandmotherFrameTownsfolkAsDrunk(charId),
+      new GrandmotherConfirmDrunkAsTownsfolk(charId),
+      new GrandmotherConfirmDrunkAsTownsfolk(charId),
       new GrandmotherShowGoodPlayerWrongRole(charId),
     ];
   }

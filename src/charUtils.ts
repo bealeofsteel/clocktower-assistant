@@ -171,3 +171,16 @@ export const getCharsById = (gameState: GameState) => {
   });
   return charMap;
 };
+
+export const getTokenInUseMap = (
+  gameState: GameState,
+): Partial<Record<CharacterName, CharacterName>> => {
+  const tokenInUseMap: Partial<Record<CharacterName, CharacterName>> = {};
+  gameState?.allChars.forEach((char) => {
+    const charTokenUsed = char.actsAsChar?.name;
+    if (charTokenUsed) {
+      tokenInUseMap[charTokenUsed] = char.name;
+    }
+  });
+  return tokenInUseMap;
+};

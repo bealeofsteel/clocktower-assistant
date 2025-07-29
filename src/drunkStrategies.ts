@@ -174,25 +174,31 @@ export class ClaimZeroOutsiders extends DrunkStrategy {
   }
 }
 
-const confirmMarionette = (gameState: GameState, excludeCharId: string) => {
-  const marionette = gameState.allChars.filter(
-    (char) => char.inPlay && char.name === CharacterName.Marionette,
+const confirmCharAsActingChar = (
+  gameState: GameState,
+  characterName: CharacterName,
+  excludeCharId: string,
+) => {
+  const charToConfirm = gameState.allChars.filter(
+    (char) => char.inPlay && char.name === characterName,
   )[0];
 
   const otherChar = shuffleArray(
     gameState.allChars.filter(
       (char) =>
-        char.inPlay && char.id !== marionette.id && char.id !== excludeCharId,
+        char.inPlay &&
+        char.id !== charToConfirm.id &&
+        char.id !== excludeCharId,
     ),
   )[0] as Character;
 
-  const prefix = `Show the ${marionette.actsAsChar?.name} character token. `;
+  const prefix = `Show the ${charToConfirm.actsAsChar?.name} character token. `;
   let suffix = "";
 
   if (Math.random() < 0.5) {
-    suffix = `Point to {{${marionette.id}}} (${marionette.actsAsChar?.type}) and {{${otherChar.id}}} (Wrong).`;
+    suffix = `Point to {{${charToConfirm.id}}} (${charToConfirm.actsAsChar?.type}) and {{${otherChar.id}}} (Wrong).`;
   } else {
-    suffix = `Point to {{${otherChar.id}}} (Wrong) and {{${marionette.id}}} (${marionette.actsAsChar?.type}).`;
+    suffix = `Point to {{${otherChar.id}}} (Wrong) and {{${charToConfirm.id}}} (${charToConfirm.actsAsChar?.type}).`;
   }
 
   return prefix + suffix;
@@ -212,7 +218,11 @@ export class ConfirmMarionetteAsTownsfolk extends DrunkStrategy {
   }
 
   getInstructionsForStrategy(gameState: GameState): string {
-    return confirmMarionette(gameState, this.charId);
+    return confirmCharAsActingChar(
+      gameState,
+      CharacterName.Marionette,
+      this.charId,
+    );
   }
 }
 
@@ -230,13 +240,35 @@ export class ConfirmMarionetteAsOutsider extends DrunkStrategy {
   }
 
   getInstructionsForStrategy(gameState: GameState): string {
-    return confirmMarionette(gameState, this.charId);
+    return confirmCharAsActingChar(
+      gameState,
+      CharacterName.Marionette,
+      this.charId,
+    );
+  }
+}
+
+// Can be done by a Marionette WW if another character is the Drunk
+export class ConfirmDrunkAsTownsfolk extends DrunkStrategy {
+  gameQualifiesForStrategy(gameState: GameState): boolean {
+    return (
+      gameState.allChars.filter(
+        (char) =>
+          char.inPlay &&
+          char.name === CharacterName.Drunk &&
+          char.id !== this.charId,
+      ).length > 0
+    );
+  }
+
+  getInstructionsForStrategy(gameState: GameState): string {
+    return confirmCharAsActingChar(gameState, CharacterName.Drunk, this.charId);
   }
 }
 
 export class GrandmotherSupportDemonBluff extends DrunkStrategy {
   getInstructionsForStrategy(gameState: GameState): string {
-    const bluffs = gameState.demonBluffs;
+    const bluffs = new Array(...gameState.demonBluffs);
     shuffleArray(bluffs);
 
     const evilChars = gameState.allChars.filter(
@@ -285,6 +317,30 @@ export class GrandmotherShowGoodPlayerWrongRole extends DrunkStrategy {
     shuffleArray(goodChars);
 
     return `The grandchild is {{${goodChars[0].id}}}. Show the ${charToShow.name} token.`;
+  }
+}
+
+export class GrandmotherConfirmDrunkAsTownsfolk extends DrunkStrategy {
+  gameQualifiesForStrategy(gameState: GameState): boolean {
+    return (
+      gameState.allChars.filter(
+        (char) =>
+          char.inPlay &&
+          char.name === CharacterName.Drunk &&
+          char.id !== this.charId,
+      ).length > 0
+    );
+  }
+
+  getInstructionsForStrategy(gameState: GameState): string {
+    const charToConfirm = gameState.allChars.filter(
+      (char) =>
+        char.inPlay &&
+        char.name === CharacterName.Drunk &&
+        char.id !== this.charId,
+    )[0];
+
+    return `The grandchild is {{${charToConfirm.id}}}. Show the ${charToConfirm.actsAsChar?.name} token.`;
   }
 }
 
