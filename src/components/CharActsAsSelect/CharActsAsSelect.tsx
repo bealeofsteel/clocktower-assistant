@@ -37,7 +37,7 @@ function CharActsAsSelect({
       allChars: newChars,
     };
 
-    const startingInfo = newChar!.getStartingInfoSuggestion(gameState);
+    const startingInfo = newChar!.getDrunkOrSoberStartingInfo(gameState);
     if (startingInfo) {
       newGameState.startingInfoSuggestions[currentChar.id] = startingInfo;
     }

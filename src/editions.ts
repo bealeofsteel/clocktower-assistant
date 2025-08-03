@@ -319,54 +319,6 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
       ],
     },
   },
-  [EditionName.NoGreaterJoy]: {
-    isTeensyville: true,
-    isCustom: true,
-    getCharactersForEdition: () => {
-      const townsfolk = [
-        new Clockmaker(),
-        new Investigator(),
-        new Empath(),
-        new Chambermaid(),
-        new Artist(),
-        new Sage(),
-      ];
-
-      const outsiders = [new Drunk(), new Klutz()];
-
-      const minions = [new ScarletWoman(), new Baron()];
-
-      const demons = [new Imp()];
-
-      return {
-        townsfolk,
-        outsiders,
-        minions,
-        demons,
-      };
-    },
-    nightInstructions: {
-      first: [
-        SpecialInstructionKey.Dusk,
-        SpecialInstructionKey.MinionInfo,
-        SpecialInstructionKey.DemonInfo,
-        CharacterName.Investigator,
-        CharacterName.Empath,
-        CharacterName.Clockmaker,
-        CharacterName.Chambermaid,
-        SpecialInstructionKey.Dawn,
-      ],
-      other: [
-        SpecialInstructionKey.Dusk,
-        CharacterName.ScarletWoman,
-        CharacterName.Imp,
-        CharacterName.Sage,
-        CharacterName.Empath,
-        CharacterName.Chambermaid,
-        SpecialInstructionKey.Dawn,
-      ],
-    },
-  },
   [EditionName.EveryoneCanPlay]: {
     isCustom: true,
     getCharactersForEdition: () => {
@@ -442,6 +394,54 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         CharacterName.FortuneTeller,
         CharacterName.Undertaker,
         CharacterName.Spy,
+        SpecialInstructionKey.Dawn,
+      ],
+    },
+  },
+  [EditionName.NoGreaterJoy]: {
+    isTeensyville: true,
+    isCustom: true,
+    getCharactersForEdition: () => {
+      const townsfolk = [
+        new Clockmaker(),
+        new Investigator(),
+        new Empath(),
+        new Chambermaid(),
+        new Artist(),
+        new Sage(),
+      ];
+
+      const outsiders = [new Drunk(), new Klutz()];
+
+      const minions = [new ScarletWoman(), new Baron()];
+
+      const demons = [new Imp()];
+
+      return {
+        townsfolk,
+        outsiders,
+        minions,
+        demons,
+      };
+    },
+    nightInstructions: {
+      first: [
+        SpecialInstructionKey.Dusk,
+        SpecialInstructionKey.MinionInfo,
+        SpecialInstructionKey.DemonInfo,
+        CharacterName.Investigator,
+        CharacterName.Empath,
+        CharacterName.Clockmaker,
+        CharacterName.Chambermaid,
+        SpecialInstructionKey.Dawn,
+      ],
+      other: [
+        SpecialInstructionKey.Dusk,
+        CharacterName.ScarletWoman,
+        CharacterName.Imp,
+        CharacterName.Sage,
+        CharacterName.Empath,
+        CharacterName.Chambermaid,
         SpecialInstructionKey.Dawn,
       ],
     },

@@ -167,6 +167,14 @@ export abstract class Character {
     return false;
   }
 
+  getDrunkOrSoberStartingInfo(gameState: GameState): string | undefined {
+    if (this.isDrunkOrPoisoned) {
+      return this.getDroisonedInfo(gameState);
+    }
+
+    return this.getStartingInfoSuggestion(gameState);
+  }
+
   getDroisonedInfo(gameState: GameState): string | undefined {
     let strategies = this.actsAsChar
       ? this.actsAsChar.getDrunkStrategies(this.id)
@@ -1462,6 +1470,10 @@ export class Cannibal extends Character {
 
   getOtherNightsInstructions(): string | undefined {
     return this.actsAsChar?.getOtherNightsInstructions();
+  }
+
+  getStartingInfoSuggestion(gameState: GameState): string | undefined {
+    return this.actsAsChar?.getStartingInfoSuggestion(gameState);
   }
 }
 

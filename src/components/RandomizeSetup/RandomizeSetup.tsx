@@ -253,7 +253,7 @@ export const generateStartingInfoSuggestions = (gameState: GameState) => {
 
   const inPlayChars = gameState.allChars.filter((char) => char.inPlay);
   for (const char of inPlayChars) {
-    const suggestion = char.getStartingInfoSuggestion(gameState);
+    const suggestion = char.getDrunkOrSoberStartingInfo(gameState);
     if (suggestion) {
       startingInfoSuggestions[char.id] = suggestion;
     }

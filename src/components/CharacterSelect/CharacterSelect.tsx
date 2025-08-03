@@ -72,7 +72,7 @@ function CharacterSelect({
       allChars: newCharsList,
     };
 
-    const startingInfo = newChar.getStartingInfoSuggestion(gameState);
+    const startingInfo = newChar.getDrunkOrSoberStartingInfo(gameState);
     if (startingInfo) {
       newGameState.startingInfoSuggestions[newChar.id] = startingInfo;
     }

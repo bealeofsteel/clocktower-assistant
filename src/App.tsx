@@ -138,9 +138,7 @@ function App() {
     const char = gameState.allChars.find(
       (char) => char.id === charId,
     ) as Character;
-    const suggestion = char.isDrunkOrPoisoned
-      ? (char.getDroisonedInfo(gameState) as string)
-      : (char.getStartingInfoSuggestion(gameState) as string);
+    const suggestion = char.getDrunkOrSoberStartingInfo(gameState) as string;
 
     const startingInfoSuggestions = {
       ...gameState.startingInfoSuggestions,
