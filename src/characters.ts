@@ -790,7 +790,7 @@ export class Philosopher extends Character {
 
   getOtherNightsInstructions(): string | undefined {
     if (this.actsAsChar) {
-      return this.actsAsChar.getFirstNightInstructions();
+      return this.actsAsChar.getOtherNightsInstructions();
     }
 
     return philosopherInstructions;
