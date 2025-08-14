@@ -15,6 +15,7 @@ import { Character } from "../../characters";
 import CharacterSelect from "../CharacterSelect/CharacterSelect";
 import CharActsAsSelect from "../CharActsAsSelect/CharActsAsSelect";
 import { useToggleDeadAliveState } from "../../hooks/useToggleDeadAliveState";
+import { regenerateNightInstructions } from "../../nightUtils";
 
 interface CharacterManagementProps {
   gameState: GameState;
@@ -92,10 +93,18 @@ function CharacterMangement({
     const newBluffs = [...gameState.demonBluffs];
     newBluffs[index] = char;
 
-    updateGameState({
+    const newGameState = {
       ...gameState,
       demonBluffs: newBluffs,
-    });
+    };
+
+    const newNightInstructions = regenerateNightInstructions(
+      gameState,
+      newGameState,
+    );
+    newGameState.nightInstructions = newNightInstructions;
+
+    updateGameState(newGameState);
   };
 
   const tokenInUseMap = getTokenInUseMap(gameState);

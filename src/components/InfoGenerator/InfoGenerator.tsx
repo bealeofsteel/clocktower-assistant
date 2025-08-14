@@ -20,9 +20,16 @@ function InfoGenerator({ gameState, updateGameState }: InfoGeneratorProps) {
         ? char.generateInfo(gameState)
         : char.actsAsChar?.generateInfo(gameState);
 
-    const infoMap = {
-      ...gameState.generatedInfo,
-    };
+    const infoMap: Partial<Record<CharacterName, Record<string, string[]>>> =
+      {};
+
+    for (const [key, value] of Object.entries(gameState.generatedInfo)) {
+      const charKey = key as CharacterName;
+      infoMap[charKey] = {};
+      for (const [id, info] of Object.entries(value)) {
+        infoMap[charKey][id] = info;
+      }
+    }
 
     if (!infoMap[charName]) {
       infoMap[charName] = {};
