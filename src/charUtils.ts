@@ -109,11 +109,11 @@ export const pickFortuneTellerRedHerring = (gameState: GameState) => {
 
 export const parseCharTokens = (
   inputStr: string,
-  instantiatedCharsById: Map<string, Character>,
+  charsById: Record<string, Character>,
 ) => {
   const regExp = /\{\{(.*?)\}\}/g;
   return inputStr.replace(regExp, (_match, token) => {
-    const char = instantiatedCharsById.get(token);
+    const char = charsById[token];
     return `<span class="char-name ${char?.alignment}">${char?.getDisplayName()}</span>` as string;
   });
 };
@@ -131,11 +131,16 @@ export const pickInPlayCharsofTypes = (
   charTypes: CharacterType[],
   excludeCharId: string,
   numChars: number,
+  excludeCharNames: CharacterName[] = [],
 ): Character[] => {
-  const chars = gameState.allChars.filter(
+  let chars = gameState.allChars.filter(
     (char) =>
       char.inPlay && charTypes.includes(char.type) && char.id !== excludeCharId,
   );
+
+  if (excludeCharNames.length) {
+    chars = chars.filter((char) => !excludeCharNames.includes(char.name));
+  }
 
   shuffleArray(chars);
 

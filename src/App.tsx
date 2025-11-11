@@ -44,17 +44,15 @@ function App() {
     localStorage.getItem(STATE_HISTORY_KEY) as string,
   );
 
-  const instantiatedCharsById = new Map<string, Character>();
-
   // To take advantage of Character functionality, we need to instantiate Character objects from the saved JSON
-  const populateCharacters = () => {
+  const populateCharacters = (state: GameState) => {
     const chars: Character[] = [];
 
     const demonBluffIds =
-      initialState.demonBluffs.map((char: Character) => char.id) || [];
+      state.demonBluffs.map((char: Character) => char.id) || [];
     const demonBluffs: Character[] = [];
 
-    initialState.allChars?.forEach((charJson: Character) => {
+    state.allChars?.forEach((charJson: Character) => {
       const char = cloneChar(charJson);
 
       if (char.actsAsChar) {
@@ -62,18 +60,17 @@ function App() {
       }
 
       chars.push(char);
-      instantiatedCharsById.set(charJson.id, char);
       if (demonBluffIds.includes(char.id)) {
         demonBluffs.push(char);
       }
     });
 
-    initialState.allChars = chars;
-    initialState.demonBluffs = demonBluffs;
+    state.allChars = chars;
+    state.demonBluffs = demonBluffs;
   };
 
   if (initialState) {
-    populateCharacters();
+    populateCharacters(initialState);
   }
 
   const [selectedTab, setSelectedTab] = useState(TabName.Setup);
@@ -111,6 +108,7 @@ function App() {
     const previousState = gameStateHistory.pop() as GameState;
 
     if (previousState) {
+      populateCharacters(previousState);
       setGameState(previousState);
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(previousState));
 
@@ -387,7 +385,7 @@ function App() {
                               gameState.startingInfoSuggestions[
                                 instruction.charId
                               ] as string,
-                              instantiatedCharsById,
+                              charsById,
                             ),
                           }}
                         ></span>
@@ -411,13 +409,11 @@ function App() {
             gameState={gameState}
             type={NightType.First}
             updateGameState={updateGameState}
-            instantiatedCharsById={instantiatedCharsById}
           ></NightInfo>
           <NightInfo
             gameState={gameState}
             type={NightType.Other}
             updateGameState={updateGameState}
-            instantiatedCharsById={instantiatedCharsById}
           ></NightInfo>
         </>
       )}

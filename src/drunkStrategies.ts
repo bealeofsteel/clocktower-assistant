@@ -30,6 +30,7 @@ export class FrameGoodPlayersAsMinion extends DrunkStrategy {
       [CharacterType.Townsfolk, CharacterType.Outsider],
       this.charId,
       2,
+      [CharacterName.Recluse],
     );
 
     return `Show the ${minion.name} character token. Point to {{${chars[0].id}}} (Minion) and {{${chars[1].id}}} (Wrong).`;

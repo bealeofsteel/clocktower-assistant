@@ -1,5 +1,4 @@
 import { GameState, NightType } from "../../types";
-import { Character } from "../../characters";
 import "./NightInfo.css";
 import { getCharsById, parseCharTokens } from "../../charUtils";
 
@@ -7,15 +6,9 @@ interface NightInfoProps {
   gameState: GameState;
   type: NightType;
   updateGameState: (newState: GameState) => void;
-  instantiatedCharsById: Map<string, Character>;
 }
 
-function NightInfo({
-  gameState,
-  type,
-  updateGameState,
-  instantiatedCharsById,
-}: NightInfoProps) {
+function NightInfo({ gameState, type, updateGameState }: NightInfoProps) {
   const selectAll = () => {
     const newInstructions = gameState.nightInstructions[type].map(
       (instruction) => {
@@ -117,10 +110,7 @@ function NightInfo({
             </span>
             <span
               dangerouslySetInnerHTML={{
-                __html: parseCharTokens(
-                  instruction.message,
-                  instantiatedCharsById,
-                ),
+                __html: parseCharTokens(instruction.message, charsById),
               }}
             ></span>
             {instruction.charId && gameState[infoField][instruction.charId] && (
@@ -130,7 +120,7 @@ function NightInfo({
                   dangerouslySetInnerHTML={{
                     __html: parseCharTokens(
                       gameState[infoField][instruction.charId] as string,
-                      instantiatedCharsById,
+                      charsById,
                     ),
                   }}
                 ></span>

@@ -522,6 +522,8 @@ export class Drunk extends Character {
   }
 }
 
+const showAZero = "Show a zero.";
+
 const getPointToCharOfTypeAndOtherCharSuggestion = (
   gameState: GameState,
   charType: CharacterType,
@@ -531,7 +533,17 @@ const getPointToCharOfTypeAndOtherCharSuggestion = (
     gameState.allChars.filter((char) => char.inPlay && char.type === charType)
       .length === 0
   ) {
-    return "Show a zero.";
+    const spyInPlay = gameState.allChars.filter(
+      (char) => char.inPlay && char.name === CharacterName.Spy,
+    );
+
+    if (
+      charType === CharacterType.Outsider &&
+      spyInPlay &&
+      Math.random() < 0.5
+    ) {
+      return showAZero;
+    }
   }
 
   // This gets returned in a different format because the character might register as something else
