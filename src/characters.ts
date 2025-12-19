@@ -844,10 +844,6 @@ export class Mutant extends Character {
   constructor() {
     super(CharacterName.Mutant, CharacterType.Outsider);
   }
-
-  canBeDemonBluff(): boolean {
-    return false;
-  }
 }
 
 export class Sweetheart extends Character {
@@ -1316,7 +1312,7 @@ export class Godfather extends Character {
   }
 
   onPicked(playerSetup: PlayerSetup): void {
-    if (Math.random() < 0.75) {
+    if (Math.random() < 0.5) {
       playerSetup.outsidersToPick++;
       playerSetup.townsfolkToPick--;
     } else {
