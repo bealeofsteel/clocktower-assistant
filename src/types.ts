@@ -101,6 +101,12 @@ export enum CharacterName {
   Noble = "Noble",
   Cannibal = "Cannibal",
   Marionette = "Marionette",
+  Amnesiac = "Amnesiac",
+  Balloonist = "Balloonist",
+  Fisherman = "Fisherman",
+  Widow = "Widow",
+  Goblin = "Goblin",
+  Leviathan = "Leviathan",
 }
 
 export enum EditionName {
@@ -110,6 +116,7 @@ export enum EditionName {
   NoGreaterJoy = "No Greater Joy",
   EveryoneCanPlay = "Everyone Can Play",
   PiesBaking = "Pies Baking",
+  LaissezUnFaire = "Laissez un Faire",
 }
 
 export interface GameState {

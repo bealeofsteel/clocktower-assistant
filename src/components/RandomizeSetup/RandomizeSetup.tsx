@@ -128,6 +128,15 @@ function RandomizeSetup({
       presetDemonBluffs.push(actsAsChar);
     }
 
+    while (playerSetup.townsfolkToPick > 0) {
+      const character = pickAvailableCharacter(
+        availableChars.townsfolk,
+        allChars,
+      );
+      character.onPicked(playerSetup, availableChars, allChars);
+      playerSetup.townsfolkToPick--;
+    }
+
     while (
       playerSetup.outsidersToPick > 0 &&
       availableChars.outsiders.length > 0
@@ -144,15 +153,15 @@ function RandomizeSetup({
     // For example, at 6 players 1 Outsider starts in play. The Baron adds 2 more, but only 2 Outsiders are on the script.
     if (playerSetup.outsidersToPick > 0) {
       playerSetup.townsfolkToPick += playerSetup.outsidersToPick;
-    }
 
-    while (playerSetup.townsfolkToPick > 0) {
-      const character = pickAvailableCharacter(
-        availableChars.townsfolk,
-        allChars,
-      );
-      character.onPicked(playerSetup, availableChars, allChars);
-      playerSetup.townsfolkToPick--;
+      while (playerSetup.townsfolkToPick > 0) {
+        const character = pickAvailableCharacter(
+          availableChars.townsfolk,
+          allChars,
+        );
+        character.onPicked(playerSetup, availableChars, allChars);
+        playerSetup.townsfolkToPick--;
+      }
     }
 
     gameState.demonBluffs = generateDemonBluffs(

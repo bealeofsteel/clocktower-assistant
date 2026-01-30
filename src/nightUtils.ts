@@ -98,7 +98,7 @@ const specialInstructions = {
     )?.[0];
 
     if (marionetteInPlay) {
-      const message = `Mark a good player neighboring the Demon with the IS THE MARIONETTE reminder. Wake the Demon. Point to the player marked IS THE MARIONETTE and show the Marionette character token. Put the Demon to sleep. <strong>Suggestion:</strong> If seat positioning allows it, point to {{${marionetteInPlay.id}}}.`;
+      const message = `Mark a good player neighboring the Demon with the IS THE MARIONETTE reminder. Wake the Demon. Show the THIS PLAYER IS & Marionette tokens. Point to the Marionette. Put the Demon to sleep. <strong>Suggestion:</strong> If seat positioning allows it, point to {{${marionetteInPlay.id}}}.`;
 
       return {
         label: SpecialInstructionKey.MarionetteInfo,

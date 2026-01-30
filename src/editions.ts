@@ -74,6 +74,12 @@ import {
   Noble,
   Cannibal,
   Marionette,
+  Amnesiac,
+  Balloonist,
+  Fisherman,
+  Goblin,
+  Leviathan,
+  Widow,
 } from "./characters";
 import {
   CharacterName,
@@ -515,6 +521,54 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
         CharacterName.Butler,
         CharacterName.Spy,
         SpecialInstructionKey.Dawn,
+      ],
+    },
+  },
+  [EditionName.LaissezUnFaire]: {
+    isCustom: true,
+    isTeensyville: true,
+    getCharactersForEdition: () => {
+      const townsfolk = [
+        new Balloonist(),
+        new Savant(),
+        new Amnesiac(),
+        new Fisherman(),
+        new Artist(),
+        new Cannibal(),
+      ];
+
+      const outsiders = [new Mutant(), new Lunatic()];
+
+      const minions = [new Widow(), new Goblin()];
+
+      const demons = [new Leviathan()];
+
+      return {
+        townsfolk,
+        outsiders,
+        minions,
+        demons,
+      };
+    },
+    nightInstructions: {
+      first: [
+        SpecialInstructionKey.Dusk,
+        SpecialInstructionKey.MinionInfo,
+        CharacterName.Lunatic,
+        SpecialInstructionKey.DemonInfo,
+        CharacterName.Widow,
+        CharacterName.Amnesiac,
+        CharacterName.Balloonist,
+        SpecialInstructionKey.Dawn,
+        CharacterName.Leviathan,
+      ],
+      other: [
+        SpecialInstructionKey.Dusk,
+        CharacterName.Lunatic,
+        CharacterName.Amnesiac,
+        CharacterName.Balloonist,
+        SpecialInstructionKey.Dawn,
+        CharacterName.Leviathan,
       ],
     },
   },

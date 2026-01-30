@@ -22,6 +22,7 @@ import {
   ConfirmDrunkAsTownsfolk,
   GrandmotherConfirmDrunkAsTownsfolk,
 } from "./drunkStrategies";
+import { EDITIONS_BY_NAME } from "./editions";
 import { playerCountConfig } from "./gameSettings";
 import { shuffleArray } from "./randomUtils";
 import {
@@ -134,7 +135,7 @@ export abstract class Character {
     return Object.assign(this, json);
   }
 
-  generateInfo(_gameState: GameState): string[] | undefined {
+  generateInfo(_gameState: GameState, _charId: string): string[] | undefined {
     return;
   }
 
@@ -144,10 +145,6 @@ export abstract class Character {
     }
 
     return `[${this.name} player name]`;
-  }
-
-  gameQualifiesForFirstNightInfo(_gameState: GameState): boolean {
-    return true;
   }
 
   // True for most chars, but the Vortox can't be seen by information gatherers since it causes all info to be false
@@ -606,19 +603,19 @@ export class Dreamer extends Character {
     return dreamerInstructions;
   }
 
-  generateInfo(gameState: GameState): string[] | undefined {
+  generateInfo(gameState: GameState, charId: string): string[] | undefined {
     const goodChars = gameState.allChars.filter(
       (char) =>
         (char.type === CharacterType.Townsfolk ||
           char.type === CharacterType.Outsider) &&
-        char.id !== this.id &&
+        char.id !== charId &&
         char.canBeSeenInPlay(),
     );
     const evilChars = gameState.allChars.filter(
       (char) =>
         (char.type === CharacterType.Minion ||
           char.type === CharacterType.Demon) &&
-        char.id !== this.id &&
+        char.id !== charId &&
         char.canBeSeenInPlay(),
     );
 
@@ -699,7 +696,7 @@ export class Savant extends Character {
     super(CharacterName.Savant);
   }
 
-  generateInfo(gameState: GameState): string[] | undefined {
+  generateInfo(gameState: GameState, charId: string): string[] | undefined {
     const strategies: SavantInfoStrategy[] = [
       new CharInPlayStatus(),
       new DidPlayersGetTrueInformationLastNight(),
@@ -746,8 +743,8 @@ export class Savant extends Character {
       }
     }
 
-    const trueInfo = trueStrategy.getTrueInfo(gameState, this.id);
-    const falseInfo = falseStrategy.getFalseInfo(gameState, this.id);
+    const trueInfo = trueStrategy.getTrueInfo(gameState, charId);
+    const falseInfo = falseStrategy.getFalseInfo(gameState, charId);
 
     const result = [];
 
@@ -1195,10 +1192,6 @@ export class Lunatic extends Character {
     return false;
   }
 
-  gameQualifiesForFirstNightInfo(gameState: GameState): boolean {
-    return gameState.playerCount >= 7;
-  }
-
   getFirstNightInstructions(): string | undefined {
     return "Show the THESE ARE YOUR MINIONS token. Point to any players. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 good character tokens. Put the Lunatic to sleep. Wake the Demon. Show the YOU ARE info token and the Demon token. Show the THIS PLAYER IS info token and the Lunatic token, then point to the Lunatic.";
   }
@@ -1261,7 +1254,11 @@ export class Lunatic extends Character {
       return `{{${char.id}}}`;
     });
 
-    let instructions = `Point to ${charTokens.join(", ")}. Show the ${bluffs[0].name}, ${bluffs[1].name}, and ${bluffs[2].name} tokens.`;
+    let instructions = "";
+
+    if (!EDITIONS_BY_NAME[gameState.edition].isTeensyville) {
+      instructions = `Point to ${charTokens.join(", ")}. Show the ${bluffs[0].name}, ${bluffs[1].name}, and ${bluffs[2].name} tokens.`;
+    }
 
     const demonFirstNightInstructions =
       this.actsAsChar?.getFirstNightInstructions() as string;
@@ -1429,7 +1426,7 @@ export class Noble extends Character {
   }
 
   getFirstNightInstructions(): string | undefined {
-    return "Point to 3 players including one evil player, in no particular order.";
+    return "Point to the 3 players marked KNOW.";
   }
 
   getStartingInfoSuggestion(gameState: GameState): string | undefined {
@@ -1493,8 +1490,158 @@ export class Marionette extends Drunk {
     this.alignment = Alignment.Evil;
   }
 
+  getFirstNightInstructions(): string | undefined {
+    return "Wake the Demon. Show the THIS PLAYER IS & Marionette tokens. Point to the Marionette.";
+  }
+
   isIncludedInMinionAndDemonInfo(): boolean {
     return false;
+  }
+
+  canActAsOtherChar(): boolean {
+    return true;
+  }
+}
+
+const amnesiacInstructions =
+  "Do whatever needs to be done to satisfy the Amnesiac's ability.";
+
+export class Amnesiac extends Character {
+  constructor() {
+    super(CharacterName.Amnesiac);
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return amnesiacInstructions;
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return amnesiacInstructions;
+  }
+
+  getStartingInfoSuggestion(_gameState: GameState): string | undefined {
+    const abilities = [
+      "Each night, point to two players. You learn if either of the two players is a Minion.",
+      "Each night, you learn how many of your living neighbours are Townsfolk.",
+      "Each night, you learn how many of your 2 alive neighbors are evil.",
+      "Each night, choose 2 players: you learn if either is a Demon. There is a good player that registers as a Demon to you.",
+      "Each night*, you learn which character died by execution today.",
+      "Each night*, choose a player (not yourself): they are safe from the Demon tonight.",
+      "Each night, choose a player (not yourself or Travellers): you learn 1 good & 1 evil character, 1 of which is correct.",
+      "Each night, you learn how many players' abilities worked abnormally (since dawn) due to another character's ability.",
+      "Each night*, you learn if a Demon voted today.",
+      "Each night*, you learn if a Minion nominated today.",
+      "Each night*, you learn how many dead players are evil.",
+      "Each night, choose an alive player: either you or they are drunk until dusk. You can't die.",
+      "Each night, choose 2 alive players (not yourself): you learn how many woke tonight due to their ability.",
+      "Each night*, choose a player (different to last night): the Demon, if chosen, learns who you are then doesn't wake tonight.",
+      "Each night*, choose 2 players: they can't die tonight, but 1 is drunk until dusk.",
+      "If both your alive neighbors are good, they can't die.",
+      "Each night, you learn a player of a different character type than last night. [+0 or +1 Outsider]",
+      "You have the ability of the recently killed executee. If they are evil, you are poisoned until a good player dies by execution.",
+      "Each night, you learn which alignment the Storyteller believes is winning: good, evil, or neither.",
+      "Each night, learn which player the Storyteller believes you should talk to most.",
+      "Each night, choose a player: a Minion, if chosen, learns this. All chosen Minions have no ability.",
+    ];
+
+    return shuffleArray(abilities)[0] as string;
+  }
+}
+
+export class Balloonist extends Character {
+  constructor() {
+    super(CharacterName.Balloonist);
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return "Point to any player. ⚫️";
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "Point to a player with a different character type to the previously shown player. ⚫️";
+  }
+
+  getStartingInfoSuggestion(gameState: GameState): string | undefined {
+    const chars = gameState.allChars.filter(
+      (char) => char.inPlay && char.id !== this.id,
+    );
+    const pickedChar = shuffleArray(chars)[0] as Character;
+
+    return `Point to {{${pickedChar.id}}} (${pickedChar.type}).`;
+  }
+
+  // "I recommend that Storytellers add Outsiders in about three quarters of games.
+  // If there are already 2 Outsiders in your game, it might be best to not add an Outsider.
+  // If there are no Outsiders in play, then it is probably best to add one via Balloonist.
+  // But feel free to mix it up every so often to keep your players on their toes,
+  // and give the Demon Outsider bluffs to match."
+  // Source: https://x.com/steve_medway/status/1804010894768378053
+  onPicked(
+    playerSetup: PlayerSetup,
+    availableChars: CharacterSet,
+    allChars: Character[],
+  ): void {
+    if (Math.random() < 0.75) {
+      playerSetup.outsidersToPick += 1;
+      playerSetup.townsfolkToPick -= 1;
+
+      // Remove a townsfolk if this is the last townsfolk pick
+      if (playerSetup.townsfolkToPick <= 0) {
+        const eligibleChars = allChars.filter(
+          (char) => char.type === CharacterType.Townsfolk && char.id != this.id,
+        );
+        const pickedChar = shuffleArray(eligibleChars)[0] as Character;
+        pickedChar.inPlay = false;
+        availableChars.townsfolk.push(pickedChar);
+        allChars = allChars.filter((char) => char.id !== pickedChar.id);
+      }
+    }
+  }
+}
+
+export class Fisherman extends Character {
+  constructor() {
+    super(CharacterName.Fisherman);
+  }
+}
+
+export class Widow extends Character {
+  constructor() {
+    super(CharacterName.Widow, CharacterType.Minion, Alignment.Evil);
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return "Show the Grimoire for as long as the Widow needs. The Widow chooses a player. ⚫️ Put the Widow to sleep. Wake the player marked KNOW & show the Widow token. ⚫️";
+  }
+
+  getStartingInfoSuggestion(gameState: GameState): string | undefined {
+    const goodChars = gameState.allChars.filter(
+      (char) => char.inPlay && char.alignment === Alignment.Good,
+    );
+
+    const pickedChar = shuffleArray(goodChars)[0] as Character;
+
+    return `Wake {{${pickedChar.id}}} and show the Widow token.`;
+  }
+}
+
+export class Goblin extends Character {
+  constructor() {
+    super(CharacterName.Goblin, CharacterType.Minion, Alignment.Evil);
+  }
+}
+
+export class Leviathan extends Character {
+  constructor() {
+    super(CharacterName.Leviathan, CharacterType.Demon, Alignment.Evil);
+  }
+
+  getFirstNightInstructions(): string | undefined {
+    return "Announce that the Leviathan is in play. ⚫️";
+  }
+
+  getOtherNightsInstructions(): string | undefined {
+    return "Change the Leviathan reminder token to the relevant day. ⚫️ You may announce that the Leviathan is in play.";
   }
 }
 
@@ -1584,4 +1731,10 @@ export const characterClassNameMap: Record<
   [CharacterName.Noble]: Noble,
   [CharacterName.Cannibal]: Cannibal,
   [CharacterName.Marionette]: Marionette,
+  [CharacterName.Amnesiac]: Amnesiac,
+  [CharacterName.Balloonist]: Balloonist,
+  [CharacterName.Fisherman]: Fisherman,
+  [CharacterName.Widow]: Widow,
+  [CharacterName.Goblin]: Goblin,
+  [CharacterName.Leviathan]: Leviathan,
 };
