@@ -44,6 +44,7 @@ import {
   ProfessorInfo,
   NobleInfo,
   ShugenjaInfo,
+  BalloonistInfo,
 } from "./savantStrategies";
 import {
   Alignment,
@@ -715,6 +716,7 @@ export class Savant extends Character {
       new ProfessorInfo(),
       new NobleInfo(),
       new ShugenjaInfo(),
+      new BalloonistInfo(),
     ];
 
     const trueStrategies = strategies?.filter((strategy) =>

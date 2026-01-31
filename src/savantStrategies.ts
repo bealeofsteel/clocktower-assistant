@@ -578,3 +578,51 @@ export class ShugenjaInfo extends SavantInfoStrategy {
     return "The closest evil player sits [clockwise/counterclockwise] from you [reroll if equidistant].";
   }
 }
+
+export class BalloonistInfo extends SavantInfoStrategy {
+  constructor() {
+    super();
+  }
+
+  getTrueInfo(gameState: GameState, currentCharId: string): string {
+    const firstChar = shuffleArray(
+      gameState.allChars.filter(
+        (char) => char.inPlay && char.id !== currentCharId,
+      ),
+    )[0] as Character;
+
+    const secondChar = shuffleArray(
+      gameState.allChars.filter(
+        (char) =>
+          char.inPlay && char.id !== currentCharId && char.id !== firstChar.id,
+      ),
+    )[0] as Character;
+
+    if (firstChar.type === secondChar.type) {
+      return `${firstChar.getPlayerNameForDisplay()} and ${secondChar.getPlayerNameForDisplay()} are the same character type.`;
+    } else {
+      return `${firstChar.getPlayerNameForDisplay()} and ${secondChar.getPlayerNameForDisplay()} are different character types.`;
+    }
+  }
+
+  getFalseInfo(gameState: GameState, currentCharId: string): string {
+    const firstChar = shuffleArray(
+      gameState.allChars.filter(
+        (char) => char.inPlay && char.id !== currentCharId,
+      ),
+    )[0] as Character;
+
+    const secondChar = shuffleArray(
+      gameState.allChars.filter(
+        (char) =>
+          char.inPlay && char.id !== currentCharId && char.id !== firstChar.id,
+      ),
+    )[0] as Character;
+
+    if (firstChar.type === secondChar.type) {
+      return `${firstChar.getPlayerNameForDisplay()} and ${secondChar.getPlayerNameForDisplay()} are different character types.`;
+    } else {
+      return `${firstChar.getPlayerNameForDisplay()} and ${secondChar.getPlayerNameForDisplay()} are the same character type.`;
+    }
+  }
+}
