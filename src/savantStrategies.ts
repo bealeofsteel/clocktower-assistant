@@ -407,7 +407,7 @@ export class SeamstressInfo extends SavantInfoStrategy {
     if (chars[0].alignment === chars[1].alignment) {
       return `${chars[0].getPlayerNameForDisplay()} and ${chars[1].getPlayerNameForDisplay()} are the same alignment.`;
     } else {
-      return `${chars[0].getPlayerNameForDisplay()} and ${chars[1].getPlayerNameForDisplay()} are not the same alignment.`;
+      return `${chars[0].getPlayerNameForDisplay()} and ${chars[1].getPlayerNameForDisplay()} are different alignments.`;
     }
   }
 
@@ -418,7 +418,7 @@ export class SeamstressInfo extends SavantInfoStrategy {
     shuffleArray(chars);
 
     if (chars[0].alignment === chars[1].alignment) {
-      return `${chars[0].getPlayerNameForDisplay()} and ${chars[1].getPlayerNameForDisplay()} are not the same alignment.`;
+      return `${chars[0].getPlayerNameForDisplay()} and ${chars[1].getPlayerNameForDisplay()} are different alignments.`;
     } else {
       return `${chars[0].getPlayerNameForDisplay()} and ${chars[1].getPlayerNameForDisplay()} are the same alignment.`;
     }

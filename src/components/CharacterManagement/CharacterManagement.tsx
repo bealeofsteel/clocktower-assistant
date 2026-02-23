@@ -198,7 +198,7 @@ function CharacterMangement({
         {[...Array(NUM_DEMON_BLUFFS)].map((_e, i) => (
           <div key={`bluffs_select_${i}`}>
             <select
-              value={gameState.demonBluffs[i].name}
+              value={gameState.demonBluffs[i]?.name}
               onChange={(e) =>
                 setDemonBluff(e.target.value as CharacterName, i)
               }
