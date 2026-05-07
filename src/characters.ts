@@ -1312,11 +1312,11 @@ export class Godfather extends Character {
 
   onPicked(playerSetup: PlayerSetup): void {
     if (Math.random() < 0.5) {
-      playerSetup.outsidersToPick++;
-      playerSetup.townsfolkToPick--;
+      playerSetup.outsidersToPick += 1;
+      playerSetup.townsfolkToPick -= 1;
     } else {
-      playerSetup.outsidersToPick--;
-      playerSetup.townsfolkToPick++;
+      playerSetup.outsidersToPick -= 1;
+      playerSetup.townsfolkToPick += 1;
     }
   }
 

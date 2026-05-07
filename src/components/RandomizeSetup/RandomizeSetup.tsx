@@ -129,6 +129,16 @@ function RandomizeSetup({
     }
 
     while (playerSetup.townsfolkToPick > 0) {
+      // In theory, we want chars who add outsiders and chars to subtract them to be able to cancel
+      // each other out, so we allow the outsider count to temporarily go negative. But if they don't
+      // cancel each other out, a negative outsider out can cause too many townsfolk to be picked.
+      // If we still have a negative outsider count and we're reaching the end of the townsfolk picks,
+      // we break out of the loop.
+      if (playerSetup.outsidersToPick * -1 === playerSetup.townsfolkToPick) {
+        playerSetup.townsfolkToPick = 0;
+        break;
+      }
+
       const character = pickAvailableCharacter(
         availableChars.townsfolk,
         allChars,
