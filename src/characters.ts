@@ -142,7 +142,7 @@ export abstract class Character {
 
   getPlayerNameForDisplay(): string {
     if (this.playerName) {
-      return this.playerName;
+      return `${this.playerName} [${this.name}]`;
     }
 
     return `[${this.name} player name]`;

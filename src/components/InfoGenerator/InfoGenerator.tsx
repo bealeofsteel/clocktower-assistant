@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Character } from "../../characters";
 import { CharacterName, GameState } from "../../types";
 import "./InfoGenerator.css";
@@ -8,6 +9,14 @@ interface InfoGeneratorProps {
 }
 
 function InfoGenerator({ gameState, updateGameState }: InfoGeneratorProps) {
+  const [localNotes, setLocalNotes] = useState(gameState?.storytellerNotes);
+
+  useEffect(() => {
+    if (gameState?.storytellerNotes !== localNotes) {
+      setLocalNotes(gameState?.storytellerNotes);
+    }
+  }, [gameState?.storytellerNotes]);
+
   if (!gameState) {
     return null;
   }
@@ -87,8 +96,9 @@ function InfoGenerator({ gameState, updateGameState }: InfoGeneratorProps) {
         <h4>Storyteller Notes</h4>
         <textarea
           className="storyteller-notes"
-          value={gameState?.storytellerNotes}
-          onChange={(e) => updateStorytellerNotes(e.target.value)}
+          value={localNotes}
+          onChange={(e) => setLocalNotes(e.target.value)}
+          onBlur={(e) => updateStorytellerNotes(e.target.value)}
         ></textarea>
       </div>
     </>

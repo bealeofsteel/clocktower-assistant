@@ -1,4 +1,4 @@
-import { ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 import { Character } from "../../characters";
 import { GameState } from "../../types";
 import { cloneChar } from "../../charUtils";
@@ -14,14 +14,13 @@ function PlayerNameInput({
   updateGameState,
   char,
 }: PlayerNameInputDisplayProps) {
-  const updatePlayerName = (
-    e: ChangeEvent<HTMLInputElement>,
-    char: Character,
-  ) => {
+  const [localValue, setLocalValue] = useState(char.playerName);
+
+  const updatePlayerName = (newValue: string) => {
     const newChars = gameState.allChars.map((oldChar) => {
       if (oldChar.id === char.id) {
         const newChar = cloneChar(oldChar);
-        newChar.playerName = e.target.value;
+        newChar.playerName = newValue;
         return newChar;
       } else {
         return oldChar;
@@ -34,11 +33,19 @@ function PlayerNameInput({
     });
   };
 
+  // This is to handle Undo actions properly. Otherwise, local state diverges from the game state
+  useEffect(() => {
+    if (char.playerName !== localValue) {
+      setLocalValue(char.playerName);
+    }
+  }, [char.playerName]);
+
   return (
     <input
       type="text"
-      value={char.playerName}
-      onChange={(e) => updatePlayerName(e, char)}
+      value={localValue}
+      onChange={(e) => setLocalValue(e.target.value)}
+      onBlur={(e) => updatePlayerName(e.target.value)}
     ></input>
   );
 }
