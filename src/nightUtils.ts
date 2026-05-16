@@ -17,32 +17,6 @@ const specialInstructions = {
       message: "Check that all eyes are closed. Some Travellers & Fabled act.",
     };
   },
-  [SpecialInstructionKey.MarionetteSetup]: (gameState: GameState) => {
-    const minions = gameState.allChars.filter(
-      (char) => char.inPlay && char.type === CharacterType.Minion,
-    );
-
-    if (
-      minions.length === 3 &&
-      minions.filter((char) => char.name === CharacterName.Marionette).length >
-        0
-    ) {
-      let message = `Swap a good player's character token with a not-in-play Minion character token. Wake this player, show them the YOU ARE info token then their Minion character token, then the YOU ARE info token then a thumbs down, then put them to sleep.`;
-
-      const minionSuggestion = minions.filter(
-        (char) => char.name !== CharacterName.Marionette && char.actsAsChar,
-      )[0];
-
-      if (minionSuggestion) {
-        message += ` <strong>Suggestion:</strong> If seat positioning allows it, wake up {{${minionSuggestion.id}}} and show them the ${minionSuggestion.name} token.`;
-      }
-
-      return {
-        label: SpecialInstructionKey.MarionetteSetup,
-        message: message,
-      };
-    }
-  },
   [SpecialInstructionKey.MinionInfo]: (gameState: GameState) => {
     if (gameState.playerCount >= 7) {
       return {
@@ -98,27 +72,11 @@ const specialInstructions = {
     )?.[0];
 
     if (marionetteInPlay) {
-      const message = `Mark a good player neighboring the Demon with the IS THE MARIONETTE reminder. Wake the Demon. Show the THIS PLAYER IS & Marionette tokens. Point to the Marionette. Put the Demon to sleep. <strong>Suggestion:</strong> If seat positioning allows it, point to {{${marionetteInPlay.id}}}.`;
+      const message = `Wake the Demon. Show the THIS PLAYER IS & Marionette tokens. Point to the Marionette. <strong>Suggestion:</strong> If seat positioning allows it, point to {{${marionetteInPlay.id}}}.`;
 
       return {
         label: SpecialInstructionKey.MarionetteInfo,
         message: message,
-      };
-    }
-  },
-  [SpecialInstructionKey.CannibalReminder]: (gameState: GameState) => {
-    const cannibalInPlay = gameState.allChars.filter(
-      (char) =>
-        char.inPlay &&
-        (char.name === CharacterName.Cannibal ||
-          char.actsAsChar?.name === CharacterName.Cannibal),
-    )?.[0];
-
-    if (cannibalInPlay) {
-      return {
-        label: SpecialInstructionKey.CannibalReminder,
-        message:
-          "If a good player died by execution today, mark them with the LUNCH reminder, and remove the Cannibal's POISONED reminder if necessary. If an evil player died by execution today, mark them with the LUNCH reminder and mark the Cannibal with the POISONED reminder.",
       };
     }
   },
@@ -163,7 +121,7 @@ export const generateNightInstructions = (gameState: GameState) => {
         characters.forEach((char) => {
           const instructionsForChar =
             nightType === NightType.First
-              ? char.getFirstNightInstructions()
+              ? char.getFirstNightInstructions(gameState)
               : char.getOtherNightsInstructions();
           if (instructionsForChar) {
             instructions.push({

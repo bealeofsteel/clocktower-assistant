@@ -161,9 +161,7 @@ export enum SpecialInstructionKey {
   MinionInfo = "Minion Info",
   DemonInfo = "Demon Info",
   Dawn = "Dawn",
-  MarionetteSetup = "Marionette Setup",
-  MarionetteInfo = "Marionette Info",
-  CannibalReminder = "Cannibal Reminder",
+  MarionetteInfo = "Marionette",
 }
 
 export enum CharacterType {

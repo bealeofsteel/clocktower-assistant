@@ -1,3 +1,4 @@
+import { generateAmnesiacAbilities } from "./amnesiacAbilityGenerator";
 import {
   InPlayCharResult,
   pickFortuneTellerRedHerring,
@@ -104,7 +105,7 @@ export abstract class Character {
     return name;
   }
 
-  getFirstNightInstructions(): string | undefined {
+  getFirstNightInstructions(_gameState: GameState): string | undefined {
     return;
   }
 
@@ -507,8 +508,8 @@ export class Drunk extends Character {
     return this.getDroisonedInfo(gameState);
   }
 
-  getFirstNightInstructions(): string | undefined {
-    return this.actsAsChar?.getFirstNightInstructions();
+  getFirstNightInstructions(gameState: GameState): string | undefined {
+    return this.actsAsChar?.getFirstNightInstructions(gameState);
   }
 
   getOtherNightsInstructions(): string | undefined {
@@ -791,9 +792,9 @@ export class Philosopher extends Character {
     return this.actsAsChar?.getStartingInfoSuggestion(gameState);
   }
 
-  getFirstNightInstructions(): string | undefined {
+  getFirstNightInstructions(gameState: GameState): string | undefined {
     if (this.actsAsChar) {
-      return this.actsAsChar.getFirstNightInstructions();
+      return this.actsAsChar.getFirstNightInstructions(gameState);
     }
 
     return philosopherInstructions;
@@ -1194,8 +1195,30 @@ export class Lunatic extends Character {
     return false;
   }
 
-  getFirstNightInstructions(): string | undefined {
-    return "Show the THESE ARE YOUR MINIONS token. Point to any players. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 good character tokens. Put the Lunatic to sleep. Wake the Demon. Show the YOU ARE info token and the Demon token. Show the THIS PLAYER IS info token and the Lunatic token, then point to the Lunatic.";
+  getFirstNightInstructions(gameState: GameState): string | undefined {
+    let instructions = "";
+
+    if (gameState.playerCount > 6) {
+      instructions +=
+        "Show the THESE ARE YOUR MINIONS token. Point to any players. Show the THESE CHARACTERS ARE NOT IN PLAY token. Show 3 good character tokens. Put the Lunatic to sleep.";
+    }
+
+    instructions += " Wake the demon.";
+
+    const demonsInPlay = gameState.allChars.filter(
+      (char) => char.inPlay && char.type === CharacterType.Demon,
+    );
+    for (let i = 0; i < demonsInPlay.length; i++) {
+      if (demonsInPlay[i].name === this.actsAsChar?.name) {
+        instructions += " Show the YOU ARE info token and the Demon token.";
+        break;
+      }
+    }
+
+    instructions +=
+      " Show the THIS PLAYER IS info token and the Lunatic token, then point to the Lunatic.";
+
+    return instructions;
   }
 
   getOtherNightsInstructions(): string | undefined {
@@ -1263,7 +1286,7 @@ export class Lunatic extends Character {
     }
 
     const demonFirstNightInstructions =
-      this.actsAsChar?.getFirstNightInstructions() as string;
+      this.actsAsChar?.getFirstNightInstructions(gameState) as string;
 
     if (demonFirstNightInstructions) {
       instructions += ` ${demonFirstNightInstructions}`;
@@ -1471,8 +1494,8 @@ export class Cannibal extends Character {
     return true;
   }
 
-  getFirstNightInstructions(): string | undefined {
-    return this.actsAsChar?.getFirstNightInstructions();
+  getFirstNightInstructions(gameState: GameState): string | undefined {
+    return this.actsAsChar?.getFirstNightInstructions(gameState);
   }
 
   getOtherNightsInstructions(): string | undefined {
@@ -1490,10 +1513,6 @@ export class Marionette extends Drunk {
     this.name = CharacterName.Marionette;
     this.type = CharacterType.Minion;
     this.alignment = Alignment.Evil;
-  }
-
-  getFirstNightInstructions(): string | undefined {
-    return "Wake the Demon. Show the THIS PLAYER IS & Marionette tokens. Point to the Marionette.";
   }
 
   isIncludedInMinionAndDemonInfo(): boolean {
@@ -1523,10 +1542,6 @@ export class Amnesiac extends Character {
 
   getStartingInfoSuggestion(_gameState: GameState): string | undefined {
     const abilities = [
-      "Each night, point to two players. You learn if either of the two players is a Minion.",
-      "Each night, you learn how many of your living neighbours are Townsfolk.",
-      "Each night, you learn how many of your 2 alive neighbors are evil.",
-      "Each night, choose 2 players: you learn if either is a Demon. There is a good player that registers as a Demon to you.",
       "Each night*, you learn which character died by execution today.",
       "Each night*, choose a player (not yourself): they are safe from the Demon tonight.",
       "Each night, choose a player (not yourself or Travellers): you learn 1 good & 1 evil character, 1 of which is correct.",
@@ -1544,6 +1559,7 @@ export class Amnesiac extends Character {
       "Each night, you learn which alignment the Storyteller believes is winning: good, evil, or neither.",
       "Each night, learn which player the Storyteller believes you should talk to most.",
       "Each night, choose a player: a Minion, if chosen, learns this. All chosen Minions have no ability.",
+      ...generateAmnesiacAbilities(),
     ];
 
     return shuffleArray(abilities)[0] as string;

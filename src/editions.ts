@@ -493,7 +493,6 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
     nightInstructions: {
       first: [
         SpecialInstructionKey.Dusk,
-        SpecialInstructionKey.MarionetteSetup,
         SpecialInstructionKey.MinionInfo,
         SpecialInstructionKey.DemonInfo,
         SpecialInstructionKey.MarionetteInfo,
@@ -510,7 +509,6 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
       ],
       other: [
         SpecialInstructionKey.Dusk,
-        SpecialInstructionKey.CannibalReminder,
         CharacterName.Poisoner,
         CharacterName.Monk,
         CharacterName.ScarletWoman,
