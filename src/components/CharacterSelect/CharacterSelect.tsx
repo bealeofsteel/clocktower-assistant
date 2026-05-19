@@ -1,19 +1,16 @@
 import { Character, characterClassNameMap } from "../../characters";
+import { useGameState } from "../../context/GameStateContext";
 import { regenerateNightInstructions } from "../../nightUtils";
-import { CharacterName, GameState } from "../../types";
+import { CharacterName } from "../../types";
 import CharOptions from "../CharOptions/CharOptions";
 
 interface CharacterSelectProps {
-  gameState: GameState;
-  updateGameState: (newState: GameState) => void;
   currentChar: Character;
 }
 
-function CharacterSelect({
-  gameState,
-  updateGameState,
-  currentChar,
-}: CharacterSelectProps) {
+function CharacterSelect({ currentChar }: CharacterSelectProps) {
+  const { gameState, updateGameState } = useGameState();
+
   const changeCharacter = (
     newCharName: CharacterName,
     currentChar: Character,
@@ -97,7 +94,7 @@ function CharacterSelect({
         changeCharacter(e.target.value as CharacterName, currentChar)
       }
     >
-      <CharOptions gameState={gameState}></CharOptions>
+      <CharOptions />
     </select>
   );
 }

@@ -1,19 +1,14 @@
 import { useEffect, useState } from "react";
 import { Character } from "../../characters";
-import { GameState } from "../../types";
 import { cloneChar } from "../../charUtils";
+import { useGameState } from "../../context/GameStateContext";
 
 interface PlayerNameInputDisplayProps {
-  gameState: GameState;
-  updateGameState: (newState: GameState) => void;
   char: Character;
 }
 
-function PlayerNameInput({
-  gameState,
-  updateGameState,
-  char,
-}: PlayerNameInputDisplayProps) {
+function PlayerNameInput({ char }: PlayerNameInputDisplayProps) {
+  const { gameState, updateGameState } = useGameState();
   const [localValue, setLocalValue] = useState(char.playerName);
 
   const updatePlayerName = (newValue: string) => {

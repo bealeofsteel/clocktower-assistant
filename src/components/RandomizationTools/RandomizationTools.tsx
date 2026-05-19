@@ -1,21 +1,16 @@
-import { Alignment, CharacterType, GameState } from "../../types";
+import { Alignment, CharacterType } from "../../types";
 import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
 import "./RandomizationTools.css";
-
-interface RandomizationToolsProps {
-  gameState: GameState;
-  updateGameState: (newState: GameState) => void;
-}
+import { useGameState } from "../../context/GameStateContext";
 
 interface Filter {
   checked: boolean;
 }
 
-function RandomizationTools({
-  gameState,
-  updateGameState,
-}: RandomizationToolsProps) {
+function RandomizationTools() {
+  const { gameState, updateGameState } = useGameState();
+
   if (!gameState) {
     return null;
   }

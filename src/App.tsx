@@ -1,27 +1,16 @@
 import { useState } from "react";
 import "./App.css";
 import PlayerCountSelect from "./components/PlayerCountSelect/PlayerCountSelect";
-import RandomizeSetup, {
-  generateDemonBluffs,
-  generateOtherNightSuggestions,
-  generateStartingInfoSuggestions,
-} from "./components/RandomizeSetup/RandomizeSetup";
-import { EditionName, GameState, CharacterType, NightType } from "./types";
-import { Character } from "./characters";
+import RandomizeSetup from "./components/RandomizeSetup/RandomizeSetup";
+import { EditionName, CharacterType, NightType } from "./types";
 import { EDITIONS_BY_NAME } from "./editions";
-import {
-  cloneChar,
-  getCharsById,
-  getTokenInUseMap,
-  parseCharTokens,
-} from "./charUtils";
+import { getCharsById, getTokenInUseMap, parseCharTokens } from "./charUtils";
 import RandomizationTools from "./components/RandomizationTools/RandomizationTools";
 import CharacterManagement from "./components/CharacterManagement/CharacterManagement";
 import CharNameDisplay from "./components/CharNameDisplay/CharNameDisplay";
 import NightInfo from "./components/NightInfo/NightInfo";
 import InfoGenerator from "./components/InfoGenerator/InfoGenerator";
-import { shuffleArray } from "./randomUtils";
-import { regenerateNightInstructions } from "./nightUtils";
+import { GameStateProvider, useGameState } from "./context/GameStateContext";
 
 enum TabName {
   Setup = "setup",
@@ -31,168 +20,24 @@ enum TabName {
   Info = "info",
 }
 
-const LOCAL_STORAGE_KEY = "gameState";
-const STATE_HISTORY_KEY = "gameStateHistory";
+// ---------------------------------------------------------------------------
+// Inner app — has access to context
+// ---------------------------------------------------------------------------
 
-const MAX_STATE_HISTORY = 100;
-
-function App() {
-  const initialState = JSON.parse(
-    localStorage.getItem(LOCAL_STORAGE_KEY) as string,
-  );
-  const initialGameStateHistory = JSON.parse(
-    localStorage.getItem(STATE_HISTORY_KEY) as string,
-  );
-
-  // To take advantage of Character functionality, we need to instantiate Character objects from the saved JSON
-  const populateCharacters = (state: GameState) => {
-    const chars: Character[] = [];
-
-    const demonBluffIds =
-      state.demonBluffs.map((char: Character) => char.id) || [];
-    const demonBluffs: Character[] = [];
-
-    state.allChars?.forEach((charJson: Character) => {
-      const char = cloneChar(charJson);
-
-      if (char.actsAsChar) {
-        char.actsAsChar = cloneChar(char.actsAsChar);
-      }
-
-      chars.push(char);
-      if (demonBluffIds.includes(char.id)) {
-        demonBluffs.push(char);
-      }
-    });
-
-    state.allChars = chars;
-    state.demonBluffs = demonBluffs;
-  };
-
-  if (initialState) {
-    populateCharacters(initialState);
-  }
+function AppInner() {
+  const {
+    gameState,
+    undoLastStateChange,
+    regenerateStartingInfo,
+    regenerateStartingInfoForChar,
+    regenerateDemonBluffs,
+  } = useGameState();
 
   const [selectedTab, setSelectedTab] = useState(TabName.Setup);
-  const [playerCount, setPlayerCount] = useState(
-    initialState?.playerCount || 12,
-  );
+  const [playerCount, setPlayerCount] = useState(gameState?.playerCount || 12);
   const [selectedEdition, setSelectedEdition] = useState(
-    initialState?.edition || EditionName.TroubleBrewing,
+    gameState?.edition || EditionName.TroubleBrewing,
   );
-
-  const [gameState, setGameState] = useState<GameState>(initialState);
-  const [gameStateHistory, setGameStateHistory] = useState<GameState[]>(
-    initialGameStateHistory || [],
-  );
-
-  const updateGameState = (newState: GameState) => {
-    const previousState = gameState;
-
-    setGameState(newState);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
-
-    const newGameStateHistory = [...gameStateHistory, previousState];
-    if (newGameStateHistory.length > MAX_STATE_HISTORY) {
-      newGameStateHistory.shift();
-    }
-
-    setGameStateHistory(newGameStateHistory);
-    localStorage.setItem(
-      STATE_HISTORY_KEY,
-      JSON.stringify(newGameStateHistory),
-    );
-  };
-
-  const undoLastStateChange = () => {
-    const previousState = gameStateHistory.pop() as GameState;
-
-    if (previousState) {
-      populateCharacters(previousState);
-      setGameState(previousState);
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(previousState));
-
-      const newGameStateHistory = [...gameStateHistory];
-      setGameStateHistory(newGameStateHistory);
-      localStorage.setItem(
-        STATE_HISTORY_KEY,
-        JSON.stringify(newGameStateHistory),
-      );
-    }
-  };
-
-  const regenerateStartingInfo = () => {
-    const startingInfoSuggestions = generateStartingInfoSuggestions(gameState);
-    const otherNightSuggestions = generateOtherNightSuggestions(gameState);
-
-    updateGameState({
-      ...gameState,
-      startingInfoSuggestions,
-      otherNightSuggestions,
-    });
-  };
-
-  const regenerateStartingInfoForChar = (charId: string) => {
-    const char = gameState.allChars.find(
-      (char) => char.id === charId,
-    ) as Character;
-    const suggestion = char.getDrunkOrSoberStartingInfo(gameState) as string;
-
-    const startingInfoSuggestions = {
-      ...gameState.startingInfoSuggestions,
-      [charId]: suggestion,
-    };
-
-    updateGameState({
-      ...gameState,
-      startingInfoSuggestions,
-    });
-  };
-
-  const regenerateDemonBluffs = () => {
-    const actsAsCharNames: string[] = [];
-    gameState.allChars.forEach((char) => {
-      if (char.actsAsChar) {
-        actsAsCharNames.push(char.actsAsChar.name);
-      }
-    });
-
-    const availableOutsiders = shuffleArray(
-      gameState.allChars.filter(
-        (char) =>
-          !char.inPlay &&
-          char.type === CharacterType.Outsider &&
-          !actsAsCharNames.includes(char.name),
-      ),
-    ) as Character[];
-    const availableTownsfolk = shuffleArray(
-      gameState.allChars.filter(
-        (char) =>
-          !char.inPlay &&
-          char.type === CharacterType.Townsfolk &&
-          !actsAsCharNames.includes(char.name),
-      ),
-    ) as Character[];
-
-    const demonBluffs = generateDemonBluffs(
-      [],
-      availableOutsiders,
-      availableTownsfolk,
-    );
-
-    const newGameState = {
-      ...gameState,
-      demonBluffs,
-    };
-
-    // Regenerate night instructions to update the Demon Info
-    newGameState.nightInstructions = regenerateNightInstructions(
-      gameState,
-      newGameState,
-    );
-
-    updateGameState(newGameState);
-  };
 
   const inPlayTownsfolk = gameState?.allChars.filter(
     (char) => char.inPlay && char.type === CharacterType.Townsfolk,
@@ -213,7 +58,6 @@ function App() {
   );
 
   const charsById = getCharsById(gameState);
-
   const tokenInUseMap = getTokenInUseMap(gameState);
 
   return (
@@ -228,13 +72,16 @@ function App() {
         <button onClick={() => setSelectedTab(TabName.Random)}>Random</button>
         <button onClick={() => setSelectedTab(TabName.Info)}>Info</button>
       </div>
+
       {selectedTab === TabName.Setup && (
         <>
           <div className="edition-container">
             <strong>Edition: </strong>
             <select
               value={selectedEdition}
-              onChange={(e) => setSelectedEdition(e.target.value)}
+              onChange={(e) =>
+                setSelectedEdition(e.target.value as EditionName)
+              }
             >
               <optgroup label="Base">
                 {Object.entries(EDITIONS_BY_NAME)
@@ -256,82 +103,49 @@ function App() {
               </optgroup>
             </select>
           </div>
+
           <PlayerCountSelect
             playerCount={playerCount}
             setPlayerCount={setPlayerCount}
-          ></PlayerCountSelect>
+          />
           <RandomizeSetup
             playerCount={playerCount}
-            updateGameState={updateGameState}
             editionName={selectedEdition}
-          ></RandomizeSetup>
+          />
 
           {gameState && (
             <>
               <div>
                 <strong>Townsfolk:</strong>
                 {inPlayTownsfolk.map((char) => (
-                  <CharNameDisplay
-                    key={char.id}
-                    gameState={gameState}
-                    updateGameState={updateGameState}
-                    char={char}
-                    playable={true}
-                  />
+                  <CharNameDisplay key={char.id} char={char} playable={true} />
                 ))}
               </div>
               <div>
                 <strong>Outsiders:</strong>
                 {inPlayOutsiders.map((char) => (
-                  <CharNameDisplay
-                    key={char.id}
-                    gameState={gameState}
-                    updateGameState={updateGameState}
-                    char={char}
-                    playable={true}
-                  />
+                  <CharNameDisplay key={char.id} char={char} playable={true} />
                 ))}
               </div>
               <div>
                 <strong>Minions:</strong>
                 {inPlayMinions.map((char) => (
-                  <CharNameDisplay
-                    key={char.id}
-                    gameState={gameState}
-                    updateGameState={updateGameState}
-                    char={char}
-                    playable={true}
-                  />
+                  <CharNameDisplay key={char.id} char={char} playable={true} />
                 ))}
               </div>
               <div>
                 <strong>Demons:</strong>
                 {inPlayDemons.map((char) => (
-                  <CharNameDisplay
-                    key={char.id}
-                    gameState={gameState}
-                    updateGameState={updateGameState}
-                    char={char}
-                    playable={true}
-                  />
+                  <CharNameDisplay key={char.id} char={char} playable={true} />
                 ))}
               </div>
               <div>
-                <span
-                  className="refresh-icon"
-                  onClick={() => regenerateDemonBluffs()}
-                >
+                <span className="refresh-icon" onClick={regenerateDemonBluffs}>
                   ⟳
                 </span>
                 <strong>Demon Bluffs:</strong>
                 {gameState.demonBluffs.map((char) => (
-                  <CharNameDisplay
-                    key={char.id}
-                    gameState={gameState}
-                    updateGameState={updateGameState}
-                    char={char}
-                    playable={false}
-                  />
+                  <CharNameDisplay key={char.id} char={char} playable={false} />
                 ))}
               </div>
               <div>
@@ -339,8 +153,6 @@ function App() {
                 {notInPlayChars.map((char) => (
                   <CharNameDisplay
                     key={char.id}
-                    gameState={gameState}
-                    updateGameState={updateGameState}
                     char={char}
                     playable={false}
                     tokenInUseMap={tokenInUseMap}
@@ -348,10 +160,7 @@ function App() {
                 ))}
               </div>
               <div>
-                <span
-                  className="refresh-icon"
-                  onClick={() => regenerateStartingInfo()}
-                >
+                <span className="refresh-icon" onClick={regenerateStartingInfo}>
                   ⟳
                 </span>
                 <strong>Starting Info:</strong>
@@ -388,7 +197,7 @@ function App() {
                               charsById,
                             ),
                           }}
-                        ></span>
+                        />
                       </div>
                     ) : null,
                 )}
@@ -397,42 +206,33 @@ function App() {
           )}
         </>
       )}
-      {selectedTab === TabName.Characters && (
-        <CharacterManagement
-          gameState={gameState}
-          updateGameState={updateGameState}
-        ></CharacterManagement>
-      )}
+
+      {selectedTab === TabName.Characters && <CharacterManagement />}
       {selectedTab === TabName.Nights && (
         <>
-          <NightInfo
-            gameState={gameState}
-            type={NightType.First}
-            updateGameState={updateGameState}
-          ></NightInfo>
-          <NightInfo
-            gameState={gameState}
-            type={NightType.Other}
-            updateGameState={updateGameState}
-          ></NightInfo>
+          <NightInfo type={NightType.First} />
+          <NightInfo type={NightType.Other} />
         </>
       )}
-      {selectedTab === TabName.Random && (
-        <RandomizationTools
-          gameState={gameState}
-          updateGameState={updateGameState}
-        ></RandomizationTools>
-      )}
-      {selectedTab === TabName.Info && (
-        <InfoGenerator
-          gameState={gameState}
-          updateGameState={updateGameState}
-        ></InfoGenerator>
-      )}
+      {selectedTab === TabName.Random && <RandomizationTools />}
+      {selectedTab === TabName.Info && <InfoGenerator />}
+
       <div className="undo-button-container">
         <button onClick={undoLastStateChange}>Undo</button>
       </div>
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Root — wraps everything in the provider
+// ---------------------------------------------------------------------------
+
+function App() {
+  return (
+    <GameStateProvider>
+      <AppInner />
+    </GameStateProvider>
   );
 }
 

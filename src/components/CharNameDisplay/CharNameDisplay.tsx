@@ -1,28 +1,23 @@
 import "./CharNameDisplay.css";
 import { Character } from "../../characters";
-import { CharacterName, GameState } from "../../types";
+import { CharacterName } from "../../types";
 import PlayerNameInput from "../PlayerNameInput/PlayerNameInput";
 import { useToggleDeadAliveState } from "../../hooks/useToggleDeadAliveState";
+import { useGameState } from "../../context/GameStateContext";
 
 interface CharNameDisplayProps {
-  gameState: GameState;
-  updateGameState: (newState: GameState) => void;
   char: Character;
   playable: boolean;
   tokenInUseMap?: Partial<Record<CharacterName, CharacterName>>;
 }
 
 function CharNameDisplay({
-  gameState,
-  updateGameState,
   char,
   playable,
   tokenInUseMap,
 }: CharNameDisplayProps) {
-  const toggleDeadAliveState = useToggleDeadAliveState(
-    gameState,
-    updateGameState,
-  );
+  const { gameState, updateGameState } = useGameState();
+  const toggleDeadAliveState = useToggleDeadAliveState();
 
   return (
     <div key={`${char.id}-name`} className="char-name-container">

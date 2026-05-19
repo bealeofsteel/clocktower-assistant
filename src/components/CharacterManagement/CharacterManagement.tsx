@@ -4,30 +4,20 @@ import {
   getAllCharsInPlay,
   getTokenInUseMap,
 } from "../../charUtils";
-import {
-  Alignment,
-  CharacterName,
-  CharacterType,
-  GameState,
-} from "../../types";
+import { Alignment, CharacterName, CharacterType } from "../../types";
 import PlayerNameInput from "../PlayerNameInput/PlayerNameInput";
 import { Character } from "../../characters";
 import CharacterSelect from "../CharacterSelect/CharacterSelect";
 import CharActsAsSelect from "../CharActsAsSelect/CharActsAsSelect";
 import { useToggleDeadAliveState } from "../../hooks/useToggleDeadAliveState";
 import { regenerateNightInstructions } from "../../nightUtils";
-
-interface CharacterManagementProps {
-  gameState: GameState;
-  updateGameState: (newState: GameState) => void;
-}
+import { useGameState } from "../../context/GameStateContext";
 
 const NUM_DEMON_BLUFFS = 3;
 
-function CharacterMangement({
-  gameState,
-  updateGameState,
-}: CharacterManagementProps) {
+function CharacterMangement() {
+  const { gameState, updateGameState } = useGameState();
+
   const toggleAlignment = (char: Character) => {
     const newChars = gameState.allChars.map((oldChar) => {
       if (oldChar.id === char.id) {
@@ -48,10 +38,7 @@ function CharacterMangement({
     });
   };
 
-  const toggleDeadAliveState = useToggleDeadAliveState(
-    gameState,
-    updateGameState,
-  );
+  const toggleDeadAliveState = useToggleDeadAliveState();
 
   const toggleActsWhileDead = (char: Character) => {
     const newChars = gameState.allChars.map((oldChar) => {

@@ -1,20 +1,17 @@
 import { Character, characterClassNameMap } from "../../characters";
 import { cloneChar } from "../../charUtils";
+import { useGameState } from "../../context/GameStateContext";
 import { regenerateNightInstructions } from "../../nightUtils";
-import { CharacterName, GameState } from "../../types";
+import { CharacterName } from "../../types";
 import CharOptions from "../CharOptions/CharOptions";
 
 interface CharActsAsSelectProps {
-  gameState: GameState;
-  updateGameState: (newState: GameState) => void;
   currentChar: Character;
 }
 
-function CharActsAsSelect({
-  gameState,
-  updateGameState,
-  currentChar,
-}: CharActsAsSelectProps) {
+function CharActsAsSelect({ currentChar }: CharActsAsSelectProps) {
+  const { gameState, updateGameState } = useGameState();
+
   const updateActsAs = (charName: CharacterName) => {
     const Klass = characterClassNameMap[charName];
     const actsAsChar = new Klass(charName);
@@ -61,7 +58,7 @@ function CharActsAsSelect({
       onChange={(e) => updateActsAs(e.target.value as CharacterName)}
       disabled={!currentChar.actsAsChar && !currentChar.canActAsOtherChar()}
     >
-      <CharOptions gameState={gameState}></CharOptions>
+      <CharOptions />
     </select>
   );
 }

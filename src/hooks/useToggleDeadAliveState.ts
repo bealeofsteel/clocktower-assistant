@@ -1,11 +1,10 @@
 import { Character } from "../characters";
 import { cloneChar } from "../charUtils";
-import { GameState } from "../types";
+import { useGameState } from "../context/GameStateContext";
 
-export function useToggleDeadAliveState(
-  gameState: GameState,
-  updateGameState: (gameState: GameState) => void,
-) {
+export function useToggleDeadAliveState() {
+  const { gameState, updateGameState } = useGameState();
+
   return (char: Character) => {
     const newNightInstructions = {
       ...gameState.nightInstructions,

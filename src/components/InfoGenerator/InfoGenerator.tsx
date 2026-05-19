@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import { Character } from "../../characters";
-import { CharacterName, GameState } from "../../types";
+import { CharacterName } from "../../types";
 import "./InfoGenerator.css";
+import { useGameState } from "../../context/GameStateContext";
 
-interface InfoGeneratorProps {
-  gameState: GameState;
-  updateGameState: (gameState: GameState) => void;
-}
-
-function InfoGenerator({ gameState, updateGameState }: InfoGeneratorProps) {
+function InfoGenerator() {
+  const { gameState, updateGameState } = useGameState();
   const [localNotes, setLocalNotes] = useState(gameState?.storytellerNotes);
 
   useEffect(() => {

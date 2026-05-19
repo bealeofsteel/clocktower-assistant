@@ -1,14 +1,15 @@
-import { GameState, NightType } from "../../types";
+import { NightType } from "../../types";
 import "./NightInfo.css";
 import { getCharsById, parseCharTokens } from "../../charUtils";
+import { useGameState } from "../../context/GameStateContext";
 
 interface NightInfoProps {
-  gameState: GameState;
   type: NightType;
-  updateGameState: (newState: GameState) => void;
 }
 
-function NightInfo({ gameState, type, updateGameState }: NightInfoProps) {
+function NightInfo({ type }: NightInfoProps) {
+  const { gameState, updateGameState } = useGameState();
+
   const selectAll = () => {
     const newInstructions = gameState.nightInstructions[type].map(
       (instruction) => {

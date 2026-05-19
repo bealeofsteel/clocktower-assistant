@@ -1,10 +1,7 @@
-import { GameState } from "../../types";
+import { useGameState } from "../../context/GameStateContext";
 
-interface CharOptionsProps {
-  gameState: GameState;
-}
-
-function CharOptions({ gameState }: CharOptionsProps) {
+function CharOptions() {
+  const { gameState } = useGameState();
   return (
     <>
       <optgroup label="Townsfolk">

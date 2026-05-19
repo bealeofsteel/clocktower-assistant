@@ -13,18 +13,16 @@ import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
 import { EDITIONS_BY_NAME } from "../../editions";
 import { generateNightInstructions } from "../../nightUtils";
+import { useGameState } from "../../context/GameStateContext";
 
 interface RandomizeSetupProps {
   playerCount: number;
-  updateGameState: (newState: GameState) => void;
   editionName: EditionName;
 }
 
-function RandomizeSetup({
-  playerCount,
-  updateGameState,
-  editionName,
-}: RandomizeSetupProps) {
+function RandomizeSetup({ playerCount, editionName }: RandomizeSetupProps) {
+  const { updateGameState } = useGameState();
+
   const pickAvailableCharacter = (
     availableChars: Character[],
     allChars: Character[],
