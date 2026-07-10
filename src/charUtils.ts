@@ -100,7 +100,9 @@ const findCharIfInPlay = (gameState: GameState, charName: CharacterName) => {
 
 export const pickFortuneTellerRedHerring = (gameState: GameState) => {
   const chars = gameState.allChars.filter(
-    (char) => char.inPlay && char.alignment === Alignment.Good,
+    (char) =>
+      char.inPlay &&
+      (char.alignment === Alignment.Good || char.canMisregisterAlignment()),
   );
 
   shuffleArray(chars);

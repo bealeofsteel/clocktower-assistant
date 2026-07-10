@@ -22,6 +22,7 @@ import {
   ConfirmMarionetteAsTownsfolk,
   ConfirmDrunkAsTownsfolk,
   GrandmotherConfirmDrunkAsTownsfolk,
+  GrandmotherRightRoleWrongGrandchild,
 } from "./drunkStrategies";
 import { EDITIONS_BY_NAME } from "./editions";
 import { playerCountConfig } from "./gameSettings";
@@ -1010,16 +1011,10 @@ export class Grandmother extends Character {
   getStartingInfoSuggestion(gameState: GameState): string | undefined {
     const chars = gameState.allChars.filter(
       (char) =>
-        char.inPlay && char.alignment === Alignment.Good && char.id !== this.id,
+        char.inPlay &&
+        (char.alignment === Alignment.Good || char.canMisregisterAlignment()) &&
+        char.id !== this.id,
     );
-
-    // Everyone Can Play includes a Spy, which can lead to this interaction
-    const spyInPlay = gameState.allChars.filter(
-      (char) => char.inPlay && char.name === CharacterName.Spy,
-    );
-    if (spyInPlay.length) {
-      chars.push(spyInPlay[0]);
-    }
 
     shuffleArray(chars);
 
@@ -1052,6 +1047,8 @@ export class Grandmother extends Character {
       new GrandmotherFrameTownsfolkAsDrunk(charId),
       new GrandmotherConfirmDrunkAsTownsfolk(charId),
       new GrandmotherConfirmDrunkAsTownsfolk(charId),
+      new GrandmotherRightRoleWrongGrandchild(charId),
+      new GrandmotherRightRoleWrongGrandchild(charId),
       new GrandmotherShowGoodPlayerWrongRole(charId),
     ];
   }

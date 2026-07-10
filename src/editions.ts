@@ -90,6 +90,7 @@ import {
 
 export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
   [EditionName.TroubleBrewing]: {
+    isBaseEdition: true,
     getCharactersForEdition: () => {
       const townsfolk = [
         new Washerwoman(),
@@ -158,6 +159,7 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
     },
   },
   [EditionName.SectsAndViolets]: {
+    isBaseEdition: true,
     getCharactersForEdition: () => {
       const townsfolk = [
         new Clockmaker(),
@@ -245,6 +247,7 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
     },
   },
   [EditionName.BadMoonRising]: {
+    isBaseEdition: true,
     getCharactersForEdition: () => {
       const townsfolk = [
         new Grandmother(),
@@ -326,7 +329,6 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
     },
   },
   [EditionName.EveryoneCanPlay]: {
-    isCustom: true,
     getCharactersForEdition: () => {
       const townsfolk = [
         new Librarian(),
@@ -406,7 +408,6 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
   },
   [EditionName.NoGreaterJoy]: {
     isTeensyville: true,
-    isCustom: true,
     getCharactersForEdition: () => {
       const townsfolk = [
         new Clockmaker(),
@@ -453,7 +454,6 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
     },
   },
   [EditionName.PiesBaking]: {
-    isCustom: true,
     getCharactersForEdition: () => {
       const townsfolk = [
         new Washerwoman(),
@@ -523,7 +523,6 @@ export const EDITIONS_BY_NAME: Record<EditionName, Edition> = {
     },
   },
   [EditionName.LaissezUnFaire]: {
-    isCustom: true,
     isTeensyville: true,
     getCharactersForEdition: () => {
       const townsfolk = [

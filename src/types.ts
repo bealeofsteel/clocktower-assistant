@@ -7,7 +7,7 @@ export interface Edition {
     [NightType.Other]: (CharacterName | SpecialInstructionKey)[];
   };
   isTeensyville?: boolean;
-  isCustom?: boolean;
+  isBaseEdition?: boolean;
 }
 
 export interface CharacterSet {

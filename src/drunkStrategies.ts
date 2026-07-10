@@ -1,4 +1,4 @@
-import { Character } from "./characters";
+import { Character, Grandmother } from "./characters";
 import {
   pickDemonBluffOfType,
   pickInPlayCharsofTypes,
@@ -267,6 +267,20 @@ export class ConfirmDrunkAsTownsfolk extends DrunkStrategy {
   }
 }
 
+const prefixGrandmotherResultWithGrandchild = (
+  gameState: GameState,
+  charId: string,
+) => {
+  const char = gameState.allChars.find(
+    (char) => char.id === charId,
+  ) as Grandmother;
+  if (char.grandchildCharId) {
+    return `The grandchild is {{${char.grandchildCharId}}}. `;
+  } else {
+    return "";
+  }
+};
+
 export class GrandmotherSupportDemonBluff extends DrunkStrategy {
   getInstructionsForStrategy(gameState: GameState): string {
     const bluffs = new Array(...gameState.demonBluffs);
@@ -277,11 +291,20 @@ export class GrandmotherSupportDemonBluff extends DrunkStrategy {
     );
     shuffleArray(evilChars);
 
-    return `The grandchild is {{${evilChars[0].id}}}. Show the ${bluffs[0].name} token.`;
+    let result = prefixGrandmotherResultWithGrandchild(gameState, this.charId);
+
+    return (result += `Point to {{${evilChars[0].id}}} and show the ${bluffs[0].name} token.`);
   }
 }
 
 export class GrandmotherFrameTownsfolkAsDrunk extends DrunkStrategy {
+  gameQualifiesForStrategy(gameState: GameState): boolean {
+    return (
+      gameState.allChars.filter((char) => char.name === CharacterName.Drunk)
+        .length > 0
+    );
+  }
+
   getInstructionsForStrategy(gameState: GameState): string {
     const townsfolk = gameState.allChars.filter(
       (char) =>
@@ -291,7 +314,9 @@ export class GrandmotherFrameTownsfolkAsDrunk extends DrunkStrategy {
     );
     shuffleArray(townsfolk);
 
-    return `The grandchild is {{${townsfolk[0].id}}}. Show the Drunk token.`;
+    let result = prefixGrandmotherResultWithGrandchild(gameState, this.charId);
+
+    return (result += `Point to {{${townsfolk[0].id}}} and show the Drunk token.`);
   }
 }
 
@@ -317,7 +342,9 @@ export class GrandmotherShowGoodPlayerWrongRole extends DrunkStrategy {
     );
     shuffleArray(goodChars);
 
-    return `The grandchild is {{${goodChars[0].id}}}. Show the ${charToShow.name} token.`;
+    let result = prefixGrandmotherResultWithGrandchild(gameState, this.charId);
+
+    return (result += `Point to {{${goodChars[0].id}}} and show the ${charToShow.name} token.`);
   }
 }
 
@@ -341,7 +368,35 @@ export class GrandmotherConfirmDrunkAsTownsfolk extends DrunkStrategy {
         char.id !== this.charId,
     )[0];
 
-    return `The grandchild is {{${charToConfirm.id}}}. Show the ${charToConfirm.actsAsChar?.name} token.`;
+    let result = prefixGrandmotherResultWithGrandchild(gameState, this.charId);
+
+    return (result += `Point to {{${charToConfirm.id}}} and show the ${charToConfirm.actsAsChar?.name} token.`);
+  }
+}
+
+export class GrandmotherRightRoleWrongGrandchild extends DrunkStrategy {
+  // This strategy doesn't work if the GM is the Drunk, since they have no actual grandchild in that case
+  gameQualifiesForStrategy(gameState: GameState): boolean {
+    const char = gameState.allChars.find((char) => char.id === this.charId);
+    return char?.name !== CharacterName.Drunk;
+  }
+
+  getInstructionsForStrategy(gameState: GameState): string {
+    const grandmother = gameState.allChars.find(
+      (char) => char.id === this.charId,
+    ) as Grandmother;
+
+    const charToConfirm = gameState.allChars.filter(
+      (char) =>
+        char.inPlay &&
+        char.id !== this.charId &&
+        char.id !== grandmother.grandchildCharId &&
+        char.alignment === Alignment.Good,
+    )[0];
+
+    let result = prefixGrandmotherResultWithGrandchild(gameState, this.charId);
+
+    return (result += `Point to {{${charToConfirm.id}}} and show the ${charToConfirm.name} token.`);
   }
 }
 

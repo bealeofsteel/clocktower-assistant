@@ -85,7 +85,7 @@ function AppInner() {
             >
               <optgroup label="Base">
                 {Object.entries(EDITIONS_BY_NAME)
-                  .filter(([_editionName, edition]) => !edition.isCustom)
+                  .filter(([_editionName, edition]) => edition.isBaseEdition)
                   .map(([editionName]) => (
                     <option key={editionName} value={editionName}>
                       {editionName}
@@ -94,7 +94,7 @@ function AppInner() {
               </optgroup>
               <optgroup label="Custom">
                 {Object.entries(EDITIONS_BY_NAME)
-                  .filter(([_editionName, edition]) => edition.isCustom)
+                  .filter(([_editionName, edition]) => !edition.isBaseEdition)
                   .map(([editionName]) => (
                     <option key={editionName} value={editionName}>
                       {editionName}
