@@ -1,4 +1,4 @@
-import { useGameState } from "../../context/GameStateContext";
+import { useGameState } from "../../hooks/useGameState";
 
 function CharOptions() {
   const { gameState } = useGameState();

@@ -10,7 +10,8 @@ import CharacterManagement from "./components/CharacterManagement/CharacterManag
 import CharNameDisplay from "./components/CharNameDisplay/CharNameDisplay";
 import NightInfo from "./components/NightInfo/NightInfo";
 import InfoGenerator from "./components/InfoGenerator/InfoGenerator";
-import { GameStateProvider, useGameState } from "./context/GameStateContext";
+import { useGameState } from "./hooks/useGameState";
+import { GameStateProvider } from "./components/GameStateProvider/GameStateProvider";
 
 enum TabName {
   Setup = "setup",
@@ -167,13 +168,14 @@ function AppInner() {
                 {gameState.nightInstructions[NightType.First]?.map(
                   (instruction) =>
                     instruction.charId &&
-                    gameState.startingInfoSuggestions[instruction.charId] ? (
+                    gameState.startingInfoSuggestions[instruction.key] ? (
                       <div key={instruction.key}>
                         <span
                           className="refresh-icon"
                           onClick={() =>
                             regenerateStartingInfoForChar(
                               instruction.charId as string,
+                              instruction.label,
                             )
                           }
                         >
@@ -192,7 +194,7 @@ function AppInner() {
                           dangerouslySetInnerHTML={{
                             __html: parseCharTokens(
                               gameState.startingInfoSuggestions[
-                                instruction.charId
+                                instruction.key
                               ] as string,
                               charsById,
                             ),

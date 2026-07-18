@@ -2,7 +2,7 @@ import { Alignment, CharacterType } from "../../types";
 import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
 import "./RandomizationTools.css";
-import { useGameState } from "../../context/GameStateContext";
+import { useGameState } from "../../hooks/useGameState";
 
 interface Filter {
   checked: boolean;

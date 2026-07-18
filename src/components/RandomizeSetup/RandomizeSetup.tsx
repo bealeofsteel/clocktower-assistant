@@ -13,7 +13,8 @@ import { Character } from "../../characters";
 import { shuffleArray } from "../../randomUtils";
 import { EDITIONS_BY_NAME } from "../../editions";
 import { generateNightInstructions } from "../../nightUtils";
-import { useGameState } from "../../context/GameStateContext";
+import { useGameState } from "../../hooks/useGameState";
+import { getDrunkOrSoberStartingInfo } from "../../charUtils";
 
 interface RandomizeSetupProps {
   playerCount: number;
@@ -270,9 +271,21 @@ export const generateStartingInfoSuggestions = (gameState: GameState) => {
 
   const inPlayChars = gameState.allChars.filter((char) => char.inPlay);
   for (const char of inPlayChars) {
-    const suggestion = char.getDrunkOrSoberStartingInfo(gameState);
+    const suggestion = getDrunkOrSoberStartingInfo(gameState, char, char);
     if (suggestion) {
-      startingInfoSuggestions[char.id] = suggestion;
+      startingInfoSuggestions[`${char.name}_${char.id}`] = suggestion;
+    }
+
+    if (char.actsAsChar) {
+      const suggestion = getDrunkOrSoberStartingInfo(
+        gameState,
+        char.actsAsChar,
+        char,
+      );
+      if (suggestion) {
+        startingInfoSuggestions[`${char.actsAsChar.name}_${char.id}`] =
+          suggestion;
+      }
     }
   }
 
@@ -286,7 +299,15 @@ export const generateOtherNightSuggestions = (gameState: GameState) => {
   for (const char of inPlayChars) {
     const suggestion = char.getOtherNightSuggestion(gameState);
     if (suggestion) {
-      otherNightSuggestions[char.id] = suggestion;
+      otherNightSuggestions[`${char.name}_${char.id}`] = suggestion;
+    }
+
+    if (char.actsAsChar) {
+      const suggestion = char.actsAsChar.getOtherNightSuggestion(gameState);
+      if (suggestion) {
+        otherNightSuggestions[`${char.actsAsChar.name}_${char.id}`] =
+          suggestion;
+      }
     }
   }
 

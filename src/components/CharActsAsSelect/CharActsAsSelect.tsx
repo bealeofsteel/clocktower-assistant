@@ -1,6 +1,6 @@
 import { Character, characterClassNameMap } from "../../characters";
-import { cloneChar } from "../../charUtils";
-import { useGameState } from "../../context/GameStateContext";
+import { cloneChar, getDrunkOrSoberStartingInfo } from "../../charUtils";
+import { useGameState } from "../../hooks/useGameState";
 import { regenerateNightInstructions } from "../../nightUtils";
 import { CharacterName } from "../../types";
 import CharOptions from "../CharOptions/CharOptions";
@@ -34,14 +34,32 @@ function CharActsAsSelect({ currentChar }: CharActsAsSelectProps) {
       allChars: newChars,
     };
 
-    const startingInfo = newChar!.getDrunkOrSoberStartingInfo(gameState);
+    const startingInfo = getDrunkOrSoberStartingInfo(
+      gameState,
+      newChar!.actsAsChar ? newChar!.actsAsChar : newChar!,
+      newChar!,
+    );
     if (startingInfo) {
-      newGameState.startingInfoSuggestions[currentChar.id] = startingInfo;
+      newGameState.startingInfoSuggestions[
+        `${newChar!.actsAsChar.name}_${newChar!.id}`
+      ] = startingInfo;
     }
 
-    const otherNightSuggestion = newChar!.getOtherNightSuggestion(gameState);
+    const otherNightSuggestion = newChar!.actsAsChar
+      ? newChar!.actsAsChar.getOtherNightSuggestion(gameState)
+      : newChar!.getOtherNightSuggestion(gameState);
     if (otherNightSuggestion) {
-      newGameState.otherNightSuggestions[currentChar.id] = otherNightSuggestion;
+      newGameState.otherNightSuggestions[
+        `${newChar!.actsAsChar.name}_${newChar!.id}`
+      ] = otherNightSuggestion;
+    }
+
+    // Lunatic requires special handling -- regenerate parent suggestion as well
+    if (newChar!.name === CharacterName.Lunatic) {
+      const lunaticOtherNightSuggestion =
+        newChar!.getOtherNightSuggestion(gameState);
+      newGameState.otherNightSuggestions[`${newChar!.name}_${newChar!.id}`] =
+        lunaticOtherNightSuggestion;
     }
 
     newGameState.nightInstructions = regenerateNightInstructions(

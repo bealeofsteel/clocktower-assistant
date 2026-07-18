@@ -11,7 +11,7 @@ import CharacterSelect from "../CharacterSelect/CharacterSelect";
 import CharActsAsSelect from "../CharActsAsSelect/CharActsAsSelect";
 import { useToggleDeadAliveState } from "../../hooks/useToggleDeadAliveState";
 import { regenerateNightInstructions } from "../../nightUtils";
-import { useGameState } from "../../context/GameStateContext";
+import { useGameState } from "../../hooks/useGameState";
 
 const NUM_DEMON_BLUFFS = 3;
 
@@ -131,18 +131,10 @@ function CharacterMangement() {
               className={`char-table-row char-name ${char.alignment} ${char.isDead ? "is-dead" : ""}`}
             >
               <td>
-                <PlayerNameInput
-                  gameState={gameState}
-                  updateGameState={updateGameState}
-                  char={char}
-                />
+                <PlayerNameInput char={char} />
               </td>
               <td>
-                <CharacterSelect
-                  gameState={gameState}
-                  updateGameState={updateGameState}
-                  currentChar={char}
-                ></CharacterSelect>
+                <CharacterSelect currentChar={char}></CharacterSelect>
               </td>
               <td className="clickable" onClick={() => toggleAlignment(char)}>
                 {char.alignment}
@@ -162,11 +154,7 @@ function CharacterMangement() {
                 ></input>
               </td>
               <td>
-                <CharActsAsSelect
-                  gameState={gameState}
-                  updateGameState={updateGameState}
-                  currentChar={char}
-                ></CharActsAsSelect>
+                <CharActsAsSelect currentChar={char}></CharActsAsSelect>
               </td>
               <td>
                 <input

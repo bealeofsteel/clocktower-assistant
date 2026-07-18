@@ -1,5 +1,4 @@
-import { Character } from "./characters";
-import { getAllCharsInPlay, getCharsById } from "./charUtils";
+import { getAbilitiesInPlay } from "./charUtils";
 import { EDITIONS_BY_NAME } from "./editions";
 import {
   GameState,
@@ -66,20 +65,6 @@ const specialInstructions = {
       message,
     };
   },
-  [SpecialInstructionKey.MarionetteInfo]: (gameState: GameState) => {
-    const marionetteInPlay = gameState.allChars.filter(
-      (char) => char.inPlay && char.name === CharacterName.Marionette,
-    )?.[0];
-
-    if (marionetteInPlay) {
-      const message = `Wake the Demon. Show the THIS PLAYER IS & Marionette tokens. Point to the Marionette. <strong>Suggestion:</strong> If seat positioning allows it, point to {{${marionetteInPlay.id}}}.`;
-
-      return {
-        label: SpecialInstructionKey.MarionetteInfo,
-        message: message,
-      };
-    }
-  },
 };
 
 export const generateNightInstructions = (gameState: GameState) => {
@@ -88,25 +73,32 @@ export const generateNightInstructions = (gameState: GameState) => {
     other: [],
   };
 
-  // To handle Drunk logic, we need a list of the characters who appear to be in play
-  const charsInPlay = getAllCharsInPlay(gameState);
-  const instructionCharNameToCharacters: Partial<
-    Record<CharacterName, Character[]>
-  > = {};
-  charsInPlay.forEach((char) => {
-    const identity = char.getIdentityForInstructions();
-    const charArray = instructionCharNameToCharacters[identity] || [];
-    charArray.push(char);
-    instructionCharNameToCharacters[identity] = charArray;
-  });
+  const abilitiesInPlayToChars = getAbilitiesInPlay(gameState);
+
+  const edition = EDITIONS_BY_NAME[gameState.edition];
+
+  const firstNightInstructions = edition.isBaseEdition
+    ? edition.nightInstructions.first
+    : FULL_FIRST_NIGHT_ORDER;
+
+  const otherNightsInstructions = edition.isBaseEdition
+    ? edition.nightInstructions.other
+    : FULL_OTHER_NIGHTS_ORDER;
 
   [NightType.First, NightType.Other].forEach((nightType: NightType) => {
     const instructions: Instruction[] = [];
 
-    for (const instructionKey of EDITIONS_BY_NAME[gameState.edition]
-      .nightInstructions[nightType]) {
+    const nightOrder =
+      nightType === NightType.First
+        ? firstNightInstructions
+        : otherNightsInstructions;
+
+    let lunaticDemonIdx = -1;
+    let nightOneDemonIdx = -1;
+
+    for (const instructionLabel of nightOrder) {
       const specialInstructionFunction =
-        specialInstructions[instructionKey as SpecialInstructionKey];
+        specialInstructions[instructionLabel as SpecialInstructionKey];
       if (specialInstructionFunction) {
         const result = specialInstructionFunction(gameState, nightType);
         if (result) {
@@ -115,25 +107,53 @@ export const generateNightInstructions = (gameState: GameState) => {
         continue;
       }
 
-      const characters =
-        instructionCharNameToCharacters[instructionKey as CharacterName];
-      if (characters) {
-        characters.forEach((char) => {
+      const charInfo =
+        abilitiesInPlayToChars[instructionLabel as CharacterName];
+      if (charInfo) {
+        charInfo.forEach((charInfo) => {
           const instructionsForChar =
             nightType === NightType.First
-              ? char.getFirstNightInstructions(gameState)
-              : char.getOtherNightsInstructions();
+              ? charInfo.actingChar.getFirstNightInstructions(gameState)
+              : charInfo.actingChar.getOtherNightsInstructions();
           if (instructionsForChar) {
+            // Lunatic must wake as the Demon before the Demon, so handle it separately
+            if (
+              charInfo.char.name === CharacterName.Lunatic &&
+              charInfo.actingChar.type === CharacterType.Demon
+            ) {
+              // On other nights, the Lunatic wakes in a fixed position
+              if (nightType === NightType.Other) {
+                return;
+              }
+              lunaticDemonIdx = instructions.length;
+            }
+
+            if (
+              nightType === NightType.First &&
+              charInfo.char.type === CharacterType.Demon
+            ) {
+              nightOneDemonIdx = instructions.length;
+            }
+
             instructions.push({
-              key: char.id,
-              label: char.name,
+              key: `${instructionLabel}_${charInfo.char.id}`,
+              label: instructionLabel,
               message: instructionsForChar,
-              charId: char.id,
+              charId: charInfo.char.id,
               checked: false,
             });
           }
         });
       }
+    }
+
+    if (
+      nightType === NightType.First &&
+      nightOneDemonIdx > -1 &&
+      lunaticDemonIdx > -1
+    ) {
+      const [instruction] = instructions.splice(lunaticDemonIdx, 1);
+      instructions.splice(nightOneDemonIdx, 0, instruction);
     }
 
     result[nightType] = instructions;
@@ -154,20 +174,9 @@ export const regenerateNightInstructions = (
     [NightType.Other]: {} as Record<string, boolean | undefined>,
   };
 
-  const getInstructionKey = (
-    instruction: Instruction,
-    gameState: GameState,
-  ) => {
-    const charsById = getCharsById(gameState);
-
-    if (instruction.label && instruction.charId) {
-      let key = `${instruction.label}_${instruction.charId}`;
-
-      const actsAsChar = charsById[instruction.charId].actsAsChar;
-      if (actsAsChar) {
-        key += `_${actsAsChar.id}`;
-      }
-      return key;
+  const getInstructionKey = (instruction: Instruction) => {
+    if (instruction.charId) {
+      return `${instruction.label}_${instruction.charId}`;
     } else {
       return instruction.label;
     }
@@ -175,9 +184,8 @@ export const regenerateNightInstructions = (
 
   [NightType.First, NightType.Other].forEach((nightType: NightType) => {
     oldNightInstructions[nightType].forEach((instruction) => {
-      checkedInstuctions[nightType][
-        getInstructionKey(instruction, oldGameState)
-      ] = instruction.checked;
+      checkedInstuctions[nightType][getInstructionKey(instruction)] =
+        instruction.checked;
     });
   });
 
@@ -185,11 +193,7 @@ export const regenerateNightInstructions = (
 
   [NightType.First, NightType.Other].forEach((nightType: NightType) => {
     newNightInstructions[nightType].forEach((instruction) => {
-      if (
-        checkedInstuctions[nightType][
-          getInstructionKey(instruction, newGameState)
-        ]
-      ) {
+      if (checkedInstuctions[nightType][getInstructionKey(instruction)]) {
         instruction.checked = true;
       }
     });

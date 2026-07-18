@@ -1,6 +1,6 @@
 import { Character } from "../characters";
 import { cloneChar } from "../charUtils";
-import { useGameState } from "../context/GameStateContext";
+import { useGameState } from "./useGameState";
 
 export function useToggleDeadAliveState() {
   const { gameState, updateGameState } = useGameState();
