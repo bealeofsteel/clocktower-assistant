@@ -112,12 +112,14 @@ export function GameStateProvider({ children }: { children: ReactNode }) {
       actingChar,
       char,
     ) as string;
+    const otherNightSuggestions = generateOtherNightSuggestions(gameState);
     updateGameState({
       ...gameState,
       startingInfoSuggestions: {
         ...gameState.startingInfoSuggestions,
         [`${label}_${charId}`]: suggestion,
       },
+      otherNightSuggestions,
     });
   };
 
