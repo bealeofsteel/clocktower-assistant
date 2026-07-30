@@ -1,5 +1,6 @@
 import { Character, characterClassNameMap } from "../../characters";
-import { useGameState } from "../../context/GameStateContext";
+import { getDrunkOrSoberStartingInfo } from "../../charUtils";
+import { useGameState } from "../../hooks/useGameState";
 import { regenerateNightInstructions } from "../../nightUtils";
 import { CharacterName } from "../../types";
 import CharOptions from "../CharOptions/CharOptions";
@@ -69,14 +70,20 @@ function CharacterSelect({ currentChar }: CharacterSelectProps) {
       allChars: newCharsList,
     };
 
-    const startingInfo = newChar.getDrunkOrSoberStartingInfo(gameState);
+    const startingInfo = getDrunkOrSoberStartingInfo(
+      gameState,
+      newChar,
+      newChar,
+    );
     if (startingInfo) {
-      newGameState.startingInfoSuggestions[newChar.id] = startingInfo;
+      newGameState.startingInfoSuggestions[`${newChar.name}_${newChar.id}`] =
+        startingInfo;
     }
 
     const otherNightSuggestion = newChar.getOtherNightSuggestion(gameState);
     if (otherNightSuggestion) {
-      newGameState.otherNightSuggestions[newChar.id] = otherNightSuggestion;
+      newGameState.otherNightSuggestions[`${newChar.name}_${newChar.id}`] =
+        otherNightSuggestion;
     }
 
     newGameState.nightInstructions = regenerateNightInstructions(

@@ -1,14 +1,24 @@
 import { Character } from "./characters";
 
-export interface Edition {
+export interface EditionBase {
   getCharactersForEdition: () => CharacterSet;
-  nightInstructions: {
-    [NightType.First]: (CharacterName | SpecialInstructionKey)[];
-    [NightType.Other]: (CharacterName | SpecialInstructionKey)[];
-  };
   isTeensyville?: boolean;
-  isBaseEdition?: boolean;
 }
+
+type ConditionalNightInstructions =
+  | {
+      isBaseEdition: true;
+      nightInstructions: {
+        [NightType.First]: (CharacterName | SpecialInstructionKey)[];
+        [NightType.Other]: (CharacterName | SpecialInstructionKey)[];
+      };
+    }
+  | {
+      isBaseEdition?: false;
+      nightInstructions?: never;
+    };
+
+export type Edition = EditionBase & ConditionalNightInstructions;
 
 export interface CharacterSet {
   townsfolk: Character[];
@@ -161,7 +171,6 @@ export enum SpecialInstructionKey {
   MinionInfo = "Minion Info",
   DemonInfo = "Demon Info",
   Dawn = "Dawn",
-  MarionetteInfo = "Marionette",
 }
 
 export enum CharacterType {

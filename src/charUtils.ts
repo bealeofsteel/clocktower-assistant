@@ -6,6 +6,35 @@ export const getAllCharsInPlay = (gameState: GameState): Character[] => {
   return gameState?.allChars?.filter((char) => char.inPlay);
 };
 
+export const getAbilitiesInPlay = (
+  gameState: GameState,
+): Partial<
+  Record<CharacterName, { char: Character; actingChar: Character }[]>
+> => {
+  const charsInPlay = getAllCharsInPlay(gameState);
+
+  const abilitiesInPlayToChars: Partial<
+    Record<CharacterName, { char: Character; actingChar: Character }[]>
+  > = {};
+  charsInPlay.forEach((char) => {
+    if (!char.actsAsChar || char.keepsOriginalAbility) {
+      (abilitiesInPlayToChars[char.name] ||= []).push({
+        char,
+        actingChar: char,
+      });
+    }
+
+    if (char.actsAsChar) {
+      (abilitiesInPlayToChars[char.actsAsChar.name] ||= []).push({
+        char,
+        actingChar: char.actsAsChar,
+      });
+    }
+  });
+
+  return abilitiesInPlayToChars;
+};
+
 export interface InPlayCharResult {
   character: Character;
   registersAs?: CharacterName;
@@ -190,4 +219,16 @@ export const getTokenInUseMap = (
     }
   });
   return tokenInUseMap;
+};
+
+export const getDrunkOrSoberStartingInfo = (
+  gameState: GameState,
+  actingChar: Character,
+  parentChar: Character,
+): string | undefined => {
+  if (parentChar.isDrunkOrPoisoned) {
+    return actingChar.getDroisonedInfo(gameState, parentChar);
+  }
+
+  return actingChar.getStartingInfoSuggestion(gameState);
 };

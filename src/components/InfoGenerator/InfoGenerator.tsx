@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Character } from "../../characters";
 import { CharacterName } from "../../types";
 import "./InfoGenerator.css";
-import { useGameState } from "../../context/GameStateContext";
+import { useGameState } from "../../hooks/useGameState";
 
 function InfoGenerator() {
   const { gameState, updateGameState } = useGameState();

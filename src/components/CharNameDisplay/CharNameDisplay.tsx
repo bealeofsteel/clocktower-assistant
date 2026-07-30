@@ -3,7 +3,6 @@ import { Character } from "../../characters";
 import { CharacterName } from "../../types";
 import PlayerNameInput from "../PlayerNameInput/PlayerNameInput";
 import { useToggleDeadAliveState } from "../../hooks/useToggleDeadAliveState";
-import { useGameState } from "../../context/GameStateContext";
 
 interface CharNameDisplayProps {
   char: Character;
@@ -16,7 +15,6 @@ function CharNameDisplay({
   playable,
   tokenInUseMap,
 }: CharNameDisplayProps) {
-  const { gameState, updateGameState } = useGameState();
   const toggleDeadAliveState = useToggleDeadAliveState();
 
   return (
@@ -30,13 +28,7 @@ function CharNameDisplay({
           ? ` (token used by ${tokenInUseMap[char.name]})`
           : ""}
       </span>
-      {playable && (
-        <PlayerNameInput
-          gameState={gameState}
-          updateGameState={updateGameState}
-          char={char}
-        />
-      )}
+      {playable && <PlayerNameInput char={char} />}
     </div>
   );
 }

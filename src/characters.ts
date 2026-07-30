@@ -68,6 +68,7 @@ export abstract class Character {
   actsAsChar: Character | undefined;
   actsWhileDead: boolean;
   isDrunkOrPoisoned: boolean;
+  keepsOriginalAbility: boolean;
 
   constructor(
     name: CharacterName,
@@ -83,6 +84,7 @@ export abstract class Character {
     this.inPlay = false;
     this.actsWhileDead = false;
     this.isDrunkOrPoisoned = false;
+    this.keepsOriginalAbility = true;
   }
 
   // Do nothing, some classes will override
@@ -120,10 +122,6 @@ export abstract class Character {
 
   getOtherNightSuggestion(_gameState: GameState): string | undefined {
     return;
-  }
-
-  getIdentityForInstructions(): CharacterName {
-    return this.actsAsChar?.name || this.name;
   }
 
   canBeDemonBluff(): boolean {
@@ -167,18 +165,11 @@ export abstract class Character {
     return false;
   }
 
-  getDrunkOrSoberStartingInfo(gameState: GameState): string | undefined {
-    if (this.isDrunkOrPoisoned) {
-      return this.getDroisonedInfo(gameState);
-    }
-
-    return this.getStartingInfoSuggestion(gameState);
-  }
-
-  getDroisonedInfo(gameState: GameState): string | undefined {
-    let strategies = this.actsAsChar
-      ? this.actsAsChar.getDrunkStrategies(this.id)
-      : this.getDrunkStrategies(this.id);
+  getDroisonedInfo(
+    gameState: GameState,
+    parentChar: Character,
+  ): string | undefined {
+    let strategies = this.getDrunkStrategies(parentChar.id);
     if (strategies) {
       strategies = strategies?.filter((strategy) =>
         strategy.gameQualifiesForStrategy(gameState),
@@ -505,18 +496,6 @@ export class Drunk extends Character {
     return false;
   }
 
-  getStartingInfoSuggestion(gameState: GameState): string | undefined {
-    return this.getDroisonedInfo(gameState);
-  }
-
-  getFirstNightInstructions(gameState: GameState): string | undefined {
-    return this.actsAsChar?.getFirstNightInstructions(gameState);
-  }
-
-  getOtherNightsInstructions(): string | undefined {
-    return this.actsAsChar?.getOtherNightsInstructions();
-  }
-
   canActAsOtherChar(): boolean {
     return true;
   }
@@ -787,25 +766,18 @@ const philosopherInstructions =
 export class Philosopher extends Character {
   constructor() {
     super(CharacterName.Philosopher);
+    this.keepsOriginalAbility = false;
   }
 
   getStartingInfoSuggestion(gameState: GameState): string | undefined {
     return this.actsAsChar?.getStartingInfoSuggestion(gameState);
   }
 
-  getFirstNightInstructions(gameState: GameState): string | undefined {
-    if (this.actsAsChar) {
-      return this.actsAsChar.getFirstNightInstructions(gameState);
-    }
-
+  getFirstNightInstructions(): string | undefined {
     return philosopherInstructions;
   }
 
   getOtherNightsInstructions(): string | undefined {
-    if (this.actsAsChar) {
-      return this.actsAsChar.getOtherNightsInstructions();
-    }
-
     return philosopherInstructions;
   }
 
@@ -1292,16 +1264,24 @@ export class Lunatic extends Character {
     return instructions;
   }
 
-  getOtherNightSuggestion(): string | undefined {
-    return this.actsAsChar?.getOtherNightsInstructions();
+  getOtherNightSuggestion(gameState: GameState): string | undefined {
+    const demon = gameState.allChars.find(
+      (char) => char.inPlay && char.type === CharacterType.Demon,
+    );
+
+    const lunaticDemonType = this.actsAsChar?.name || "Demon";
+
+    let simulateTheDemonsAbilityText = `Simulate the ${lunaticDemonType}'s ability`;
+    if (this.actsAsChar) {
+      simulateTheDemonsAbilityText += ` (${this.actsAsChar?.getOtherNightsInstructions()})`;
+    }
+    simulateTheDemonsAbilityText += ".";
+
+    return `${simulateTheDemonsAbilityText} Put the Lunatic to sleep. Wake {{${demon?.id}}}. Show the Lunatic token & point to {{${this.id}}}, then their target(s).`;
   }
 
   canActAsOtherChar(): boolean {
     return true;
-  }
-
-  getIdentityForInstructions(): CharacterName {
-    return this.name;
   }
 }
 
@@ -1490,18 +1470,6 @@ export class Cannibal extends Character {
   canActAsOtherChar(): boolean {
     return true;
   }
-
-  getFirstNightInstructions(gameState: GameState): string | undefined {
-    return this.actsAsChar?.getFirstNightInstructions(gameState);
-  }
-
-  getOtherNightsInstructions(): string | undefined {
-    return this.actsAsChar?.getOtherNightsInstructions();
-  }
-
-  getStartingInfoSuggestion(gameState: GameState): string | undefined {
-    return this.actsAsChar?.getStartingInfoSuggestion(gameState);
-  }
 }
 
 export class Marionette extends Drunk {
@@ -1510,6 +1478,20 @@ export class Marionette extends Drunk {
     this.name = CharacterName.Marionette;
     this.type = CharacterType.Minion;
     this.alignment = Alignment.Evil;
+  }
+
+  getFirstNightInstructions(): string {
+    return "Wake the Demon. Show the THIS PLAYER IS & Marionette tokens. Point to the Marionette.";
+  }
+
+  // Bit of a hack. Since the Marionette receives bad info, we mark it as droisoned even though the player is likely
+  // sober and healthy. Its regular starting suggestion falls under getDroisonedInfo() as a result.
+  getDroisonedInfo(gameState: GameState): string {
+    const demon = gameState.allChars.filter(
+      (char) => char.inPlay && char.type === CharacterType.Demon,
+    )[0];
+
+    return `Wake {{${demon.id}}}. Point to {{${this.id}}}.`;
   }
 
   isIncludedInMinionAndDemonInfo(): boolean {

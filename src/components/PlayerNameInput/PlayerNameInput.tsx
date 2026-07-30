@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Character } from "../../characters";
 import { cloneChar } from "../../charUtils";
-import { useGameState } from "../../context/GameStateContext";
+import { useGameState } from "../../hooks/useGameState";
 
 interface PlayerNameInputDisplayProps {
   char: Character;
