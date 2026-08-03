@@ -1254,13 +1254,6 @@ export class Lunatic extends Character {
       instructions = `Point to ${charTokens.join(", ")}. Show the ${bluffs[0].name}, ${bluffs[1].name}, and ${bluffs[2].name} tokens.`;
     }
 
-    const demonFirstNightInstructions =
-      this.actsAsChar?.getFirstNightInstructions(gameState) as string;
-
-    if (demonFirstNightInstructions) {
-      instructions += ` ${demonFirstNightInstructions}`;
-    }
-
     return instructions;
   }
 
